@@ -5632,6 +5632,31 @@ async function checkAppUpdateFromGitHub(isManual = false) {
       showNativeToast("🔍 GitHub에서 최신 버전 확인 중...");
     }
 
+    // 🌐 [웹 브라우저 환경 (Chrome/Safari/iOS/PC) 완벽 지원]:
+    // 웹앱은 서버(클라우드)에서 항상 최신 코드가 실행되므로 Android APK 전용 강제 업데이트에서 제외하고 즉시 가동합니다!
+    if (!window.AndroidBridge) {
+      updateCheckFinished = true;
+      window.isUpdatePendingInstall = false;
+      const splashBar = document.getElementById("splashProgressBar");
+      const splashPct = document.getElementById("splashPctCounter");
+      const splashStep = document.getElementById("splashStepText");
+      const splashStatus = document.getElementById("splashStatusText");
+      if (splashStep) splashStep.textContent = "✅ 가동 준비 완료";
+      if (splashStatus) {
+        splashStatus.textContent = "✅ 최신 웹 환경 가동 완료";
+        splashStatus.style.color = "#4ade80";
+      }
+      if (splashBar) splashBar.style.width = "100%";
+      if (splashPct) splashPct.textContent = "100%";
+      setTimeout(() => {
+        dismissSplashGracefully();
+      }, 500);
+      if (isManual) {
+        showNativeToast("🌐 현재 최신 웹 클라우드 버전을 이용 중입니다.");
+      }
+      return;
+    }
+
     const repo = APP_RELEASE_META.githubRepo;
     const B = window.AndroidBridge || {};
     const splashStatus = document.getElementById("splashStatusText");
