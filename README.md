@@ -1,7 +1,7 @@
-# 🚀 메리츠 AI 자동 주식 트레이더 (Meritz AI Auto Trader)
+﻿# 🚀 메리츠 AI 자동 주식 트레이더 (Meritz AI Auto Trader)
 
 > **메리츠증권 공식 실전 Open API 연동 7중 안전 감시 주식 자동매매 시스템**  
-> **공식 배포 웹사이트:** [https://okhrogo-dev.github.io/Ai_Trade_Marits/](https://okhrogo-dev.github.io/Ai_Trade_Marits/)  
+> **공식 배포 웹사이트:** [https://okhdev.github.io/AI_TRADE/](https://okhdev.github.io/AI_TRADE/)  
 > **사이트 개설자 및 앱 개발자: 오경한**  
 
 ---
@@ -12,7 +12,7 @@
 | :--- | :--- | :---: | :--- |
 | **Android** | `메리츠_AI_주식.apk` | v4.3.0 | [⬇️ Android APK 받기](메리츠_AI_주식.apk) |
 | **Windows** | `메리츠_AI_주식.exe` | v4.3.0 | [⬇️ Windows EXE 받기](메리츠_AI_주식.exe) |
-| **Web (PWA)** | `web/index.html` | v4.3.0 | [🌐 Web 버전 바로 열기](https://okhrogo-dev.github.io/Ai_Trade_Marits/web/index.html) |
+| **Web (PWA)** | `web/index.html` | v4.3.0 | [🌐 Web 버전 바로 열기](https://okhdev.github.io/AI_TRADE/web/index.html) |
 | **iOS** | `ios/ios_guide.html` | v4.3.0 | [🍎 아이폰 홈 화면 추가 안내](ios/ios_guide.html) |
 
 ---
@@ -40,5 +40,6 @@
 ## 👨‍💻 제작자 정보 (Credits)
 
 * **사이트 개설자 및 앱 개발자:** **오경한**
-* **GitHub Repository:** [https://github.com/okhrogo-dev/Ai_Trade_Marits](https://github.com/okhrogo-dev/Ai_Trade_Marits)
+* **GitHub Repository:** [https://github.com/OKHDEV/AI_TRADE](https://github.com/OKHDEV/AI_TRADE)
 * **Copyright:** © 2026 오경한. All rights reserved.
+
