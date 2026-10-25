@@ -327,6 +327,125 @@
     0% { r: 3px; opacity: 1; stroke-width: 2px; }
     100% { r: 16px; opacity: 0; stroke-width: 0.5px; }
   }
+
+  /* =========================================================================
+     🎨 6. 환경설정·테마 커스텀 전용 스타일시트
+     ========================================================================= */
+  :root {
+    --btn-radius: 8px;
+    --card-radius: 12px;
+  }
+  .card, .card-approval { border-radius: var(--card-radius) !important; }
+  .btn { border-radius: var(--btn-radius) !important; }
+
+  /* ☀️ 화이트 라이트 테마 */
+  body.theme-light {
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --card2: #f1f5f9;
+    --border: #e2e8f0;
+    --text: #0f172a;
+    --sub: #64748b;
+  }
+  body.theme-light .top-header {
+    background: #ffffff !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+  }
+  body.theme-light .bottom-nav {
+    background: #ffffff !important;
+    border-top: 1px solid #e2e8f0 !important;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.04);
+  }
+  body.theme-light .nav-item { color: #64748b !important; }
+  body.theme-light .nav-item.active { color: #2563eb !important; }
+  body.theme-light .card, body.theme-light .card-approval {
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+  }
+  body.theme-light .inp, body.theme-light select, body.theme-light input[type="text"], body.theme-light input[type="number"], body.theme-light input[type="password"] {
+    background: #f8fafc !important;
+    color: #0f172a !important;
+    border: 1px solid #cbd5e1 !important;
+  }
+  body.theme-light .chip {
+    background: #f1f5f9 !important;
+    color: #475569 !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+  body.theme-light .chip.active {
+    background: #2563eb !important;
+    color: #ffffff !important;
+    border-color: #2563eb !important;
+  }
+  body.theme-light .kpi-box {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+  body.theme-light .log-box {
+    background: #f8fafc !important;
+    color: #334155 !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+  body.theme-light .idx-bar {
+    background: #f1f5f9 !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+
+  /* 🌌 OLED 트루 블랙 테마 */
+  body.theme-oled {
+    --bg: #000000 !important;
+    --card: #09090b !important;
+    --card2: #141416 !important;
+    --border: #27272a !important;
+    --text: #fafafa !important;
+    --sub: #a1a1aa !important;
+  }
+  body.theme-oled .top-header, body.theme-oled .bottom-nav {
+    background: #000000 !important;
+    border-color: #27272a !important;
+  }
+
+  /* ☕ 웜 모카 / 아이케어 테마 */
+  body.theme-mocha {
+    --bg: #1c1917 !important;
+    --card: #292524 !important;
+    --card2: #332e2b !important;
+    --border: #44403c !important;
+    --text: #f5f5f4 !important;
+    --sub: #a8a29e !important;
+  }
+  body.theme-mocha .top-header, body.theme-mocha .bottom-nav {
+    background: #1c1917 !important;
+    border-color: #44403c !important;
+  }
+
+  /* 🇺🇸 글로벌 가격 색상 체계 (상승 초록 / 하락 빨강) */
+  body.price-global {
+    --up: #10b981 !important;
+    --down: #ef4444 !important;
+  }
+  body.price-global .up-txt { color: #10b981 !important; }
+  body.price-global .down-txt { color: #ef4444 !important; }
+
+  /* 🔲 버튼 라운딩 스타일 */
+  body.btn-round {
+    --btn-radius: 22px !important;
+    --card-radius: 18px !important;
+  }
+  body.btn-sharp {
+    --btn-radius: 2px !important;
+    --card-radius: 4px !important;
+  }
+
+  /* ✨ 네온 글로우 끄기 (플랫 모드) */
+  body.btn-glow-off * {
+    box-shadow: none !important;
+    filter: none !important;
+  }
+
+  /* 🔤 폰트 크기 조절 */
+  body.font-small { font-size: 11.5px !important; }
+  body.font-large { font-size: 14.5px !important; }
 </style>
 </head>
 <body>
@@ -772,6 +891,7 @@
     <div class="chip pro-only" onclick="switchCfgSubTab('safety', this)">🛡️ 3. AI 안전·한도</div>
     <div class="chip" onclick="switchCfgSubTab('notif', this)">🔔 4. 폰알림·승인</div>
     <div class="chip" onclick="switchCfgSubTab('security', this)">🔒 5. 보안PIN·일지</div>
+    <div class="chip" onclick="switchCfgSubTab('prefs', this)">🎨 6. 환경설정·테마</div>
   </div>
 
   <!-- 서브설정 1: 📖 사용방법·튜토리얼 & 안전원리 백과사전 -->
@@ -1087,6 +1207,148 @@
       <button class="btn btn-meritz" style="width:100%; padding:10px; font-size:12px; font-weight:800;" onclick="openDownloadInBrowserFallback('https://github.com/OKHDEV/AI_TRADE/blob/main/%EB%A9%94%EB%A6%AC%EC%B8%A0_AI_%EC%A3%BC%EC%8B%9D.apk')">
         🌐 GitHub 웹에서 직접 다운로드
       </button>
+    </div>
+  </div>
+
+
+  <!-- 서브설정 6: 🎨 환경설정·테마 커스텀 및 UX 제어 -->
+  <div id="cfg-sub-prefs" class="sub-cfg-panel">
+    <!-- 1. 테마 모드 -->
+    <div class="card" style="border: 1.5px solid #38bdf8;">
+      <div class="card-title" style="color: #38bdf8;">
+        <span>🎨 화면 테마 모드</span>
+        <span id="themeBadge" class="badge badge-blue">다크 네온</span>
+      </div>
+      <div style="font-size: 11.5px; color: var(--sub); margin-bottom: 10px;">
+        눈의 피로도를 낮추는 다크 네온, 깔끔한 핀테크 화이트 라이트, OLED 배터리 절약 블랙 등을 실시간으로 선택합니다.
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+        <button class="btn btn-dark" id="btnThemeDark" onclick="setUserTheme('dark')" style="border: 1.5px solid #38bdf8;">🌙 다크 네온 (기본)</button>
+        <button class="btn btn-dark" id="btnThemeLight" onclick="setUserTheme('light')" style="border: 1.5px solid var(--border);">☀️ 화이트 라이트</button>
+        <button class="btn btn-dark" id="btnThemeOled" onclick="setUserTheme('oled')" style="border: 1.5px solid var(--border);">🌌 OLED 블랙</button>
+        <button class="btn btn-dark" id="btnThemeMocha" onclick="setUserTheme('mocha')" style="border: 1.5px solid var(--border);">☕ 웜 모카</button>
+      </div>
+    </div>
+
+    <!-- 2. 버튼 및 카드 디자인 스타일 -->
+    <div class="card">
+      <div class="card-title">
+        <span>🔲 버튼 및 모서리 디자인</span>
+        <span id="radiusBadge" class="badge badge-gold">표준 (8px)</span>
+      </div>
+      <div style="font-size: 11.5px; color: var(--sub); margin-bottom: 10px;">
+        버튼과 카드의 외형 스타일을 취향에 맞게 즉시 변경합니다.
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 12px;">
+        <button class="btn btn-dark" id="btnRadiusRound" onclick="setBtnDesign('round')">💊 라운드</button>
+        <button class="btn btn-dark" id="btnRadiusStd" onclick="setBtnDesign('standard')">📱 표준</button>
+        <button class="btn btn-dark" id="btnRadiusSharp" onclick="setBtnDesign('sharp')">📐 각진 HTS</button>
+      </div>
+
+      <div class="card-title" style="font-size: 12px; margin-top: 10px; margin-bottom: 6px;">
+        <span>✨ 네온 발광 글로우 효과</span>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn btn-green" id="btnGlowOn" onclick="setGlowEffect(true)" style="flex: 1;">✨ 글로우 켜기</button>
+        <button class="btn btn-dark" id="btnGlowOff" onclick="setGlowEffect(false)" style="flex: 1;">미니멀 끄기</button>
+      </div>
+    </div>
+
+    <!-- 3. 포인트 강조 컬러 -->
+    <div class="card">
+      <div class="card-title">
+        <span>🔴 메인 포인트 컬러</span>
+        <span id="accentBadge" class="badge badge-red">메리츠 레드</span>
+      </div>
+      <div style="font-size: 11.5px; color: var(--sub); margin-bottom: 10px;">
+        브랜드 심볼 및 주요 강조 액센트 색상을 변경합니다.
+      </div>
+      <div style="display: flex; gap: 8px; justify-content: space-between; align-items: center; padding: 4px 0;">
+        <div onclick="setAccentColor('red')" style="width: 38px; height: 38px; border-radius: 50%; background: #e11d48; cursor: pointer; border: 2.5px solid #fff; box-shadow: 0 0 10px #e11d48;" title="메리츠 레드"></div>
+        <div onclick="setAccentColor('blue')" style="width: 38px; height: 38px; border-radius: 50%; background: #0284c7; cursor: pointer; border: 2.5px solid transparent; box-shadow: 0 0 8px #0284c7;" title="사파이어 블루"></div>
+        <div onclick="setAccentColor('green')" style="width: 38px; height: 38px; border-radius: 50%; background: #10b981; cursor: pointer; border: 2.5px solid transparent; box-shadow: 0 0 8px #10b981;" title="에메랄드 그린"></div>
+        <div onclick="setAccentColor('purple')" style="width: 38px; height: 38px; border-radius: 50%; background: #8b5cf6; cursor: pointer; border: 2.5px solid transparent; box-shadow: 0 0 8px #8b5cf6;" title="바이올렛"></div>
+        <div onclick="setAccentColor('gold')" style="width: 38px; height: 38px; border-radius: 50%; background: #f59e0b; cursor: pointer; border: 2.5px solid transparent; box-shadow: 0 0 8px #f59e0b;" title="골드"></div>
+      </div>
+    </div>
+
+    <!-- 4. 상승/하락 등락 색상 체계 -->
+    <div class="card">
+      <div class="card-title">
+        <span>📈 주가 등락 색상 체계</span>
+        <span id="priceColorBadge" class="badge badge-red">🇰🇷 한국식</span>
+      </div>
+      <div style="font-size: 11.5px; color: var(--sub); margin-bottom: 10px;">
+        국내 증시 표준(상승 빨강/하락 파랑) 또는 미국/글로벌 표준(상승 초록/하락 빨강)으로 전환합니다.
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+        <button class="btn btn-dark" id="btnPriceKr" onclick="setPriceColorMode('kr')" style="border: 1.5px solid #ef4444;">
+          🇰🇷 한국식 (▲빨강 / ▼파랑)
+        </button>
+        <button class="btn btn-dark" id="btnPriceGlobal" onclick="setPriceColorMode('global')" style="border: 1.5px solid var(--border);">
+          🇺🇸 미국/글로벌 (▲초록 / ▼빨강)
+        </button>
+      </div>
+    </div>
+
+    <!-- 5. 사운드 및 햅틱 진동 -->
+    <div class="card">
+      <div class="card-title">
+        <span>🔊 효과음 및 햅틱 진동</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px; font-size: 12px;">
+        <label style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+          <div>
+            <div style="font-weight: 700; color: #f8fafc;">🔔 AI 체결 및 주문 승인 차임벨</div>
+            <div style="font-size: 11px; color: var(--sub);">AI 매수/매도 포착 및 체결 시 알림 사운드 재생</div>
+          </div>
+          <input type="checkbox" id="chkPrefsSound" onchange="toggleSound(this.checked)" style="width: 18px; height: 18px;">
+        </label>
+        <div style="margin-top: -4px;">
+          <button class="btn btn-dark" style="padding: 4px 10px; font-size: 11px; width: auto; display: inline-flex;" onclick="testSound()">🔔 효과음 테스트</button>
+        </div>
+
+        <hr style="border: none; border-top: 1px solid var(--border); margin: 2px 0;">
+
+        <label style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+          <div>
+            <div style="font-weight: 700; color: #f8fafc;">📳 터치 및 체결 햅틱 진동</div>
+            <div style="font-size: 11px; color: var(--sub);">버튼 클릭 및 주요 체결 이벤트 발생 시 진동 피드백</div>
+          </div>
+          <input type="checkbox" id="chkPrefsHaptic" checked onchange="toggleHaptics(this.checked)" style="width: 18px; height: 18px;">
+        </label>
+
+        <hr style="border: none; border-top: 1px solid var(--border); margin: 2px 0;">
+
+        <label style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+          <div>
+            <div style="font-weight: 700; color: #f8fafc;">⚡ 실시간 체결 펄스 깜빡임</div>
+            <div style="font-size: 11px; color: var(--sub);">실시간 시세 갱신 시 부드러운 하이라이트 애니메이션</div>
+          </div>
+          <input type="checkbox" id="chkPrefsTickFlash" checked onchange="toggleTickFlash(this.checked)" style="width: 18px; height: 18px;">
+        </label>
+      </div>
+    </div>
+
+    <!-- 6. 글꼴 크기 배율 -->
+    <div class="card">
+      <div class="card-title">
+        <span>🔤 글자 크기 조절 (가독성)</span>
+        <span id="fontScaleBadge" class="badge badge-green">보통 (100%)</span>
+      </div>
+      <div style="font-size: 11.5px; color: var(--sub); margin-bottom: 10px;">
+        차트 및 종목 정보 글자 크기를 사용자 시력에 맞추어 확대/축소합니다.
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;">
+        <button class="btn btn-dark" id="btnFontSmall" onclick="setFontScale('small')">작게 (90%)</button>
+        <button class="btn btn-dark" id="btnFontNormal" onclick="setFontScale('normal')">보통 (100%)</button>
+        <button class="btn btn-dark" id="btnFontLarge" onclick="setFontScale('large')">크게 (112%)</button>
+      </div>
+    </div>
+
+    <!-- 7. 초기화 버튼 -->
+    <div style="text-align: center; margin: 16px 0 8px;">
+      <button class="btn btn-dark" style="padding: 9px 18px; font-size: 12px; width: auto; color: #94a3b8; border: 1px solid var(--border);" onclick="resetUserPrefs()">🔄 환경설정 기본값으로 초기화</button>
     </div>
   </div>
 
@@ -6153,6 +6415,229 @@ function openDownloadInBrowserFallback(url) {
       });
     });
   }
+
+// =========================================================================
+// 🎨 환경설정·테마 커스텀 및 UX 제어 엔진
+// =========================================================================
+const DEFAULT_USER_PREFS = {
+  theme: "dark", // dark, light, oled, mocha
+  radius: "standard", // standard, round, sharp
+  glow: true,
+  accent: "red", // red, blue, green, purple, gold
+  priceMode: "kr", // kr, global
+  soundEnabled: true,
+  hapticEnabled: true,
+  tickFlash: true,
+  fontScale: "normal" // small, normal, large
+};
+
+let userPrefs = Object.assign({}, DEFAULT_USER_PREFS);
+
+function loadUserPrefs() {
+  try {
+    const raw = localStorage.getItem("meritz_ui_preferences");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      userPrefs = Object.assign({}, DEFAULT_USER_PREFS, parsed);
+    }
+  } catch (e) {}
+  applyUserPrefs(false);
+}
+
+function saveUserPrefs() {
+  try {
+    localStorage.setItem("meritz_ui_preferences", JSON.stringify(userPrefs));
+  } catch (e) {}
+}
+
+function applyUserPrefs(showToast) {
+  const body = document.body;
+  if (!body) return;
+
+  // 1. Theme
+  body.classList.remove("theme-light", "theme-oled", "theme-mocha");
+  if (userPrefs.theme === "light") body.classList.add("theme-light");
+  else if (userPrefs.theme === "oled") body.classList.add("theme-oled");
+  else if (userPrefs.theme === "mocha") body.classList.add("theme-mocha");
+
+  // 2. Radius
+  body.classList.remove("btn-round", "btn-sharp");
+  if (userPrefs.radius === "round") body.classList.add("btn-round");
+  else if (userPrefs.radius === "sharp") body.classList.add("btn-sharp");
+
+  // 3. Glow
+  if (!userPrefs.glow) body.classList.add("btn-glow-off");
+  else body.classList.remove("btn-glow-off");
+
+  // 4. Accent Color
+  const accents = {
+    red: "#e11d48",
+    blue: "#0284c7",
+    green: "#10b981",
+    purple: "#8b5cf6",
+    gold: "#f59e0b"
+  };
+  body.style.setProperty("--meritz", accents[userPrefs.accent] || "#e11d48");
+
+  // 5. Price Color Mode
+  if (userPrefs.priceMode === "global") body.classList.add("price-global");
+  else body.classList.remove("price-global");
+
+  // 6. Font Scale
+  body.classList.remove("font-small", "font-large");
+  if (userPrefs.fontScale === "small") body.classList.add("font-small");
+  else if (userPrefs.fontScale === "large") body.classList.add("font-large");
+
+  // Update UI Elements in Settings Tab
+  updatePrefsUiIndicators();
+
+  if (showToast) {
+    showNativeToast("🎨 환경설정이 실시간 적용되었습니다.");
+  }
+}
+
+function updatePrefsUiIndicators() {
+  const themeBadge = document.getElementById("themeBadge");
+  if (themeBadge) {
+    const labels = { dark: "다크 네온", light: "화이트 라이트", oled: "OLED 블랙", mocha: "웜 모카" };
+    themeBadge.textContent = labels[userPrefs.theme] || "다크 네온";
+  }
+
+  const radiusBadge = document.getElementById("radiusBadge");
+  if (radiusBadge) {
+    const labels = { round: "라운드", standard: "표준 (8px)", sharp: "각진 HTS" };
+    radiusBadge.textContent = labels[userPrefs.radius] || "표준";
+  }
+
+  const priceColorBadge = document.getElementById("priceColorBadge");
+  if (priceColorBadge) {
+    priceColorBadge.textContent = userPrefs.priceMode === "global" ? "🇺🇸 글로벌식" : "🇰🇷 한국식";
+  }
+
+  const fontScaleBadge = document.getElementById("fontScaleBadge");
+  if (fontScaleBadge) {
+    const labels = { small: "작게 (90%)", normal: "보통 (100%)", large: "크게 (112%)" };
+    fontScaleBadge.textContent = labels[userPrefs.fontScale] || "보통";
+  }
+
+  const chkSound = document.getElementById("chkPrefsSound");
+  if (chkSound) chkSound.checked = !!userPrefs.soundEnabled;
+
+  const chkHaptic = document.getElementById("chkPrefsHaptic");
+  if (chkHaptic) chkHaptic.checked = !!userPrefs.hapticEnabled;
+
+  const chkFlash = document.getElementById("chkPrefsTickFlash");
+  if (chkFlash) chkFlash.checked = !!userPrefs.tickFlash;
+}
+
+function setUserTheme(theme) {
+  userPrefs.theme = theme;
+  saveUserPrefs();
+  applyUserPrefs(true);
+  playTradingSound('bell');
+}
+
+function setBtnDesign(radius) {
+  userPrefs.radius = radius;
+  saveUserPrefs();
+  applyUserPrefs(true);
+}
+
+function setGlowEffect(on) {
+  userPrefs.glow = on;
+  saveUserPrefs();
+  applyUserPrefs(true);
+}
+
+function setAccentColor(accent) {
+  userPrefs.accent = accent;
+  saveUserPrefs();
+  applyUserPrefs(true);
+  playTradingSound('bell');
+}
+
+function setPriceColorMode(mode) {
+  userPrefs.priceMode = mode;
+  saveUserPrefs();
+  applyUserPrefs(true);
+  paintMarketIndices();
+}
+
+function setFontScale(scale) {
+  userPrefs.fontScale = scale;
+  saveUserPrefs();
+  applyUserPrefs(true);
+}
+
+function toggleSound(on) {
+  userPrefs.soundEnabled = on;
+  saveUserPrefs();
+  if (on) playTradingSound('buy');
+}
+
+function toggleHaptics(on) {
+  userPrefs.hapticEnabled = on;
+  saveUserPrefs();
+  if (on && navigator.vibrate) try { navigator.vibrate(40); } catch(e) {}
+}
+
+function toggleTickFlash(on) {
+  userPrefs.tickFlash = on;
+  saveUserPrefs();
+}
+
+function resetUserPrefs() {
+  userPrefs = Object.assign({}, DEFAULT_USER_PREFS);
+  saveUserPrefs();
+  applyUserPrefs(true);
+  showNativeToast("🔄 환경설정이 기본값으로 초기화되었습니다.");
+}
+
+function playTradingSound(type) {
+  if (!userPrefs.soundEnabled) return;
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    if (type === 'buy') {
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(659.25, ctx.currentTime + 0.08);
+      osc.frequency.exponentialRampToValueAtTime(783.99, ctx.currentTime + 0.16);
+      gain.gain.setValueAtTime(0.18, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.35);
+    } else {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      gain.gain.setValueAtTime(0.18, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.4);
+    }
+  } catch(e) {}
+}
+
+function testSound() {
+  playTradingSound('buy');
+  if (navigator.vibrate) try { navigator.vibrate(30); } catch(e) {}
+}
+
+// 초기화 시 사용자 환경설정 자동 로드
+if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+  window.addEventListener('DOMContentLoaded', () => {
+    loadUserPrefs();
+  });
+}
+if (typeof setTimeout === 'function') {
+  setTimeout(() => { loadUserPrefs(); }, 100);
+}
 </script>
 </body>
 
