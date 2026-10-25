@@ -9,11 +9,13 @@
   --line: #1e293b;
   --line-light: #334155;
   --cyan: #38bdf8;
-  --cyan-glow: rgba(56, 189, 248, 0.35);
+  --cyan-glow: rgba(56, 189, 248, 0.4);
+  --cyan-bright: #7dd3fc;
   --green: #10b981;
   --red: #f43f5e;
   --gold: #fbbf24;
-  --radius: 16px;
+  --purple: #818cf8;
+  --radius: 18px;
   --gutter: 24px;
   --font: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
   color-scheme: dark;
@@ -40,6 +42,20 @@ body {
   word-break: keep-all;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  position: relative;
+}
+
+/* 🌟 마우스 커서 반응형 배경 조명 스팟라이트 */
+#mouseGlow {
+  position: fixed;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.07) 0%, rgba(30, 27, 75, 0.03) 50%, transparent 70%);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  z-index: 0;
+  transition: opacity 0.3s ease;
 }
 
 img {
@@ -62,10 +78,7 @@ code {
   color: var(--cyan);
 }
 
-h1,
-h2,
-h3,
-h4 {
+h1, h2, h3, h4 {
   margin: 0;
   font-weight: 900;
   line-height: 1.15;
@@ -77,6 +90,8 @@ h4 {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 var(--gutter);
+  position: relative;
+  z-index: 1;
 }
 
 /* 상단 네비게이션 */
@@ -84,10 +99,11 @@ h4 {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(0, 0, 0, 0.88);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  transition: transform 0.3s ease, background 0.3s ease;
 }
 
 .nav-inner {
@@ -110,7 +126,12 @@ h4 {
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  box-shadow: 0 0 12px var(--cyan-glow);
+  box-shadow: 0 0 14px var(--cyan-glow);
+  transition: transform 0.3s ease;
+}
+
+.brand:hover .brand-icon {
+  transform: rotate(5deg) scale(1.08);
 }
 
 .brand-title {
@@ -129,25 +150,46 @@ h4 {
 
 .nav-links a {
   color: var(--gray);
-  transition: color 0.15s;
+  transition: color 0.15s, transform 0.15s;
 }
 
 .nav-links a:hover {
   color: var(--white);
+  transform: translateY(-1px);
 }
 
 .nav-btn-highlight {
   background: linear-gradient(135deg, #0284c7, #2563eb);
   color: #fff !important;
-  padding: 7px 16px;
+  padding: 8px 18px;
   border-radius: 20px;
   box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);
-  transition: transform 0.15s, box-shadow 0.15s !important;
+  transition: transform 0.2s, box-shadow 0.2s !important;
 }
 
 .nav-btn-highlight:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(2, 132, 199, 0.6);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 24px rgba(2, 132, 199, 0.65);
+}
+
+/* 🌟 3D 입체 스크롤 등장 애니메이션 (.reveal-3d) */
+.reveal-3d {
+  opacity: 0;
+  transform: perspective(1200px) rotateX(12deg) translateY(50px) scale(0.94);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-3d.active {
+  opacity: 1;
+  transform: perspective(1200px) rotateX(0deg) translateY(0) scale(1);
+}
+
+/* 🌟 마우스 움직임 반응형 3D 카드 틸트 (.tilt-card) */
+.tilt-card {
+  transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+  transform-style: preserve-3d;
+  will-change: transform;
 }
 
 /* 히어로 섹션 */
@@ -157,26 +199,11 @@ h4 {
   overflow: hidden;
 }
 
-.hero::before {
-  content: '';
-  position: absolute;
-  top: -150px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 900px;
-  height: 450px;
-  background: radial-gradient(circle, rgba(56, 189, 248, 0.14) 0%, rgba(16, 185, 129, 0.05) 50%, transparent 75%);
-  pointer-events: none;
-  z-index: 0;
-}
-
 .hero-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
   gap: 48px;
   align-items: center;
-  position: relative;
-  z-index: 1;
 }
 
 .hero-tag {
@@ -186,12 +213,19 @@ h4 {
   background: rgba(56, 189, 248, 0.12);
   border: 1px solid rgba(56, 189, 248, 0.35);
   border-radius: 30px;
-  padding: 4px 14px;
-  margin-bottom: 20px;
-  font-size: 12px;
+  padding: 5px 16px;
+  margin-bottom: 22px;
+  font-size: 12.5px;
   font-weight: 800;
   color: var(--cyan);
   letter-spacing: 0.5px;
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
+  animation: pulseBadge 3s infinite ease-in-out;
+}
+
+@keyframes pulseBadge {
+  0%, 100% { box-shadow: 0 0 15px rgba(56, 189, 248, 0.2); }
+  50% { box-shadow: 0 0 25px rgba(56, 189, 248, 0.45); }
 }
 
 .hero-title {
@@ -206,6 +240,8 @@ h4 {
   background: linear-gradient(135deg, #ffffff 30%, var(--cyan) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  display: inline-block;
+  animation: shimmer 6s infinite linear;
 }
 
 .hero-lead {
@@ -213,17 +249,17 @@ h4 {
   color: var(--gray);
   max-width: 32em;
   margin-bottom: 36px;
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
 .hero-cta {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
-/* 메인 다운로드 버튼 */
+/* 버튼 스타일 */
 .btn-primary {
   display: inline-flex;
   align-items: center;
@@ -236,12 +272,30 @@ h4 {
   font-weight: 900;
   letter-spacing: -0.01em;
   box-shadow: 0 8px 24px rgba(2, 132, 199, 0.45);
-  transition: transform 0.15s, box-shadow 0.15s;
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(60deg, transparent 35%, rgba(255,255,255,0.25) 50%, transparent 65%);
+  transform: rotate(30deg) translateX(-100%);
+  transition: transform 0.8s ease;
+}
+
+.btn-primary:hover::after {
+  transform: rotate(30deg) translateX(100%);
 }
 
 .btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 28px rgba(2, 132, 199, 0.65);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 14px 32px rgba(2, 132, 199, 0.65);
 }
 
 .btn-secondary {
@@ -255,13 +309,14 @@ h4 {
   color: #f1f5f9;
   font-size: 16px;
   font-weight: 800;
-  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
 }
 
 .btn-secondary:hover {
   background: #1e293b;
   border-color: var(--cyan);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
 }
 
 .hero-meta {
@@ -279,18 +334,64 @@ h4 {
   gap: 6px;
 }
 
-/* 히어로 우측 인터랙티브 캔버스 카드 */
-.hero-graphic {
+/* 🌟 3D 입체 히어로 카드 스테이지 */
+.hero-stage-3d {
   position: relative;
+  perspective: 1400px;
 }
 
 .canvas-card {
   background: linear-gradient(145deg, rgba(15, 23, 42, 0.95) 0%, rgba(3, 7, 18, 0.98) 100%);
-  border: 1.5px solid rgba(56, 189, 248, 0.35);
-  border-radius: 24px;
-  padding: 20px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(56, 189, 248, 0.15);
+  border: 1.5px solid rgba(56, 189, 248, 0.4);
+  border-radius: 26px;
+  padding: 22px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85), 0 0 36px rgba(56, 189, 248, 0.2);
   position: relative;
+  transform: rotateY(-6deg) rotateX(4deg);
+  transition: transform 0.4s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.4s ease;
+  transform-style: preserve-3d;
+}
+
+.canvas-card:hover {
+  transform: rotateY(0deg) rotateX(0deg) translateY(-6px);
+  box-shadow: 0 35px 80px rgba(0, 0, 0, 0.9), 0 0 45px rgba(56, 189, 248, 0.35);
+}
+
+/* 🌟 입체 공중 부양 3D 배지들 (Floating 3D Chips) */
+.float-chip {
+  position: absolute;
+  z-index: 10;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1.5px solid rgba(56, 189, 248, 0.5);
+  border-radius: 16px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.8), 0 0 18px rgba(56, 189, 248, 0.3);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transform: translateZ(35px);
+  pointer-events: none;
+}
+
+.chip-top-right {
+  top: -18px;
+  right: -14px;
+  animation: floatAnim 4.2s ease-in-out infinite;
+}
+
+.chip-bottom-left {
+  bottom: -16px;
+  left: -14px;
+  animation: floatAnim 5.1s ease-in-out infinite 1.2s;
+}
+
+@keyframes floatAnim {
+  0%, 100% { transform: translateZ(35px) translateY(0); }
+  50% { transform: translateZ(35px) translateY(-10px); }
 }
 
 .card-header {
@@ -304,7 +405,7 @@ h4 {
   background: rgba(16, 185, 129, 0.15);
   border: 1px solid rgba(16, 185, 129, 0.4);
   color: #34d399;
-  padding: 3px 10px;
+  padding: 4px 12px;
   border-radius: 20px;
   font-size: 11px;
   font-weight: 800;
@@ -331,7 +432,7 @@ h4 {
 #heroCanvas {
   width: 100%;
   height: 240px;
-  border-radius: 12px;
+  border-radius: 14px;
   background: #060a12;
   border: 1px solid #1e293b;
   display: block;
@@ -361,10 +462,53 @@ h4 {
   color: #f1f5f9;
 }
 
+/* 🌟 실시간 3D 스탯 카운터 바 (KPI Metrics) */
+.metrics-band {
+  background: linear-gradient(180deg, #000000 0%, #070b14 100%);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 42px 0;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  text-align: center;
+}
+
+.metric-card {
+  padding: 16px;
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  transition: transform 0.25s, border-color 0.25s;
+}
+
+.metric-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--cyan);
+}
+
+.metric-num {
+  font-size: clamp(32px, 3.8vw, 48px);
+  font-weight: 900;
+  line-height: 1;
+  margin-bottom: 6px;
+  background: linear-gradient(135deg, #ffffff 40%, var(--cyan) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.metric-label {
+  font-size: 13.5px;
+  color: var(--gray);
+  font-weight: 700;
+}
+
 /* 실시간 전광판 롤링 티커 */
 .ticker {
   background: #090d16;
-  border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
   padding: 14px 0;
   overflow: hidden;
@@ -374,7 +518,7 @@ h4 {
 .ticker-track {
   display: flex;
   width: max-content;
-  animation: tickerScroll 24s linear infinite;
+  animation: tickerScroll 26s linear infinite;
 }
 
 .ticker-group {
@@ -416,14 +560,14 @@ h4 {
 
 /* 섹션 공통 */
 section {
-  padding: 90px 0;
+  padding: 96px 0;
   position: relative;
 }
 
 .section-head {
   text-align: center;
   max-width: 680px;
-  margin: 0 auto 56px;
+  margin: 0 auto 60px;
 }
 
 .section-badge {
@@ -431,7 +575,7 @@ section {
   background: rgba(56, 189, 248, 0.12);
   border: 1px solid rgba(56, 189, 248, 0.3);
   color: var(--cyan);
-  padding: 4px 14px;
+  padding: 5px 16px;
   border-radius: 20px;
   font-size: 12px;
   font-weight: 800;
@@ -455,7 +599,7 @@ section {
   grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
   gap: 56px;
   align-items: center;
-  margin-bottom: 80px;
+  margin-bottom: 90px;
 }
 
 .feature-row.flip {
@@ -488,14 +632,14 @@ section {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .feature-points li {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
-  font-size: 15px;
+  gap: 12px;
+  font-size: 15.5px;
   color: #e2e8f0;
 }
 
@@ -504,66 +648,80 @@ section {
   color: var(--cyan);
   font-weight: 900;
   background: rgba(56, 189, 248, 0.15);
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 12.5px;
   flex-shrink: 0;
   margin-top: 2px;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
 }
 
 /* 카드 비주얼 래퍼 */
 .feature-card-wrap {
   background: linear-gradient(145deg, #0f172a 0%, #030712 100%);
   border: 1.5px solid var(--line);
-  border-radius: 22px;
-  padding: 24px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+  border-radius: 24px;
+  padding: 26px;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.65);
   position: relative;
   overflow: hidden;
+}
+
+.feature-card-wrap::after {
+  content: '';
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, transparent 70%);
+  pointer-events: none;
 }
 
 .mockup-hud {
   background: #020617;
   border: 1.5px solid rgba(56, 189, 248, 0.4);
-  border-radius: 14px;
-  padding: 16px;
-  box-shadow: inset 0 0 20px rgba(56, 189, 248, 0.1);
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: inset 0 0 24px rgba(56, 189, 248, 0.1);
 }
 
 /* 4대 플랫폼 다운로드 섹션 */
 .platform-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
+  gap: 22px;
   margin-top: 40px;
 }
 
 .platform-card {
   background: var(--bg-card);
   border: 1.5px solid var(--line);
-  border-radius: 20px;
-  padding: 26px 20px;
+  border-radius: 22px;
+  padding: 28px 22px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+  transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1), border-color 0.25s, box-shadow 0.3s;
   position: relative;
 }
 
 .platform-card:hover {
-  transform: translateY(-6px);
+  transform: translateY(-8px) scale(1.02);
   border-color: var(--cyan);
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7), 0 0 24px rgba(56, 189, 248, 0.18);
+  box-shadow: 0 20px 44px rgba(0, 0, 0, 0.8), 0 0 30px rgba(56, 189, 248, 0.25);
 }
 
 .platform-card.recommended {
-  border-color: rgba(56, 189, 248, 0.5);
-  background: linear-gradient(180deg, rgba(14, 28, 54, 0.8) 0%, rgba(11, 17, 32, 0.95) 100%);
+  border-color: rgba(56, 189, 248, 0.55);
+  background: linear-gradient(180deg, rgba(14, 28, 54, 0.85) 0%, rgba(11, 17, 32, 0.98) 100%);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(56, 189, 248, 0.15);
 }
 
 .card-top-badge {
@@ -573,14 +731,19 @@ section {
   color: white;
   font-size: 11px;
   font-weight: 900;
-  padding: 2px 10px;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(2, 132, 199, 0.4);
+  padding: 3px 12px;
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.45);
 }
 
 .platform-icon {
-  font-size: 42px;
+  font-size: 44px;
   margin-bottom: 14px;
+  transition: transform 0.3s ease;
+}
+
+.platform-card:hover .platform-icon {
+  transform: scale(1.15) rotate(6deg);
 }
 
 .platform-name {
@@ -601,7 +764,7 @@ section {
   color: #cbd5e1;
   margin-bottom: 22px;
   flex-grow: 1;
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
 .platform-btn {
@@ -617,18 +780,20 @@ section {
   background: #1e293b;
   color: #fff;
   border: 1px solid var(--line-light);
-  transition: all 0.15s;
+  transition: all 0.2s;
 }
 
 .platform-btn:hover {
   background: linear-gradient(135deg, #0284c7, #2563eb);
   border-color: transparent;
   box-shadow: 0 6px 18px rgba(2, 132, 199, 0.5);
+  transform: translateY(-2px);
 }
 
 .platform-btn.primary {
   background: linear-gradient(135deg, #0284c7, #2563eb);
   border-color: transparent;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);
 }
 
 /* 3단계 설치 가이드 */
@@ -642,14 +807,19 @@ section {
 .step-card {
   background: var(--bg-card);
   border: 1px solid var(--line);
-  border-radius: 18px;
-  padding: 24px;
-  position: relative;
+  border-radius: 20px;
+  padding: 26px;
+  transition: transform 0.25s, border-color 0.25s;
+}
+
+.step-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--cyan);
 }
 
 .step-num {
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   border-radius: 12px;
   background: rgba(56, 189, 248, 0.15);
   border: 1.5px solid var(--cyan);
@@ -658,8 +828,9 @@ section {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  font-size: 17px;
   margin-bottom: 16px;
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.3);
 }
 
 .step-card h4 {
@@ -670,17 +841,19 @@ section {
 
 .step-card p {
   color: var(--gray);
-  font-size: 14px;
+  font-size: 14.5px;
   line-height: 1.6;
 }
 
 /* 파이널 CTA */
 .final-cta {
-  background: radial-gradient(circle at 50% 50%, rgba(30, 27, 75, 0.8) 0%, rgba(3, 7, 18, 0.98) 100%);
+  background: radial-gradient(circle at 50% 50%, rgba(30, 27, 75, 0.85) 0%, rgba(3, 7, 18, 0.98) 100%);
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
   text-align: center;
   padding: 100px 0;
+  position: relative;
+  overflow: hidden;
 }
 
 .final-cta h2 {
@@ -695,7 +868,7 @@ section {
   margin: 0 auto 36px;
 }
 
-/* 하단 푸터 (작성자: 오경한 필수 명시) */
+/* 하단 푸터 (오경한 개발자 명시) */
 .footer {
   background: #020408;
   border-top: 1px solid #141b2b;
@@ -730,11 +903,17 @@ section {
 }
 
 .developer-badge-box {
-  background: rgba(15, 23, 42, 0.8);
-  border: 1.5px solid rgba(56, 189, 248, 0.4);
-  border-radius: 14px;
-  padding: 16px 20px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  background: rgba(15, 23, 42, 0.85);
+  border: 1.5px solid rgba(56, 189, 248, 0.45);
+  border-radius: 16px;
+  padding: 18px 22px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), 0 0 16px rgba(56, 189, 248, 0.2);
+  transition: transform 0.25s, border-color 0.25s;
+}
+
+.developer-badge-box:hover {
+  transform: translateY(-2px);
+  border-color: var(--cyan);
 }
 
 .developer-badge-title {
@@ -777,6 +956,9 @@ section {
     grid-template-columns: 1fr;
     gap: 40px;
   }
+  .canvas-card {
+    transform: none !important;
+  }
   .feature-row, .feature-row.flip {
     grid-template-columns: 1fr;
     gap: 36px;
@@ -790,6 +972,9 @@ section {
   .platform-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
   .steps-grid {
     grid-template-columns: 1fr;
   }
@@ -797,6 +982,9 @@ section {
 
 @media (max-width: 600px) {
   .platform-grid {
+    grid-template-columns: 1fr;
+  }
+  .metrics-grid {
     grid-template-columns: 1fr;
   }
   .nav-links a:not(.nav-btn-highlight) {

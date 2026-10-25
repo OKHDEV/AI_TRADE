@@ -1,22 +1,77 @@
-// 메리츠 AI 자동 주식 트레이더 랜딩 웹사이트 인터랙티브 엔진
+// 메리츠 AI 자동 주식 트레이더 랜딩 웹사이트 인터랙티브 3D 모션 그래픽 엔진
 (function() {
   'use strict';
 
-  // 1. 히어로 캔버스 인터랙티브 주식 차트 시뮬레이션
+  // 1. 마우스 반응형 3D 커서 조명 스팟라이트
+  const glow = document.getElementById('mouseGlow');
+  if (glow) {
+    window.addEventListener('mousemove', (e) => {
+      glow.style.left = e.clientX + 'px';
+      glow.style.top = e.clientY + 'px';
+    });
+  }
+
+  // 2. 3D 입체 스크롤 등장 애니메이션 (Intersection Observer)
+  const revealElements = document.querySelectorAll('.reveal-3d');
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, idx) => {
+        if (entry.isIntersecting) {
+          // 살짝 시차(stagger)를 주어 도미노처럼 입체적으로 등장
+          setTimeout(() => {
+            entry.target.classList.add('active');
+          }, (idx % 4) * 100);
+        }
+      });
+    }, {
+      threshold: 0.12,
+      rootMargin: '0px 0px -40px 0px'
+    });
+
+    revealElements.forEach((el) => observer.observe(el));
+  } else {
+    revealElements.forEach((el) => el.classList.add('active'));
+  }
+
+  // 3. 카드 마우스 호버 3D 입체 틸트 (Tilt Effect)
+  const tiltCards = document.querySelectorAll('.tilt-card');
+  tiltCards.forEach((card) => {
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      const deltaX = (x - centerX) / centerX;
+      const deltaY = (y - centerY) / centerY;
+
+      // 입체 회전 각도 제한 (-8도 ~ +8도)
+      const rotX = -deltaY * 9;
+      const rotY = deltaX * 9;
+
+      card.style.transform = `perspective(1000px) rotateX(${rotX}deg) rotateY(${rotY}deg) translateY(-6px) scale(1.02)`;
+    });
+
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0) scale(1)';
+    });
+  });
+
+  // 4. 히어로 인터랙티브 3D 주식 차트 + 사이버 퀀트 파티클 엔진
   const canvas = document.getElementById('heroCanvas');
   if (canvas) {
     const ctx = canvas.getContext('2d');
-    let width = canvas.width = canvas.parentElement.clientWidth - 40;
+    let width = canvas.width = canvas.parentElement.clientWidth - 44;
     let height = canvas.height = 240;
 
     window.addEventListener('resize', () => {
       if (canvas && canvas.parentElement) {
-        width = canvas.width = canvas.parentElement.clientWidth - 40;
+        width = canvas.width = canvas.parentElement.clientWidth - 44;
         height = canvas.height = 240;
       }
     });
 
-    // 25개 합성 캔들 데이터 생성 (삼성전자 급등 골든크로스 패턴)
+    // 25개 합성 캔들스틱 데이터
     const candles = [
       { o: 58200, c: 58500, h: 58700, l: 58100, v: 120 },
       { o: 58500, c: 58400, h: 58800, l: 58200, v: 95 },
@@ -40,8 +95,21 @@
       { o: 64200, c: 64500, h: 64900, l: 64000, v: 820 }
     ];
 
+    // 공중 부양 퀀트 데이터 파티클 30개
+    const particles = [];
+    for (let i = 0; i < 35; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        r: Math.random() * 2 + 0.8,
+        speed: Math.random() * 0.4 + 0.2,
+        alpha: Math.random() * 0.6 + 0.2
+      });
+    }
+
     let hoveredIndex = candles.length - 1;
     let animPulse = 0;
+    let scanLineX = 0;
 
     canvas.addEventListener('mousemove', (e) => {
       const rect = canvas.getBoundingClientRect();
@@ -60,7 +128,7 @@
     function drawChart() {
       ctx.clearRect(0, 0, width, height);
 
-      const padTop = 30;
+      const padTop = 32;
       const padBottom = 35;
       const chartH = height - padTop - padBottom;
       const step = width / candles.length;
@@ -69,7 +137,23 @@
       const maxP = 65500;
       const priceToY = (p) => padTop + chartH - ((p - minP) / (maxP - minP)) * chartH;
 
-      // 은은한 그리드
+      // 1. 공중 부양 퀀트 데이터 파티클
+      particles.forEach((pt) => {
+        pt.y -= pt.speed;
+        if (pt.y < 0) {
+          pt.y = height;
+          pt.x = Math.random() * width;
+        }
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, pt.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(56, 189, 248, ${pt.alpha})`;
+        ctx.shadowColor = '#38bdf8';
+        ctx.shadowBlur = 4;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      });
+
+      // 2. 은은한 3D 배경 그리드 라인
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
       ctx.lineWidth = 1;
       for (let p = 58000; p <= 65000; p += 2000) {
@@ -80,7 +164,7 @@
         ctx.stroke();
       }
 
-      // 거래량 바 & 캔들스틱 그리기
+      // 3. 거래량 바 & 캔들스틱 그리기
       candles.forEach((c, i) => {
         const cx = i * step + step / 2;
         const bw = Math.max(3, step * 0.6);
@@ -89,12 +173,12 @@
 
         // 볼륨 바 (하단)
         const vH = (c.v / 900) * 35;
-        ctx.fillStyle = isUp ? 'rgba(244, 63, 94, 0.25)' : 'rgba(56, 189, 248, 0.25)';
+        ctx.fillStyle = isUp ? 'rgba(244, 63, 94, 0.28)' : 'rgba(56, 189, 248, 0.28)';
         ctx.fillRect(cx - bw / 2, height - vH, bw, vH);
 
         // 꼬리선
         ctx.strokeStyle = col;
-        ctx.lineWidth = 1.2;
+        ctx.lineWidth = 1.3;
         ctx.beginPath();
         ctx.moveTo(cx, priceToY(c.h));
         ctx.lineTo(cx, priceToY(c.l));
@@ -107,7 +191,7 @@
         ctx.fillRect(cx - bw / 2, yTop, bw, bodyH);
       });
 
-      // AI 골든크로스 상승 추세 곡선 (네온)
+      // 4. AI 골든크로스 상승 추세 곡선 (네온 발광)
       ctx.beginPath();
       candles.forEach((c, i) => {
         const cx = i * step + step / 2;
@@ -115,19 +199,28 @@
         if (i === 0) ctx.moveTo(cx, cy);
         else ctx.lineTo(cx, cy);
       });
-      ctx.strokeStyle = 'rgba(56, 189, 248, 0.85)';
+      ctx.strokeStyle = '#38bdf8';
       ctx.lineWidth = 2.5;
       ctx.shadowColor = '#38bdf8';
-      ctx.shadowBlur = 10;
+      ctx.shadowBlur = 12;
       ctx.stroke();
       ctx.shadowBlur = 0;
 
-      // 호버 또는 현재 캔들 십자선 & 펄스
+      // 5. 실시간 AI 스캐닝 레이저 라인 (좌에서 우로 통과)
+      scanLineX = (scanLineX + 1.2) % width;
+      const grad = ctx.createLinearGradient(scanLineX - 30, 0, scanLineX + 5, 0);
+      grad.addColorStop(0, 'rgba(56, 189, 248, 0)');
+      grad.addColorStop(0.8, 'rgba(56, 189, 248, 0.15)');
+      grad.addColorStop(1, 'rgba(56, 189, 248, 0.45)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(scanLineX - 30, 0, 35, height);
+
+      // 6. 호버 또는 현재 캔들 십자선 & 펄스 레이더
       const cur = candles[hoveredIndex];
       const hx = hoveredIndex * step + step / 2;
       const hy = priceToY(cur.c);
 
-      ctx.strokeStyle = 'rgba(56, 189, 248, 0.5)';
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.6)';
       ctx.setLineDash([3, 3]);
       ctx.beginPath();
       ctx.moveTo(hx, 0);
@@ -137,22 +230,21 @@
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // 펄스 레이더
       animPulse = (animPulse + 0.05) % (Math.PI * 2);
       const pr = 4 + Math.sin(animPulse) * 3;
       ctx.beginPath();
       ctx.arc(hx, hy, pr, 0, Math.PI * 2);
       ctx.fillStyle = '#ffffff';
       ctx.shadowColor = '#38bdf8';
-      ctx.shadowBlur = 12;
+      ctx.shadowBlur = 14;
       ctx.fill();
       ctx.shadowBlur = 0;
 
       // 상단 고대비 정보 텍스트
-      ctx.fillStyle = '#f1f5f9';
-      ctx.font = 'bold 12px sans-serif';
+      ctx.fillStyle = '#f8fafc';
+      ctx.font = 'bold 12.5px sans-serif';
       ctx.textAlign = 'left';
-      ctx.fillText(`종가: ${cur.c.toLocaleString()}원 (+1,200원, +1.9%) | 거래량: ${cur.v * 1000}주`, 8, 18);
+      ctx.fillText(`종가: ${cur.c.toLocaleString()}원 (+1,200원, +2.05%) | 거래량: ${(cur.v * 1000).toLocaleString()}주`, 10, 18);
 
       requestAnimationFrame(drawChart);
     }
@@ -160,7 +252,43 @@
     drawChart();
   }
 
-  // 2. 실시간 시세 티커 동적 갱신
+  // 5. 실시간 숫자 카운트업 애니메이션 (Counter Engine)
+  const countElements = document.querySelectorAll('.counter-val');
+  if ('IntersectionObserver' in window) {
+    const countObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const el = entry.target;
+          const target = parseFloat(el.getAttribute('data-target'));
+          const suffix = el.getAttribute('data-suffix') || '';
+          const decimals = parseInt(el.getAttribute('data-decimals') || '0', 10);
+          let start = 0;
+          const duration = 1500;
+          const startTime = performance.now();
+
+          function updateCounter(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            // Ease out expo
+            const easeOut = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+            const currentVal = (start + (target - start) * easeOut).toFixed(decimals);
+            el.textContent = currentVal + suffix;
+
+            if (progress < 1) {
+              requestAnimationFrame(updateCounter);
+            }
+          }
+
+          requestAnimationFrame(updateCounter);
+          countObserver.unobserve(el);
+        }
+      });
+    }, { threshold: 0.5 });
+
+    countElements.forEach((el) => countObserver.observe(el));
+  }
+
+  // 6. 실시간 시세 티커 동적 갱신
   function updateTickerPrices() {
     const items = document.querySelectorAll('.ticker-item .rate-up');
     items.forEach((item) => {
@@ -169,30 +297,6 @@
       item.textContent = `${sign}${delta}% ▲`;
     });
   }
-  setInterval(updateTickerPrices, 4000);
+  setInterval(updateTickerPrices, 3500);
 
-  // 3. 알림 토스트 헬퍼
-  window.showCopyToast = function(text) {
-    const toast = document.createElement('div');
-    toast.style.position = 'fixed';
-    toast.style.bottom = '24px';
-    toast.style.left = '50%';
-    toast.style.transform = 'translateX(-50%)';
-    toast.style.background = '#0f172a';
-    toast.style.border = '1.5px solid #38bdf8';
-    toast.style.color = '#fff';
-    toast.style.padding = '12px 24px';
-    toast.style.borderRadius = '30px';
-    toast.style.fontSize = '14px';
-    toast.style.fontWeight = '800';
-    toast.style.zIndex = '999999';
-    toast.style.boxShadow = '0 8px 24px rgba(0,0,0,0.7), 0 0 16px rgba(56,189,248,0.4)';
-    toast.innerHTML = text;
-    document.body.appendChild(toast);
-    setTimeout(() => {
-      toast.style.opacity = '0';
-      toast.style.transition = 'opacity 0.4s';
-      setTimeout(() => toast.remove(), 400);
-    }, 2400);
-  };
 })();

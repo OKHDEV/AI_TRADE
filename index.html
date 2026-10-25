@@ -18,6 +18,8 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- 마우스 반응형 3D 조명 스팟라이트 -->
+  <div id="mouseGlow"></div>
 
   <!-- 상단 네비게이션 -->
   <header class="nav">
@@ -73,37 +75,75 @@
           </div>
         </div>
 
-        <!-- 히어로 우측 주식 캔버스 -->
+        <!-- 히어로 우측 주식 캔버스 (3D 스테이지 & 플로팅 칩) -->
         <div class="hero-graphic">
-          <div class="canvas-card">
-            <div class="card-header">
-              <div class="card-badge">
-                <span class="pulse-dot"></span>
-                AI 실시간 골든크로스 포착
-              </div>
-              <span style="color:#fb7185; font-weight:900; font-size:13px;">삼성전자 +2.1% ▲</span>
+          <div class="hero-stage-3d">
+            <!-- 3D 공중 부양 배지 1 -->
+            <div class="float-chip chip-top-right">
+              <span style="background:rgba(56,189,248,0.2); color:#38bdf8; border:1px solid rgba(56,189,248,0.4); padding:2px 8px; border-radius:10px;">AI 퀀트</span>
+              <span>실시간 시그널 96점 포착</span>
             </div>
 
-            <canvas id="heroCanvas"></canvas>
+            <!-- 3D 공중 부양 배지 2 -->
+            <div class="float-chip chip-bottom-left">
+              <span style="background:rgba(74,222,128,0.2); color:#4ade80; border:1px solid rgba(74,222,128,0.4); padding:2px 8px; border-radius:10px;">7중 안전</span>
+              <span>0원 보호 브레이크 정상</span>
+            </div>
 
-            <div class="card-stats">
-              <div class="stat-item">
-                <div class="stat-label">AI SCORE</div>
-                <div class="stat-val" style="color:#38bdf8;">96점</div>
+            <div class="canvas-card tilt-card">
+              <div class="card-header">
+                <div class="card-badge">
+                  <span class="pulse-dot"></span>
+                  AI 실시간 골든크로스 포착
+                </div>
+                <span style="color:#fb7185; font-weight:900; font-size:13px;">삼성전자 +2.1% ▲</span>
               </div>
-              <div class="stat-item">
-                <div class="stat-label">RSI 지표</div>
-                <div class="stat-val" style="color:#10b981;">46.2 안정</div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-label">추정 체결가</div>
-                <div class="stat-val" style="color:#fbbf24;">59,800원</div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-label">안전 브레이크</div>
-                <div class="stat-val" style="color:#34d399;">정상 가동</div>
+
+              <canvas id="heroCanvas"></canvas>
+
+              <div class="card-stats">
+                <div class="stat-item">
+                  <div class="stat-label">AI SCORE</div>
+                  <div class="stat-val" style="color:#38bdf8;">96점</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">RSI 지표</div>
+                  <div class="stat-val" style="color:#10b981;">46.2 안정</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">추정 체결가</div>
+                  <div class="stat-val" style="color:#fbbf24;">59,800원</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">안전 브레이크</div>
+                  <div class="stat-val" style="color:#34d399;">정상 가동</div>
+                </div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 🌟 실시간 3D 스탯 카운터 바 (KPI Metrics) -->
+    <section class="metrics-band reveal-3d">
+      <div class="wrap">
+        <div class="metrics-grid">
+          <div class="metric-card tilt-card">
+            <div class="metric-num counter-val" data-target="0.02" data-suffix="초" data-decimals="2">0.02초</div>
+            <div class="metric-label">초고속 주문 전송 속도</div>
+          </div>
+          <div class="metric-card tilt-card">
+            <div class="metric-num counter-val" data-target="96" data-suffix="점" data-decimals="0">96점</div>
+            <div class="metric-label">AI 퀀트 최고 포착 점수</div>
+          </div>
+          <div class="metric-card tilt-card">
+            <div class="metric-num counter-val" data-target="100" data-suffix="%" data-decimals="0">100%</div>
+            <div class="metric-label">7중 안전 감시 체결율</div>
+          </div>
+          <div class="metric-card tilt-card">
+            <div class="metric-num counter-val" data-target="58" data-suffix="건" data-decimals="0">58건</div>
+            <div class="metric-label">전체 단위 검증 테스트 통과</div>
           </div>
         </div>
       </div>
@@ -143,7 +183,7 @@
         </div>
 
         <!-- 피처 1: 실전 주문 -->
-        <div class="feature-row">
+        <div class="feature-row reveal-3d">
           <div class="feature-copy">
             <h3>스마트폰과 PC 어디서나,<br>터치 한 번으로 1주 체결</h3>
             <p>원하는 종목의 [1주 주문] 버튼을 누르면 메리츠 SMART 앱으로 즉시 해당 주식창이 열리거나, Open API를 통해 터치 즉시 실전 매수 주문이 안전하게 전송됩니다.</p>
@@ -155,7 +195,7 @@
             </ul>
           </div>
           <div class="feature-card-wrap">
-            <div class="mockup-hud">
+            <div class="mockup-hud tilt-card">
               <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:13px;">
                 <span style="color:#38bdf8; font-weight:800;">⚡ 실전 매매 연동 패널</span>
                 <span style="color:#4ade80; font-weight:800;">KRX 거래소 직결</span>
@@ -177,7 +217,7 @@
         </div>
 
         <!-- 피처 2: 60fps 차트 드래그 -->
-        <div class="feature-row flip">
+        <div class="feature-row flip reveal-3d">
           <div class="feature-copy">
             <h3>손가락을 꾹 누르고 쭈우욱,<br>60fps 실시간 봉차트 탐색</h3>
             <p>화면 스크롤 간섭 없이 차트 영역 위에서 손가락을 대고 좌우로 드래그하면, 지나가는 캔들의 날짜·시가·고가·저가·종가·거래량이 십자선과 함께 60fps로 매끄럽게 따라다닙니다.</p>
@@ -189,7 +229,7 @@
             </ul>
           </div>
           <div class="feature-card-wrap">
-            <div class="mockup-hud">
+            <div class="mockup-hud tilt-card">
               <div style="background:rgba(11,19,41,0.95); border:2px solid #38bdf8; border-radius:12px; padding:12px 14px; margin-bottom:12px;">
                 <div style="font-size:14px; font-weight:900; color:#fff; margin-bottom:4px;">
                   [📅 오늘 10/25] 종가: <span style="color:#f87171;">59,800원 (+1,200원, +2.05%)</span>
@@ -206,7 +246,7 @@
         </div>
 
         <!-- 피처 3: 7중 안전 감시 엔진 -->
-        <div class="feature-row">
+        <div class="feature-row reveal-3d">
           <div class="feature-copy">
             <h3>7중 안전 감시 엔진과<br>연속 손절 서킷브레이커</h3>
             <p>단 한 번의 오류도 용납하지 않는 금융 안전 장치가 작동합니다. 잔고가 없거나 정보가 입력되지 않으면 자동으로 보호 모드로 잠기며, 시장 급락 시 긴급 손절을 스스로 방어합니다.</p>
@@ -218,7 +258,7 @@
             </ul>
           </div>
           <div class="feature-card-wrap">
-            <div class="mockup-hud">
+            <div class="mockup-hud tilt-card">
               <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
                 <span style="font-size:20px;">🛡️</span>
                 <span style="font-size:14px; font-weight:900; color:#4ade80;">7중 금융 안전 방어 체계 가동 중</span>
@@ -239,7 +279,7 @@
         </div>
 
         <!-- 피처 4: 쉬운 모드 -->
-        <div class="feature-row flip">
+        <div class="feature-row flip reveal-3d">
           <div class="feature-copy">
             <h3>주린이도 한눈에 쉬운,<br>초보자 전용 '쉬운 모드'</h3>
             <p>복잡하고 난해한 수학 공식과 전문 용어 칩들을 깔끔하게 정리했습니다. 꼭 필요한 3대 추천 종목과 직관적인 버튼만 남겨 누구나 쉽게 사용할 수 있습니다.</p>
@@ -251,7 +291,7 @@
             </ul>
           </div>
           <div class="feature-card-wrap">
-            <div class="mockup-hud">
+            <div class="mockup-hud tilt-card">
               <div style="display:flex; gap:6px; margin-bottom:12px;">
                 <span style="background:rgba(56,189,248,0.2); border:1px solid #38bdf8; color:#38bdf8; font-weight:800; font-size:11px; padding:4px 10px; border-radius:14px;">👑 시총 TOP 10</span>
                 <span style="background:#1e293b; color:#94a3b8; font-weight:700; font-size:11px; padding:4px 10px; border-radius:14px;">🛡️ 안전 우량주</span>
@@ -287,7 +327,7 @@
 
         <div class="platform-grid">
           <!-- 1. Android APK -->
-          <div class="platform-card recommended">
+          <div class="platform-card recommended tilt-card reveal-3d">
             <span class="card-top-badge">강력 추천</span>
             <div class="platform-icon">📱</div>
             <div class="platform-name">Android</div>
@@ -302,7 +342,7 @@
           </div>
 
           <!-- 2. Windows EXE -->
-          <div class="platform-card">
+          <div class="platform-card tilt-card reveal-3d">
             <div class="platform-icon">💻</div>
             <div class="platform-name">Windows</div>
             <div class="platform-sub">PC 무설치 실행 (.EXE)</div>
@@ -316,7 +356,7 @@
           </div>
 
           <!-- 3. Web PWA -->
-          <div class="platform-card">
+          <div class="platform-card tilt-card reveal-3d">
             <div class="platform-icon">🌐</div>
             <div class="platform-name">Web PWA</div>
             <div class="platform-sub">브라우저 즉시 실행 (무설치)</div>
@@ -330,7 +370,7 @@
           </div>
 
           <!-- 4. iOS -->
-          <div class="platform-card" id="ios-guide">
+          <div class="platform-card tilt-card reveal-3d" id="ios-guide">
             <div class="platform-icon">🍎</div>
             <div class="platform-name">iOS</div>
             <div class="platform-sub">iPhone / iPad Safari</div>
@@ -356,19 +396,19 @@
         </div>
 
         <div class="steps-grid">
-          <div class="step-card">
+          <div class="step-card tilt-card reveal-3d">
             <div class="step-num">1</div>
             <h4>내 기기에 맞는 앱 받기</h4>
             <p>안드로이드폰은 <code>메리츠_AI_주식.apk</code>, PC는 <code>메리츠_AI_주식.exe</code>를 다운로드하거나 웹 버전을 바로 엽니다.</p>
           </div>
 
-          <div class="step-card">
+          <div class="step-card tilt-card reveal-3d">
             <div class="step-num">2</div>
             <h4>메리츠 연동 방식 선택</h4>
             <p>메리츠 SMART 앱으로 바로 열어 주문하거나, 메리츠 Open API App Key를 등록하여 원클릭 실전 자동 체결을 연동합니다.</p>
           </div>
 
-          <div class="step-card">
+          <div class="step-card tilt-card reveal-3d">
             <div class="step-num">3</div>
             <h4>AI 감시 시작 누르면 끝</h4>
             <p>상단의 [▶ AI 감시 시작]을 누르면 7중 안전 감시 엔진이 실시간 급등 유망주를 모니터링하며 매매를 돕습니다.</p>
