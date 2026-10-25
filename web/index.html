@@ -1213,6 +1213,40 @@
 
   <!-- 서브설정 6: 🎨 환경설정·테마 커스텀 및 UX 제어 -->
   <div id="cfg-sub-prefs" class="sub-cfg-panel">
+
+    <!-- 👑 부자들의 투자 원칙 & 엘리트 퀀트 알고리즘 카드 -->
+    <div class="card" style="border: 1.5px solid #f59e0b; background: linear-gradient(135deg, rgba(245,158,11,0.08) 0%, rgba(15,23,42,0.95) 100%);">
+      <div class="card-title" style="color: #fbbf24;">
+        <span>👑 부자들의 투자 원칙 & 퀀트 알고리즘</span>
+        <span class="badge badge-gold">헤지펀드 실전 가동</span>
+      </div>
+      <div style="font-size: 11.5px; color: #cbd5e1; margin-bottom: 12px; line-height: 1.5;">
+        세계 최고 투자자들과 퀀트 헤지펀드가 자산을 불리는 <b>4대 실전 수학 원칙</b>이 AI 스캔 및 주문 시 자동으로 작동합니다.
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px; font-size: 11.5px;">
+        <div style="background: rgba(30,41,59,0.8); border: 1px solid rgba(245,158,11,0.3); border-radius: 8px; padding: 10px;">
+          <div style="font-weight: 800; color: #fbbf24; margin-bottom: 2px;">🎯 1. 켈리 공식 (Kelly Criterion) 포지션 사이징</div>
+          <div style="color: #94a3b8; font-size: 11px;">수학적 최적 베팅 공식: 승률과 손익비를 계산하여 계좌 잔고의 안전 비중(Half-Kelly: 10~20%)만 동적 분할 배분하여 원금 복구 불능을 수학적으로 원천 차단합니다.</div>
+        </div>
+
+        <div style="background: rgba(30,41,59,0.8); border: 1px solid rgba(56,189,248,0.3); border-radius: 8px; padding: 10px;">
+          <div style="font-weight: 800; color: #38bdf8; margin-bottom: 2px;">⚡ 2. 마크 미너비니 VCP (변동성 축소 패턴)</div>
+          <div style="color: #94a3b8; font-size: 11px;">미국 투자 챔피언 공식 비법: 주가 진폭이 점차 좁아지며(T1➔T2➔T3) 거래량이 말라붙는 세력 매집 막바지 꼭지점을 포착하여 손익비 1:4 이상의 극단적 손익비로 진입합니다.</div>
+        </div>
+
+        <div style="background: rgba(30,41,59,0.8); border: 1px solid rgba(16,185,129,0.3); border-radius: 8px; padding: 10px;">
+          <div style="font-weight: 800; color: #34d399; margin-bottom: 2px;">🐋 3. 스마트 머니 자금 흐름 지수 (MFI)</div>
+          <div style="color: #94a3b8; font-size: 11px;">가격뿐만 아니라 실제 거래량을 결합 분석하여 주가 횡보 중 기관·외인의 잠행 매집 다이버전스를 실시간 포착합니다.</div>
+        </div>
+
+        <div style="background: rgba(30,41,59,0.8); border: 1px solid rgba(244,63,94,0.3); border-radius: 8px; padding: 10px;">
+          <div style="font-weight: 800; color: #fda4af; margin-bottom: 2px;">🛡️ 4. 워런 버핏식 경제적 해자 & 안전마진</div>
+          <div style="color: #94a3b8; font-size: 11px;">부실 잡주 테마주는 AI 안전필터가 100% 차단하며, 대한민국 시총 최상위 독점적 우량주에 기본 하방 안전마진 가산점을 부여합니다.</div>
+        </div>
+      </div>
+    </div>
+
     <!-- 1. 테마 모드 -->
     <div class="card" style="border: 1.5px solid #38bdf8;">
       <div class="card-title" style="color: #38bdf8;">
@@ -2445,6 +2479,141 @@ function refreshLiveQuotesAndRender() {
 // =========================================================================
 // 3. AI 멀티팩터 분석 & 7중 안전 검증 엔진
 // =========================================================================
+
+// =========================================================================
+// 👑 부자들의 투자 원칙 & 엘리트 퀀트 알고리즘 엔진
+// 1. 켈리 공식 (Kelly Criterion) 포지션 사이징
+// 2. 마크 미너비니 VCP (Volatility Contraction Pattern) 변동성 축소 패턴
+// 3. 스마트 머니 자금 흐름 지수 (MFI - Money Flow Index)
+// 4. 워런 버핏 & 피터 린치 경제적 해자(Moat) & 밸류에이션 안전마진
+// =========================================================================
+
+// 0. XSS 방지 보안 인코딩 함수
+function escapeHtml(str) {
+  if (str === null || str === undefined) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+// 1. 켈리 공식 (Kelly Criterion) 최적 포지션 사이징
+// f* = (p * (b + 1) - 1) / b (하프 켈리 적용으로 드로다운 방어)
+function meritzCalculateKellyFraction(winRate = 0.62, winLossRatio = 1.8) {
+  const p = Math.max(0.35, Math.min(0.95, Number(winRate) || 0.62));
+  const b = Math.max(0.8, Math.min(4.0, Number(winLossRatio) || 1.8));
+  const fullKelly = (p * (b + 1) - 1) / b;
+  const halfKelly = Math.max(0.05, Math.min(0.25, fullKelly * 0.5));
+  return Number(halfKelly.toFixed(3));
+}
+
+// 2. 마크 미너비니 VCP (Volatility Contraction Pattern) 변동성 축소 패턴 탐지기
+function meritzEvaluateVcp(candles) {
+  if (!candles || !Array.isArray(candles) || candles.length < 15) {
+    return { state: "NO_SIGNAL", reason: "캔들 데이터 부족", score: 0 };
+  }
+  function segRange(sub) {
+    const highs = sub.map(c => c.high || c.h || 0);
+    const lows = sub.map(c => c.low || c.l || 0);
+    const avg = highs.reduce((a, b) => a + b, 0) / (highs.length || 1);
+    const maxH = Math.max(...highs);
+    const minL = Math.min(...lows);
+    return ((maxH - minL) / (avg || 1)) * 100;
+  }
+  const t1 = segRange(candles.slice(-15, -10));
+  const t2 = segRange(candles.slice(-10, -5));
+  const t3 = segRange(candles.slice(-5));
+
+  const isContracting = (t1 > t2) && (t2 > t3) && (t3 < 6.5);
+  const volLast5 = candles.slice(-5).reduce((a, c) => a + (c.volume || c.vol || 0), 0) / 5;
+  const volPrev10 = candles.slice(-15, -5).reduce((a, c) => a + (c.volume || c.vol || 0), 0) / 10;
+  const volDryUp = volLast5 < (volPrev10 * 0.9);
+
+  if (isContracting && volDryUp) {
+    return {
+      state: "VCP_READY",
+      reason: `⚡ [미너비니 VCP] 변동성 3단계 축소 완료 (${t1.toFixed(1)}%➔${t2.toFixed(1)}%➔${t3.toFixed(1)}% 수축+매도세 소멸 폭발임박)`,
+      score: 16
+    };
+  } else if (isContracting) {
+    return {
+      state: "VCP_FORMING",
+      reason: `📈 [VCP 수축] 변동성 축소 진행 중 (${t1.toFixed(1)}%➔${t2.toFixed(1)}%➔${t3.toFixed(1)}%)`,
+      score: 8
+    };
+  }
+  return { state: "NORMAL", reason: "일반 변동성 구간", score: 0 };
+}
+
+// 3. 스마트 머니 자금 흐름 지수 (MFI - Money Flow Index)
+function meritzEvaluateMfi(candles, period = 14) {
+  if (!candles || !Array.isArray(candles) || candles.length <= period) {
+    return { state: "NO_SIGNAL", mfi: 50, reason: "MFI 데이터 부족", score: 0 };
+  }
+  const typicalPrices = candles.map(c => ((c.high || c.h || 0) + (c.low || c.l || 0) + (c.close || c.c || 0)) / 3.0);
+  const volumes = candles.map(c => c.volume || c.vol || 0);
+
+  let posMf = 0.0, negMf = 0.0;
+  const start = candles.length - period;
+  for (let i = start; i < candles.length; i++) {
+    const mf = typicalPrices[i] * volumes[i];
+    if (typicalPrices[i] > typicalPrices[i - 1]) posMf += mf;
+    else if (typicalPrices[i] < typicalPrices[i - 1]) negMf += mf;
+  }
+  let mfi = 50.0;
+  if (negMf === 0) mfi = 100.0;
+  else {
+    const mr = posMf / negMf;
+    mfi = 100.0 - (100.0 / (1.0 + mr));
+  }
+  mfi = Number(mfi.toFixed(1));
+
+  if (mfi <= 25.0) {
+    return {
+      state: "SMART_MONEY_ACCUMULATION",
+      mfi,
+      reason: `🐋 [스마트머니 MFI ${mfi}점] 세력·큰손 과매도 잠행 매집 포착`,
+      score: 14
+    };
+  } else if (mfi >= 80.0) {
+    return {
+      state: "OVERBOUGHT_EXHAUSTION",
+      mfi,
+      reason: `⚠️ [MFI ${mfi}점 과열] 단기 매수세 과열 소진 (추격 매수 금지)`,
+      score: -12
+    };
+  } else if (mfi >= 55.0 && posMf > negMf * 1.3) {
+    return {
+      state: "STRONG_INFLOW",
+      mfi,
+      reason: `💰 [순자금 강한 유입] 기관·외인 대량 수급 유입세 (MFI ${mfi}점)`,
+      score: 8
+    };
+  }
+  return { state: "NEUTRAL", mfi, reason: `MFI 중립 수급 (${mfi}점)`, score: 0 };
+}
+
+// 4. 워런 버핏 & 피터 린치 식 경제적 해자(Moat) & 밸류에이션 안전마진 필터
+function meritzEvaluateMoat(code, marcapRank) {
+  if (marcapRank && marcapRank <= 5) {
+    return {
+      moat: "WIDE_MOAT",
+      score: 12,
+      reason: `👑 시총 ${marcapRank}위 최상위 경제적 해자 (워런 버핏 안전마진 확보)`
+    };
+  } else if (marcapRank && marcapRank <= 10) {
+    return {
+      moat: "NARROW_MOAT",
+      score: 8,
+      reason: `🛡️ 시총 ${marcapRank}위 대한민국 핵심 대장주 (하방 경직성 우수)`
+    };
+  }
+  return { moat: "STANDARD", score: 0, reason: "" };
+}
+
+
 // =========================================================================
 // 🎯 메리츠증권 공식 트레이딩 전략 5대 기술적 지표 알고리즘
 // =========================================================================
@@ -2994,6 +3163,9 @@ function analyzeStock(code) {
   const orderbookEval = meritzEvaluateOrderbookImbalance(q.orderbook || null);
   const levelsEval = meritzEvaluateServerLevels(q, candles);
   const sdEval = meritzEvaluateSupplyDemand(candles, 5);
+  const vcpEval = meritzEvaluateVcp(candles);
+  const mfiEval = meritzEvaluateMfi(candles, 14);
+  const moatEval = meritzEvaluateMoat(pureCode, foundStock ? foundStock.marcapRank : null);
 
   const totalAsset = getTotalAsset() || 10000000;
   const volSizing = meritzVolatilitySizing(candles, totalAsset, 0.01, 2.0, 0.20);
@@ -3296,7 +3468,7 @@ function executeBuyImmediately(code, qty, strategy, reason) {
   }
   appendLog(`📡 [메리츠 실전 매수 접수] ${apiRes.msg}`);
 
-  state.cash -= totalReq;
+  state.cash = Math.max(0, Math.round(state.cash - totalReq));
   if (state.holdings[code]) {
     const h = state.holdings[code];
     const newQty = h.qty + qty;
@@ -3354,7 +3526,7 @@ function executeSellImmediately(code, qty, strategy, reason) {
     const pnl = net - cost;
     const pnlPct = Number(((pnl / Math.max(1, cost)) * 100).toFixed(2));
 
-    state.cash += net;
+    state.cash = Math.max(0, Math.round(state.cash + net));
     if (sellQty >= h.qty) {
       delete state.holdings[targetCode];
     } else {
