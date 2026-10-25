@@ -2,7 +2,6 @@
 
 > **메리츠증권 공식 실전 Open API 연동 7중 안전 감시 주식 자동매매 시스템**  
 > **공식 배포 웹사이트:** [https://okhdev.github.io/AI_TRADE/](https://okhdev.github.io/AI_TRADE/)  
-> **사이트 개설자 및 앱 개발자: 오경한**  
 
 ---
 
