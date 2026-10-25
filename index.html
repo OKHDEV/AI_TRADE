@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>메리츠 AI 자동 주식 트레이더 - 공식 소개 및 다운로드</title>
+  <meta name="description" content="메리츠증권 공식 Open API 연동. 7중 안전 감시 체결과 퀀트 AI 급등주 알고리즘이 결합된 All-in-One 주식 자동매매 시스템. Android APK, Windows EXE, Web, iOS 지원.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="메리츠 AI 자동 주식 트레이더">
+  <meta property="og:description" content="AI가 포착하고, 원클릭으로 1주 체결. 7중 안전 감시 주식 자동매매 시스템.">
+  <meta property="og:image" content="images/app_icon_512.png">
+  <meta name="theme-color" content="#000000">
+  <link rel="icon" type="image/png" href="images/icon.png">
+  <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+  <!-- Pretendard Variable 웹 폰트 -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- 상단 네비게이션 -->
+  <header class="nav">
+    <div class="wrap nav-inner">
+      <a class="brand" href="#top">
+        <img src="images/icon.png" alt="메리츠 AI 로고" class="brand-icon">
+        <span class="brand-title">메리츠 AI 주식</span>
+      </a>
+      <nav class="nav-links">
+        <a href="#features">핵심 기능</a>
+        <a href="#platforms">다운로드</a>
+        <a href="#install">설치 안내</a>
+        <a href="https://github.com/okhrogo-dev/Ai_Trade_Marits" target="_blank" rel="noopener">GitHub</a>
+        <a href="#platforms" class="nav-btn-highlight">무료 다운로드</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- 히어로 섹션 -->
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div class="hero-copy">
+          <div class="hero-tag">⚡ 메리츠증권 공식 실전 Open API · 7중 안전 감시</div>
+          <h1 class="hero-title">
+            AI가 분석하고,<br>
+            <span class="highlight">원클릭으로 1주 체결.</span>
+          </h1>
+          <p class="hero-lead">
+            빅데이터 퀀트 알고리즘이 실시간 급등 유망주를 포착하고, 7중 안전 감시 엔진이 고객님의 계좌를 철저히 지킵니다. 스마트폰과 PC 어디서나 손가락 하나로 실전 주식을 매매하세요.
+          </p>
+
+          <div class="hero-cta">
+            <a href="downloads/메리츠_AI_주식.apk" class="btn-primary" download>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13m0 0-4-4m4 4 4-4M4 20h16"/></svg>
+              Android APK 다운로드
+            </a>
+            <a href="downloads/메리츠_AI_주식.exe" class="btn-secondary" download>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M3 9h18"/></svg>
+              Windows EXE
+            </a>
+            <a href="../web/index.html" class="btn-secondary" target="_blank">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              Web 바로실행
+            </a>
+          </div>
+
+          <div class="hero-meta">
+            <span>🛡️ 100% 무료 배포</span>
+            <span>📱 최신 정식 빌드 v4.3.0</span>
+            <span>🔒 금융 보안 암호화</span>
+            <span>👑 시총 TOP 10 실시간 분석</span>
+          </div>
+        </div>
+
+        <!-- 히어로 우측 주식 캔버스 -->
+        <div class="hero-graphic">
+          <div class="canvas-card">
+            <div class="card-header">
+              <div class="card-badge">
+                <span class="pulse-dot"></span>
+                AI 실시간 골든크로스 포착
+              </div>
+              <span style="color:#fb7185; font-weight:900; font-size:13px;">삼성전자 +2.1% ▲</span>
+            </div>
+
+            <canvas id="heroCanvas"></canvas>
+
+            <div class="card-stats">
+              <div class="stat-item">
+                <div class="stat-label">AI SCORE</div>
+                <div class="stat-val" style="color:#38bdf8;">96점</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">RSI 지표</div>
+                <div class="stat-val" style="color:#10b981;">46.2 안정</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">추정 체결가</div>
+                <div class="stat-val" style="color:#fbbf24;">59,800원</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">안전 브레이크</div>
+                <div class="stat-val" style="color:#34d399;">정상 가동</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 실시간 시세 티커 -->
+    <div class="ticker">
+      <div class="ticker-track">
+        <div class="ticker-group">
+          <span class="ticker-item">📊 KOSPI 2,580.42 <span class="rate-up">+1.24% ▲</span></span>
+          <span class="ticker-item">📈 KOSDAQ 742.15 <span class="rate-up">+0.88% ▲</span></span>
+          <span class="ticker-item">👑 삼성전자 59,800 <span class="rate-up">+2.10% ▲</span></span>
+          <span class="ticker-item">⚡ SK하이닉스 189,000 <span class="rate-up">+3.42% ▲</span></span>
+          <span class="ticker-item">🛡️ 7중 안전 감시 체결 <span class="rate-badge">100% 정상</span></span>
+          <span class="ticker-item">🚀 60fps 차트 드래그 탐색 <span class="rate-badge">신규 탑재</span></span>
+          <span class="ticker-item">🌟 초보자 쉬운 모드 <span class="rate-badge">클린 UI</span></span>
+        </div>
+        <div class="ticker-group">
+          <span class="ticker-item">📊 KOSPI 2,580.42 <span class="rate-up">+1.24% ▲</span></span>
+          <span class="ticker-item">📈 KOSDAQ 742.15 <span class="rate-up">+0.88% ▲</span></span>
+          <span class="ticker-item">👑 삼성전자 59,800 <span class="rate-up">+2.10% ▲</span></span>
+          <span class="ticker-item">⚡ SK하이닉스 189,000 <span class="rate-up">+3.42% ▲</span></span>
+          <span class="ticker-item">🛡️ 7중 안전 감시 체결 <span class="rate-badge">100% 정상</span></span>
+          <span class="ticker-item">🚀 60fps 차트 드래그 탐색 <span class="rate-badge">신규 탑재</span></span>
+          <span class="ticker-item">🌟 초보자 쉬운 모드 <span class="rate-badge">클린 UI</span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 핵심 기능 섹션 -->
+    <section id="features">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="section-badge">CORE FEATURES</span>
+          <h2 class="section-title">스마트한 매매를 위한<br>압도적 테크놀로지</h2>
+          <p class="section-desc">복잡한 증권사 HTS/MTS를 열지 않아도, 가장 빠르고 안전하게 시장의 기회를 잡습니다.</p>
+        </div>
+
+        <!-- 피처 1: 실전 주문 -->
+        <div class="feature-row">
+          <div class="feature-copy">
+            <h3>스마트폰과 PC 어디서나,<br>터치 한 번으로 1주 체결</h3>
+            <p>원하는 종목의 [1주 주문] 버튼을 누르면 메리츠 SMART 앱으로 즉시 해당 주식창이 열리거나, Open API를 통해 터치 즉시 실전 매수 주문이 안전하게 전송됩니다.</p>
+            <ul class="feature-points">
+              <li>메리츠증권 공식 SMART 앱 종목코드 직통 연동</li>
+              <li>정규장 개장 중 즉시 체결 및 마감 시간 자동 예약 접수</li>
+              <li>10단계 실시간 매수/매도 호가 잔량 및 체결 강도 시각화</li>
+              <li>개인정보 및 보안키 256비트 기기 내부 로컬 암호화 보관</li>
+            </ul>
+          </div>
+          <div class="feature-card-wrap">
+            <div class="mockup-hud">
+              <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:13px;">
+                <span style="color:#38bdf8; font-weight:800;">⚡ 실전 매매 연동 패널</span>
+                <span style="color:#4ade80; font-weight:800;">KRX 거래소 직결</span>
+              </div>
+              <div style="background:#0b1120; border-radius:10px; padding:14px; margin-bottom:12px;">
+                <div style="font-size:16px; font-weight:900; color:#fff; margin-bottom:4px;">삼성전자 (005930)</div>
+                <div style="font-size:12px; color:#94a3b8;">현재가: <b style="color:#f87171;">59,800원</b> (+1,200원, +2.05%)</div>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <div style="flex:1; background:linear-gradient(135deg, #be123c, #9f1239); color:#fff; padding:12px; border-radius:10px; text-align:center; font-weight:900; font-size:13px;">
+                  📱 메리츠앱 종목 직행
+                </div>
+                <div style="flex:1; background:linear-gradient(135deg, #0284c7, #2563eb); color:#fff; padding:12px; border-radius:10px; text-align:center; font-weight:900; font-size:13px;">
+                  ⚡ 원터치 1주 매수
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 피처 2: 60fps 차트 드래그 -->
+        <div class="feature-row flip">
+          <div class="feature-copy">
+            <h3>손가락을 꾹 누르고 쭈우욱,<br>60fps 실시간 봉차트 탐색</h3>
+            <p>화면 스크롤 간섭 없이 차트 영역 위에서 손가락을 대고 좌우로 드래그하면, 지나가는 캔들의 날짜·시가·고가·저가·종가·거래량이 십자선과 함께 60fps로 매끄럽게 따라다닙니다.</p>
+            <ul class="feature-points">
+              <li>대형 2단 고대비 HUD: 노안이나 작은 폰에서도 시원하게 판독</li>
+              <li>형광 네온 테두리 & 95% 불투명 카드 오버레이</li>
+              <li>최근 30거래일 고저가 범위 및 이평선 골든크로스 시각화</li>
+              <li>마우스 클릭 드래그 및 모바일 터치 제스처 완벽 동시 지원</li>
+            </ul>
+          </div>
+          <div class="feature-card-wrap">
+            <div class="mockup-hud">
+              <div style="background:rgba(11,19,41,0.95); border:2px solid #38bdf8; border-radius:12px; padding:12px 14px; margin-bottom:12px;">
+                <div style="font-size:14px; font-weight:900; color:#fff; margin-bottom:4px;">
+                  [📅 오늘 10/25] 종가: <span style="color:#f87171;">59,800원 (+1,200원, +2.05%)</span>
+                </div>
+                <div style="font-size:12px; color:#fbbf24; font-weight:700;">
+                  시가 58,900 | 고가 60,100 | 저가 58,600 | 거래량 14,205,930주
+                </div>
+              </div>
+              <div style="height:110px; background:#060a12; border-radius:8px; border:1px dashed #334155; display:flex; align-items:center; justify-content:center; color:#38bdf8; font-size:13px; font-weight:800;">
+                📈 60fps 터치 & 드래그 인터랙티브 캔들스틱 캔버스
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 피처 3: 7중 안전 감시 엔진 -->
+        <div class="feature-row">
+          <div class="feature-copy">
+            <h3>7중 안전 감시 엔진과<br>연속 손절 서킷브레이커</h3>
+            <p>단 한 번의 오류도 용납하지 않는 금융 안전 장치가 작동합니다. 잔고가 없거나 정보가 입력되지 않으면 자동으로 보호 모드로 잠기며, 시장 급락 시 긴급 손절을 스스로 방어합니다.</p>
+            <ul class="feature-points">
+              <li>예수금 0원 / 계좌 미연결 시 주문 100% 원천 차단 보호</li>
+              <li>2회 연속 손절 발생 시 감시 봇 자동 정지 (서킷브레이커)</li>
+              <li>모든 주문 전 명의자 스마트폰으로 승인 알림 발송</li>
+              <li>RSI 과열 차단선(75.0 이상) & ATR 변동성 리스크 사이징 탑재</li>
+            </ul>
+          </div>
+          <div class="feature-card-wrap">
+            <div class="mockup-hud">
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+                <span style="font-size:20px;">🛡️</span>
+                <span style="font-size:14px; font-weight:900; color:#4ade80;">7중 금융 안전 방어 체계 가동 중</span>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:8px; font-size:12.5px;">
+                <div style="background:#0f172a; padding:10px 12px; border-radius:8px; border-left:3px solid #38bdf8;">
+                  🔒 <b>0원 보호:</b> 계좌 미연결 시 0주 안전 잠금
+                </div>
+                <div style="background:#0f172a; padding:10px 12px; border-radius:8px; border-left:3px solid #10b981;">
+                  📱 <b>주인 허락제:</b> AI 매수 전 스마트폰 승인 필수
+                </div>
+                <div style="background:#0f172a; padding:10px 12px; border-radius:8px; border-left:3px solid #f43f5e;">
+                  🛑 <b>서킷브레이커:</b> 2연속 손절 시 비상엔진 즉시 정지
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 피처 4: 쉬운 모드 -->
+        <div class="feature-row flip">
+          <div class="feature-copy">
+            <h3>주린이도 한눈에 쉬운,<br>초보자 전용 '쉬운 모드'</h3>
+            <p>복잡하고 난해한 수학 공식과 전문 용어 칩들을 깔끔하게 정리했습니다. 꼭 필요한 3대 추천 종목과 직관적인 버튼만 남겨 누구나 쉽게 사용할 수 있습니다.</p>
+            <ul class="feature-points">
+              <li>👑 시총 TOP 10, 🛡️ 안전 우량주, 🌟 전체 추천 3대 핵심 칩</li>
+              <li>거추장스러운 150px 중복 카드와 복잡한 지수 전광판 숨김</li>
+              <li>직관적인 1줄 안심 배지와 원터치 1주 예약 지원</li>
+              <li>고급 퀀트 사용자를 위해 언제든 원클릭으로 기본모드 전환 가능</li>
+            </ul>
+          </div>
+          <div class="feature-card-wrap">
+            <div class="mockup-hud">
+              <div style="display:flex; gap:6px; margin-bottom:12px;">
+                <span style="background:rgba(56,189,248,0.2); border:1px solid #38bdf8; color:#38bdf8; font-weight:800; font-size:11px; padding:4px 10px; border-radius:14px;">👑 시총 TOP 10</span>
+                <span style="background:#1e293b; color:#94a3b8; font-weight:700; font-size:11px; padding:4px 10px; border-radius:14px;">🛡️ 안전 우량주</span>
+                <span style="background:#1e293b; color:#94a3b8; font-weight:700; font-size:11px; padding:4px 10px; border-radius:14px;">🌟 전체 추천</span>
+              </div>
+              <div style="background:#0b1120; border-radius:10px; padding:12px; border:1px solid #1e293b;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <div>
+                    <div style="font-size:15px; font-weight:900; color:#fff;">삼성전자</div>
+                    <div style="font-size:11.5px; color:#94a3b8;">시가총액 1위 · 반도체/AI</div>
+                  </div>
+                  <div style="text-align:right;">
+                    <div style="font-size:15px; font-weight:900; color:#f87171;">59,800원</div>
+                    <div style="font-size:11px; color:#4ade80; font-weight:800;">AI점수 96점 (적극추천)</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 4대 플랫폼 다운로드 섹션 -->
+    <section id="platforms" class="band-dark">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="section-badge">MULTI-PLATFORM SUPPORT</span>
+          <h2 class="section-title">모든 기기에서 자유롭게</h2>
+          <p class="section-desc">안드로이드 스마트폰, 윈도우 PC, 아이폰, 웹 브라우저까지 완벽하게 지원합니다.</p>
+        </div>
+
+        <div class="platform-grid">
+          <!-- 1. Android APK -->
+          <div class="platform-card recommended">
+            <span class="card-top-badge">강력 추천</span>
+            <div class="platform-icon">📱</div>
+            <div class="platform-name">Android</div>
+            <div class="platform-sub">안드로이드 스마트폰 (.APK)</div>
+            <p class="platform-desc">
+              강제 업데이트 화면 완전 고정 및 터치 우회 차단. 스마트폰에서 가장 강력한 1주 주문과 푸시 알림을 지원합니다.
+            </p>
+            <a href="downloads/메리츠_AI_주식.apk" class="platform-btn primary" download>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v13m0 0-4-4m4 4 4-4M4 20h16"/></svg>
+              APK 다운로드 (v4.3.0)
+            </a>
+          </div>
+
+          <!-- 2. Windows EXE -->
+          <div class="platform-card">
+            <div class="platform-icon">💻</div>
+            <div class="platform-name">Windows</div>
+            <div class="platform-sub">PC 무설치 실행 (.EXE)</div>
+            <p class="platform-desc">
+              별도 설치 없이 더블 클릭 즉시 크롬리스 독립 앱 윈도우로 쾌적하게 실행되는 데스크톱 프로그램입니다.
+            </p>
+            <a href="downloads/메리츠_AI_주식.exe" class="platform-btn" download>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M3 9h18"/></svg>
+              EXE 다운로드 (7.8MB)
+            </a>
+          </div>
+
+          <!-- 3. Web PWA -->
+          <div class="platform-card">
+            <div class="platform-icon">🌐</div>
+            <div class="platform-name">Web PWA</div>
+            <div class="platform-sub">브라우저 즉시 실행 (무설치)</div>
+            <p class="platform-desc">
+              설치 없이 Chrome, Edge, Safari에서 바로 열 수 있으며, 주소창의 [앱 설치]로 바탕화면에 바로 등록 가능합니다.
+            </p>
+            <a href="../web/index.html" class="platform-btn" target="_blank">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              웹앱 바로 열기
+            </a>
+          </div>
+
+          <!-- 4. iOS -->
+          <div class="platform-card" id="ios-guide">
+            <div class="platform-icon">🍎</div>
+            <div class="platform-name">iOS</div>
+            <div class="platform-sub">iPhone / iPad Safari</div>
+            <p class="platform-desc">
+              사파리에서 [홈 화면에 추가]만 누르면 아이폰 바탕화면에 전용 아이콘이 생기며 전체화면 네이티브 앱으로 구동됩니다.
+            </p>
+            <a href="../ios/ios_guide.html" class="platform-btn" target="_blank">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm0 5v6m0 4h.01"/></svg>
+              아이폰 설치 가이드
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 설치 방법 안내 섹션 -->
+    <section id="install">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="section-badge">EASY 3 STEPS</span>
+          <h2 class="section-title">누구나 1분 만에 시작하는 방법</h2>
+          <p class="section-desc">복잡한 설정 없이 세 단계만 거치면 AI 주식 트레이더가 가동 준비를 마칩니다.</p>
+        </div>
+
+        <div class="steps-grid">
+          <div class="step-card">
+            <div class="step-num">1</div>
+            <h4>내 기기에 맞는 앱 받기</h4>
+            <p>안드로이드폰은 <code>메리츠_AI_주식.apk</code>, PC는 <code>메리츠_AI_주식.exe</code>를 다운로드하거나 웹 버전을 바로 엽니다.</p>
+          </div>
+
+          <div class="step-card">
+            <div class="step-num">2</div>
+            <h4>메리츠 연동 방식 선택</h4>
+            <p>메리츠 SMART 앱으로 바로 열어 주문하거나, 메리츠 Open API App Key를 등록하여 원클릭 실전 자동 체결을 연동합니다.</p>
+          </div>
+
+          <div class="step-card">
+            <div class="step-num">3</div>
+            <h4>AI 감시 시작 누르면 끝</h4>
+            <p>상단의 [▶ AI 감시 시작]을 누르면 7중 안전 감시 엔진이 실시간 급등 유망주를 모니터링하며 매매를 돕습니다.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 파이널 CTA -->
+    <section class="final-cta">
+      <div class="wrap">
+        <h2>지금 메리츠 AI 자동 주식을 시작해 보세요</h2>
+        <p>복잡하고 어려웠던 주식 매매, 퀀트 알고리즘과 7중 안전 감시 엔진이 고객님의 든든한 투자 파트너가 되어 드립니다.</p>
+        <div style="display:flex; justify-content:center; gap:14px; flex-wrap:wrap;">
+          <a href="downloads/메리츠_AI_주식.apk" class="btn-primary" download>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v13m0 0-4-4m4 4 4-4M4 20h16"/></svg>
+            Android APK 다운로드
+          </a>
+          <a href="downloads/메리츠_AI_주식.exe" class="btn-secondary" download>
+            💻 Windows EXE 다운로드
+          </a>
+          <a href="../web/index.html" class="btn-secondary" target="_blank">
+            🌐 웹 버전 바로가기
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 하단 푸터 (오경한 개발자 공식 명시) -->
+  <footer class="footer">
+    <div class="wrap">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <h4>
+            <img src="images/icon.png" alt="" width="26" height="26" style="border-radius:6px;">
+            메리츠 AI 자동 주식 트레이더
+          </h4>
+          <p>
+            메리츠증권 공식 실전 Open API 연동 주식 자동매매 및 퀀트 지표 모니터링 시스템. 명의자 허락 기반 안전 체결과 초보자를 위한 쉬운 모드를 지원합니다.
+          </p>
+        </div>
+
+        <!-- 🌟 사이트 개설자 및 앱 개발자 배지 (사용자 필수 요청 사항) -->
+        <div class="developer-badge-box">
+          <div class="developer-badge-title">👨‍💻 CREATOR & LEAD DEVELOPER</div>
+          <div class="developer-name">사이트 개설자 및 앱 개발자: 오경한</div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>
+          © 2026 오경한 (glglekdy). All rights reserved. 본 시스템은 오픈소스 금융 알고리즘 규격을 준수합니다.
+        </div>
+        <div class="footer-links">
+          <a href="https://github.com/okhrogo-dev/Ai_Trade_Marits" target="_blank" rel="noopener">GitHub 저장소</a>
+          <a href="../web/index.html" target="_blank">Web 버전</a>
+          <a href="../ios/ios_guide.html" target="_blank">iOS 가이드</a>
+          <a href="downloads/메리츠_AI_주식.apk">APK 파일</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="main.js"></script>
+</body>
+</html>

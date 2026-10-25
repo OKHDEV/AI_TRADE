@@ -1,0 +1,27 @@
+{
+  "name": "메리츠 AI 자동 주식",
+  "short_name": "메리츠 AI",
+  "description": "메리츠증권 공식 실전 Open API · 7중 안전 감시 체결 시스템",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#030712",
+  "theme_color": "#0b1120",
+  "icons": [
+    {
+      "src": "./app_icon_192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./app_icon_512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "./apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}
