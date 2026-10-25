@@ -202,14 +202,83 @@
   .stock-actions.four-cols { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
   .stock-actions .btn { width: 100%; min-width: 0; padding: 7px 2px; font-size: clamp(9px, 2.6vw, 11.5px); font-weight: 800; white-space: nowrap; text-align: center; box-sizing: border-box; overflow: hidden; text-overflow: ellipsis; }
 
-  /* 필터 칩 */
+  /* 필터 칩 & 스크롤 네비게이션 */
+  .chip-bar-nav-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 12px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .chip-nav-btn {
+    flex: 0 0 28px;
+    width: 28px;
+    height: 32px;
+    background: #1e293b;
+    color: #f1f5f9;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    user-select: none;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  .chip-nav-btn:hover {
+    background: var(--meritz);
+    color: #fff;
+    border-color: #fb7185;
+    transform: scale(1.05);
+  }
+  .chip-nav-btn:active {
+    transform: scale(0.95);
+  }
+  body.theme-light .chip-nav-btn {
+    background: #f1f5f9 !important;
+    color: #334155 !important;
+    border: 1px solid #cbd5e1 !important;
+  }
+  body.theme-light .chip-nav-btn:hover {
+    background: #2563eb !important;
+    color: #ffffff !important;
+    border-color: #2563eb !important;
+  }
+
   .chip-bar {
     display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 8px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(225, 29, 72, 0.45) rgba(15, 23, 42, 0.5);
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    cursor: grab;
   }
-  .chip-bar::-webkit-scrollbar { display: none; }
+  .chip-bar.is-dragging {
+    cursor: grabbing;
+    user-select: none;
+    scroll-behavior: auto;
+  }
+  .chip-bar::-webkit-scrollbar {
+    height: 4px;
+    display: block;
+  }
+  .chip-bar::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.5);
+    border-radius: 3px;
+  }
+  .chip-bar::-webkit-scrollbar-thumb {
+    background: linear-gradient(90deg, #e11d48, #fb7185);
+    border-radius: 3px;
+  }
   .chip {
     white-space: nowrap; padding: 6px 11px; border-radius: 16px; font-size: 11px; font-weight: 700;
     background: var(--card2); color: #cbd5e1; border: 1px solid var(--border); cursor: pointer;
+    user-select: none;
   }
   .chip.active { background: var(--meritz); color: #fff; border-color: #fb7185; }
 
@@ -884,14 +953,18 @@
 <!-- ===================================================================== -->
 <div id="tab-settings" class="tab-page">
 
-  <!-- 세부 설정 전환 칩 바 -->
-  <div class="chip-bar" style="margin-bottom:12px;">
-    <div class="chip active" onclick="switchCfgSubTab('tutorial', this)">📖 1. 사용방법·튜토리얼</div>
-    <div class="chip" onclick="switchCfgSubTab('meritz', this)">🏦 2. 메리츠 계좌연동</div>
-    <div class="chip pro-only" onclick="switchCfgSubTab('safety', this)">🛡️ 3. AI 안전·한도</div>
-    <div class="chip" onclick="switchCfgSubTab('notif', this)">🔔 4. 폰알림·승인</div>
-    <div class="chip" onclick="switchCfgSubTab('security', this)">🔒 5. 보안PIN·일지</div>
-    <div class="chip" onclick="switchCfgSubTab('prefs', this)">🎨 6. 환경설정·테마</div>
+  <!-- 세부 설정 전환 칩 바 (좌우 화살표 + 휠스크롤 + 드래그 지원) -->
+  <div class="chip-bar-nav-wrap">
+    <button type="button" class="chip-nav-btn" onclick="scrollChipContainer('cfgChipBar', -150)" title="이전 메뉴">◀</button>
+    <div id="cfgChipBar" class="chip-bar" style="flex:1; margin-bottom:0;">
+      <div class="chip active" onclick="switchCfgSubTab('tutorial', this)">📖 1. 사용방법·튜토리얼</div>
+      <div class="chip" onclick="switchCfgSubTab('meritz', this)">🏦 2. 메리츠 계좌연동</div>
+      <div class="chip pro-only" onclick="switchCfgSubTab('safety', this)">🛡️ 3. AI 안전·한도</div>
+      <div class="chip" onclick="switchCfgSubTab('notif', this)">🔔 4. 폰알림·승인</div>
+      <div class="chip" onclick="switchCfgSubTab('security', this)">🔒 5. 보안PIN·일지</div>
+      <div class="chip" onclick="switchCfgSubTab('prefs', this)">🎨 6. 환경설정·테마</div>
+    </div>
+    <button type="button" class="chip-nav-btn" onclick="scrollChipContainer('cfgChipBar', 150)" title="다음 메뉴">▶</button>
   </div>
 
   <!-- 서브설정 1: 📖 사용방법·튜토리얼 & 안전원리 백과사전 -->
@@ -4873,12 +4946,99 @@ function goToMeritzAccountSetup() {
   switchCfgSubTab("meritz", document.querySelectorAll("#tab-settings .chip")[1]);
 }
 
+function scrollChipContainer(id, offset) {
+  if (typeof document === 'undefined') return;
+  const el = document.getElementById(id);
+  if (el) {
+    if (typeof el.scrollBy === 'function') {
+      try {
+        el.scrollBy({ left: offset, behavior: 'smooth' });
+      } catch (e) {
+        el.scrollLeft += offset;
+      }
+    } else {
+      el.scrollLeft += offset;
+    }
+  }
+}
+
 function switchCfgSubTab(subId, chipEl) {
+  if (typeof document === 'undefined') return;
   document.querySelectorAll(".sub-cfg-panel").forEach(p => p.classList.remove("active"));
-  document.getElementById("cfg-sub-" + subId).classList.add("active");
+  const targetPanel = document.getElementById("cfg-sub-" + subId);
+  if (targetPanel) targetPanel.classList.add("active");
   document.querySelectorAll("#tab-settings .chip").forEach(c => c.classList.remove("active"));
-  if (chipEl) chipEl.classList.add("active");
-  if (subId === "security") renderSecurityPinCard();
+  if (chipEl) {
+    chipEl.classList.add("active");
+    if (typeof chipEl.scrollIntoView === 'function') {
+      try {
+        chipEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      } catch (e) {
+        chipEl.scrollIntoView(false);
+      }
+    }
+  }
+  if (subId === "security" && typeof renderSecurityPinCard === 'function') renderSecurityPinCard();
+}
+
+function initChipBarGestures() {
+  if (typeof document === 'undefined' || typeof document.querySelectorAll !== 'function') return;
+  const bars = document.querySelectorAll('.chip-bar');
+  bars.forEach(bar => {
+    if (!bar || (bar.dataset && bar.dataset.gestureBound === 'true')) return;
+    if (bar.dataset) bar.dataset.gestureBound = 'true';
+
+    // 1. Mouse wheel horizontal scrolling
+    if (typeof bar.addEventListener === 'function') {
+      bar.addEventListener('wheel', (e) => {
+        if (e.deltaY !== 0) {
+          e.preventDefault();
+          bar.scrollLeft += e.deltaY;
+        }
+      }, { passive: false });
+
+      // 2. Mouse drag-to-scroll
+      let isDown = false;
+      let startX = 0;
+      let scrollStart = 0;
+      let dragged = false;
+
+      bar.addEventListener('mousedown', (e) => {
+        isDown = true;
+        dragged = false;
+        startX = e.pageX - (bar.offsetLeft || 0);
+        scrollStart = bar.scrollLeft || 0;
+        bar.classList.add('is-dragging');
+      });
+
+      if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+        window.addEventListener('mouseup', () => {
+          if (isDown) {
+            isDown = false;
+            bar.classList.remove('is-dragging');
+            setTimeout(() => { dragged = false; }, 60);
+          }
+        });
+      }
+
+      bar.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        const x = e.pageX - (bar.offsetLeft || 0);
+        const walk = x - startX;
+        if (Math.abs(walk) > 4) dragged = true;
+        bar.scrollLeft = scrollStart - walk;
+      });
+
+      bar.querySelectorAll('.chip').forEach(chip => {
+        chip.addEventListener('click', (e) => {
+          if (dragged) {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+          }
+        }, true);
+      });
+    }
+  });
 }
 
 function quickSetDeposit(amount) {
@@ -6805,10 +6965,14 @@ function testSound() {
 if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
   window.addEventListener('DOMContentLoaded', () => {
     loadUserPrefs();
+    initChipBarGestures();
   });
 }
 if (typeof setTimeout === 'function') {
-  setTimeout(() => { loadUserPrefs(); }, 100);
+  setTimeout(() => {
+    loadUserPrefs();
+    initChipBarGestures();
+  }, 100);
 }
 </script>
 </body>
