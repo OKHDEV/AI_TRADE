@@ -11,16 +11,17 @@
     });
   }
 
-  // 2. 3D 입체 스크롤 등장 애니메이션 (Intersection Observer)
+  // 2. 3D 입체 스크롤 등장 & 무한 재실행 애니메이션 (Intersection Observer)
   const revealElements = document.querySelectorAll('.reveal-3d');
   if ('IntersectionObserver' in window) {
     const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry, idx) => {
+      entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          // 살짝 시차(stagger)를 주어 도미노처럼 입체적으로 등장
-          setTimeout(() => {
-            entry.target.classList.add('active');
-          }, (idx % 4) * 100);
+          entry.target.classList.add('active');
+        } else {
+          // 스크롤 올려서 화면 밖으로 벗어났을 때 클래스를 제거하여
+          // 다시 스크롤을 내릴 때 언제든 100% 모션이 다시 재생되도록 보장!
+          entry.target.classList.remove('active');
         }
       });
     }, {
@@ -71,7 +72,7 @@
       }
     });
 
-    // 25개 합성 캔들스틱 데이터
+    // 20개 합성 캔들스틱 데이터
     const candles = [
       { o: 58200, c: 58500, h: 58700, l: 58100, v: 120 },
       { o: 58500, c: 58400, h: 58800, l: 58200, v: 95 },
@@ -95,7 +96,7 @@
       { o: 64200, c: 64500, h: 64900, l: 64000, v: 820 }
     ];
 
-    // 공중 부양 퀀트 데이터 파티클 30개
+    // 공중 부양 퀀트 데이터 파티클 35개
     const particles = [];
     for (let i = 0; i < 35; i++) {
       particles.push({
@@ -252,24 +253,24 @@
     drawChart();
   }
 
-  // 5. 실시간 숫자 카운트업 애니메이션 (Counter Engine)
+  // 5. 실시간 숫자 카운트업 엔진 (스크롤 올렸다 내릴 때마다 무한 재실행)
   const countElements = document.querySelectorAll('.counter-val');
   if ('IntersectionObserver' in window) {
     const countObserver = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
+        const el = entry.target;
+        const target = parseFloat(el.getAttribute('data-target'));
+        const suffix = el.getAttribute('data-suffix') || '';
+        const decimals = parseInt(el.getAttribute('data-decimals') || '0', 10);
+
         if (entry.isIntersecting) {
-          const el = entry.target;
-          const target = parseFloat(el.getAttribute('data-target'));
-          const suffix = el.getAttribute('data-suffix') || '';
-          const decimals = parseInt(el.getAttribute('data-decimals') || '0', 10);
           let start = 0;
-          const duration = 1500;
+          const duration = 1400;
           const startTime = performance.now();
 
           function updateCounter(currentTime) {
             const elapsed = currentTime - startTime;
             const progress = Math.min(elapsed / duration, 1);
-            // Ease out expo
             const easeOut = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
             const currentVal = (start + (target - start) * easeOut).toFixed(decimals);
             el.textContent = currentVal + suffix;
@@ -278,12 +279,13 @@
               requestAnimationFrame(updateCounter);
             }
           }
-
           requestAnimationFrame(updateCounter);
-          countObserver.unobserve(el);
+        } else {
+          // 화면 밖으로 나가면 리셋 -> 다시 스크롤해 들어올 때 0부터 카운트업 재재생!
+          el.textContent = (0).toFixed(decimals) + suffix;
         }
       });
-    }, { threshold: 0.5 });
+    }, { threshold: 0.25 });
 
     countElements.forEach((el) => countObserver.observe(el));
   }
@@ -298,5 +300,239 @@
     });
   }
   setInterval(updateTickerPrices, 3500);
+
+  // 7. 피처 1 인터랙티브 모의 매수 시뮬레이터 (신박한 체험 기능)
+  window.simulateHudClick = function(type, btn) {
+    if (type === 'buy') {
+      btn.style.transform = 'scale(0.92)';
+      setTimeout(() => { btn.style.transform = ''; }, 150);
+
+      let toast = document.getElementById('hudBuyToast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'hudBuyToast';
+        toast.className = 'hud-live-toast';
+        document.body.appendChild(toast);
+      }
+      toast.innerHTML = `
+        <div class="toast-content">
+          <span class="toast-icon">⚡</span>
+          <div>
+            <div class="toast-title">삼성전자 (005930) 1주 체결 완료!</div>
+            <div class="toast-sub">체결가: 59,800원 · 메리츠 Open API 초고속 0.02초 직결 완료</div>
+          </div>
+        </div>
+      `;
+      toast.classList.add('show');
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2600);
+
+      const origText = btn.innerHTML;
+      btn.innerHTML = '✓ 1주 체결 성공!';
+      btn.style.background = 'linear-gradient(135deg, #059669, #10b981)';
+      setTimeout(() => {
+        btn.innerHTML = origText;
+        btn.style.background = '';
+      }, 2000);
+    } else if (type === 'meritz') {
+      let toast = document.getElementById('hudBuyToast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'hudBuyToast';
+        toast.className = 'hud-live-toast';
+        document.body.appendChild(toast);
+      }
+      toast.innerHTML = `
+        <div class="toast-content">
+          <span class="toast-icon">📱</span>
+          <div>
+            <div class="toast-title">메리츠 SMART 앱 005930 직행</div>
+            <div class="toast-sub">스마트폰 설치 시 메리츠증권 공식 호가창으로 다이렉트 이동합니다.</div>
+          </div>
+        </div>
+      `;
+      toast.classList.add('show');
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2600);
+    }
+  };
+
+  // 8. 피처 2 인터랙티브 60fps 봉차트 터치 & 드래그 탐색 엔진
+  const f2Canvas = document.getElementById('dragChartCanvas');
+  if (f2Canvas) {
+    const f2Ctx = f2Canvas.getContext('2d');
+    let f2W = f2Canvas.width = f2Canvas.parentElement.clientWidth || 360;
+    let f2H = f2Canvas.height = 130;
+
+    window.addEventListener('resize', () => {
+      if (f2Canvas && f2Canvas.parentElement) {
+        f2W = f2Canvas.width = f2Canvas.parentElement.clientWidth;
+        f2H = f2Canvas.height = 130;
+        drawF2Chart();
+      }
+    });
+
+    const f2Candles = [
+      { d: "10/01", o: 56500, c: 57200, h: 57400, l: 56300, v: 9800 },
+      { d: "10/02", o: 57200, c: 56900, h: 57500, l: 56700, v: 8400 },
+      { d: "10/05", o: 56900, c: 57800, h: 58000, l: 56800, v: 11200 },
+      { d: "10/06", o: 57800, c: 58200, h: 58500, l: 57600, v: 13500 },
+      { d: "10/07", o: 58200, c: 57900, h: 58400, l: 57700, v: 9100 },
+      { d: "10/08", o: 57900, c: 58600, h: 58900, l: 57800, v: 14200 },
+      { d: "10/12", o: 58600, c: 58300, h: 58800, l: 58100, v: 8900 },
+      { d: "10/13", o: 58300, c: 59100, h: 59400, l: 58200, v: 16800 },
+      { d: "10/14", o: 59100, c: 58900, h: 59300, l: 58700, v: 10400 },
+      { d: "10/15", o: 58900, c: 59700, h: 60100, l: 58800, v: 21500 },
+      { d: "10/16", o: 59700, c: 59400, h: 59900, l: 59200, v: 12300 },
+      { d: "10/19", o: 59400, c: 60300, h: 60600, l: 59300, v: 24500 },
+      { d: "10/20", o: 60300, c: 60000, h: 60500, l: 59800, v: 13100 },
+      { d: "10/21", o: 60000, c: 60800, h: 61200, l: 59900, v: 27800 },
+      { d: "10/22", o: 60800, c: 60500, h: 61000, l: 60200, v: 15400 },
+      { d: "10/25", o: 58900, c: 59800, h: 60100, l: 58600, v: 14205 }
+    ];
+
+    let f2Idx = f2Candles.length - 1;
+
+    function updateF2Hud(idx) {
+      const c = f2Candles[idx];
+      const dateEl = document.getElementById('feat2Date');
+      const closeEl = document.getElementById('feat2Close');
+      const detEl = document.getElementById('feat2Details');
+      const isUp = c.c >= c.o;
+      const diff = c.c - c.o;
+      const pct = ((diff / c.o) * 100).toFixed(2);
+      const sign = diff >= 0 ? '+' : '';
+
+      if (dateEl) dateEl.textContent = `오늘 ${c.d}`;
+      if (closeEl) {
+        closeEl.textContent = `${c.c.toLocaleString()}원 (${sign}${diff.toLocaleString()}원, ${sign}${pct}%)`;
+        closeEl.style.color = isUp ? '#f87171' : '#38bdf8';
+      }
+      if (detEl) {
+        detEl.textContent = `시가 ${c.o.toLocaleString()} | 고가 ${c.h.toLocaleString()} | 저가 ${c.l.toLocaleString()} | 거래량 ${(c.v * 1000).toLocaleString()}주`;
+      }
+    }
+
+    function drawF2Chart() {
+      f2Ctx.clearRect(0, 0, f2W, f2H);
+      const step = f2W / f2Candles.length;
+      const padTop = 18;
+      const padBot = 22;
+      const h = f2H - padTop - padBot;
+      const minP = 55800;
+      const maxP = 61800;
+      const toY = (p) => padTop + h - ((p - minP) / (maxP - minP)) * h;
+
+      // 캔들 및 거래량
+      f2Candles.forEach((c, i) => {
+        const cx = i * step + step / 2;
+        const bw = Math.max(4, step * 0.6);
+        const isUp = c.c >= c.o;
+        const col = isUp ? '#f43f5e' : '#38bdf8';
+
+        // 거래량 바
+        const vh = (c.v / 28000) * 24;
+        f2Ctx.fillStyle = isUp ? 'rgba(244,63,94,0.3)' : 'rgba(56,189,248,0.3)';
+        f2Ctx.fillRect(cx - bw / 2, f2H - vh, bw, vh);
+
+        // 꼬리선
+        f2Ctx.strokeStyle = col;
+        f2Ctx.lineWidth = 1.2;
+        f2Ctx.beginPath();
+        f2Ctx.moveTo(cx, toY(c.h));
+        f2Ctx.lineTo(cx, toY(c.l));
+        f2Ctx.stroke();
+
+        // 몸통
+        const yTop = Math.min(toY(c.o), toY(c.c));
+        const bh = Math.max(2, Math.abs(toY(c.o) - toY(c.c)));
+        f2Ctx.fillStyle = col;
+        f2Ctx.fillRect(cx - bw / 2, yTop, bw, bh);
+      });
+
+      // 인터랙티브 십자선
+      const cur = f2Candles[f2Idx];
+      const hx = f2Idx * step + step / 2;
+      const hy = toY(cur.c);
+
+      f2Ctx.strokeStyle = '#38bdf8';
+      f2Ctx.setLineDash([2, 2]);
+      f2Ctx.lineWidth = 1;
+      f2Ctx.beginPath();
+      f2Ctx.moveTo(hx, 0); f2Ctx.lineTo(hx, f2H);
+      f2Ctx.moveTo(0, hy); f2Ctx.lineTo(f2W, hy);
+      f2Ctx.stroke();
+      f2Ctx.setLineDash([]);
+
+      // 타겟 펄스 원
+      f2Ctx.beginPath();
+      f2Ctx.arc(hx, hy, 4, 0, Math.PI * 2);
+      f2Ctx.fillStyle = '#fff';
+      f2Ctx.shadowColor = '#38bdf8';
+      f2Ctx.shadowBlur = 10;
+      f2Ctx.fill();
+      f2Ctx.shadowBlur = 0;
+    }
+
+    function handleMove(e) {
+      const rect = f2Canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const x = clientX - rect.left;
+      const step = f2W / f2Candles.length;
+      const idx = Math.max(0, Math.min(f2Candles.length - 1, Math.floor(x / step)));
+      if (idx !== f2Idx) {
+        f2Idx = idx;
+        updateF2Hud(f2Idx);
+        drawF2Chart();
+      }
+      const hint = document.querySelector('.chart-drag-hint');
+      if (hint) hint.style.opacity = '0';
+    }
+
+    f2Canvas.addEventListener('mousemove', handleMove);
+    f2Canvas.addEventListener('touchmove', handleMove, { passive: true });
+    drawF2Chart();
+    updateF2Hud(f2Idx);
+  }
+
+  // 9. 피처 4 '초보자 쉬운 모드' 탭 전환 시뮬레이터
+  window.switchEasyStock = function(tabName, chipEl) {
+    const parent = chipEl.parentElement;
+    parent.querySelectorAll('.easy-chip').forEach(c => c.classList.remove('active'));
+    chipEl.classList.add('active');
+
+    const stockData = {
+      top10: { name: "삼성전자 (005930)", tag: "시가총액 1위 · 반도체/AI", price: "59,800원", score: "AI점수 96점 (적극추천)", up: true },
+      safety: { name: "현대차 (005380)", tag: "배당수익률 6.2% · 안전 우량주", price: "248,500원", score: "AI점수 92점 (안심매수)", up: true },
+      all: { name: "SK하이닉스 (000660)", tag: "HBM3E 독점공급 · 퀀트 모멘텀", price: "189,000원", score: "AI점수 95점 (급등포착)", up: true }
+    };
+
+    const d = stockData[tabName] || stockData.top10;
+    const card = document.getElementById('easyModeStockCard');
+    if (card) {
+      card.style.opacity = '0';
+      card.style.transform = 'translateY(6px)';
+      setTimeout(() => {
+        card.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div style="font-size:16px; font-weight:900; color:#fff;">${d.name}</div>
+              <div style="font-size:12px; color:#94a3b8;">${d.tag}</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:16px; font-weight:900; color:${d.up ? '#f87171' : '#38bdf8'};">${d.price}</div>
+              <div style="font-size:11.5px; color:#4ade80; font-weight:800;">${d.score}</div>
+            </div>
+          </div>
+        `;
+        card.style.opacity = '1';
+        card.style.transform = 'translateY(0)';
+      }, 140);
+    }
+  };
 
 })();

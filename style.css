@@ -593,13 +593,14 @@ section {
   color: var(--gray);
 }
 
-/* 피처 지그재그 섹션 */
+/* 피처 지그재그 섹션 (3D 분할 스크롤 애니메이션) */
 .feature-row {
   display: grid;
   grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
   gap: 56px;
   align-items: center;
   margin-bottom: 90px;
+  perspective: 1400px;
 }
 
 .feature-row.flip {
@@ -614,10 +615,50 @@ section {
   order: 1;
 }
 
+/* 🌟 좌측 텍스트 3D 슬라이드 & 로테이트 */
+.feature-copy {
+  opacity: 0;
+  transform: translateX(-45px) rotateY(10deg);
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+}
+
+.feature-row.active .feature-copy {
+  opacity: 1;
+  transform: translateX(0) rotateY(0deg);
+}
+
+.feature-row.flip .feature-copy {
+  transform: translateX(45px) rotateY(-10deg);
+}
+.feature-row.flip.active .feature-copy {
+  transform: translateX(0) rotateY(0deg);
+}
+
 .feature-copy h3 {
   font-size: clamp(26px, 3.2vw, 38px);
   margin-bottom: 16px;
   line-height: 1.25;
+  position: relative;
+  display: inline-block;
+}
+
+.feature-copy h3::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 0;
+  width: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #38bdf8, transparent);
+  border-radius: 2px;
+  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.feature-row.active .feature-copy h3::after {
+  width: 80%;
+  transition-delay: 0.3s;
 }
 
 .feature-copy p {
@@ -626,6 +667,7 @@ section {
   margin-bottom: 22px;
 }
 
+/* 🌟 체크포인트 불릿 리스트 도미노 스태거 등장 */
 .feature-points {
   list-style: none;
   padding: 0;
@@ -641,6 +683,23 @@ section {
   gap: 12px;
   font-size: 15.5px;
   color: #e2e8f0;
+  opacity: 0;
+  transform: translateX(-24px);
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.feature-row.active .feature-points li:nth-child(1) {
+  opacity: 1; transform: translateX(0); transition-delay: 0.25s;
+}
+.feature-row.active .feature-points li:nth-child(2) {
+  opacity: 1; transform: translateX(0); transition-delay: 0.38s;
+}
+.feature-row.active .feature-points li:nth-child(3) {
+  opacity: 1; transform: translateX(0); transition-delay: 0.51s;
+}
+.feature-row.active .feature-points li:nth-child(4) {
+  opacity: 1; transform: translateX(0); transition-delay: 0.64s;
 }
 
 .feature-points li::before {
@@ -658,9 +717,16 @@ section {
   flex-shrink: 0;
   margin-top: 2px;
   box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+  transform: scale(0);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* 카드 비주얼 래퍼 */
+.feature-row.active .feature-points li:nth-child(1)::before { transform: scale(1); transition-delay: 0.3s; }
+.feature-row.active .feature-points li:nth-child(2)::before { transform: scale(1); transition-delay: 0.43s; }
+.feature-row.active .feature-points li:nth-child(3)::before { transform: scale(1); transition-delay: 0.56s; }
+.feature-row.active .feature-points li:nth-child(4)::before { transform: scale(1); transition-delay: 0.69s; }
+
+/* 🌟 우측 카드 비주얼 래퍼 3D 등장 */
 .feature-card-wrap {
   background: linear-gradient(145deg, #0f172a 0%, #030712 100%);
   border: 1.5px solid var(--line);
@@ -669,6 +735,24 @@ section {
   box-shadow: 0 20px 48px rgba(0, 0, 0, 0.65);
   position: relative;
   overflow: hidden;
+  opacity: 0;
+  transform: translateX(50px) rotateY(-14deg) scale(0.94);
+  transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.3s ease;
+  transform-style: preserve-3d;
+}
+
+.feature-row.active .feature-card-wrap {
+  opacity: 1;
+  transform: translateX(0) rotateY(0deg) scale(1);
+}
+
+.feature-row.flip .feature-card-wrap {
+  transform: translateX(-50px) rotateY(14deg) scale(0.94);
+}
+.feature-row.flip.active .feature-card-wrap {
+  transform: translateX(0) rotateY(0deg) scale(1);
 }
 
 .feature-card-wrap::after {
@@ -683,12 +767,250 @@ section {
   pointer-events: none;
 }
 
+/* 🌟 사이버 HUD 터미널 카드 스타일 & 홀로그램 스윕 */
 .mockup-hud {
   background: #020617;
   border: 1.5px solid rgba(56, 189, 248, 0.4);
   border-radius: 16px;
   padding: 18px;
-  box-shadow: inset 0 0 24px rgba(56, 189, 248, 0.1);
+  box-shadow: inset 0 0 24px rgba(56, 189, 248, 0.1), 0 10px 30px rgba(0, 0, 0, 0.7);
+  position: relative;
+  overflow: hidden;
+}
+
+.mockup-hud::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 70%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.22), transparent);
+  transform: skewX(-25deg);
+  transition: left 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  z-index: 5;
+}
+
+.feature-row.active .mockup-hud::before {
+  left: 200%;
+  transition-delay: 0.45s;
+}
+
+/* 사이버 코너 브라켓 */
+.hud-corner-tl, .hud-corner-br {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  pointer-events: none;
+  border-color: #38bdf8;
+  border-style: solid;
+  opacity: 0.85;
+}
+.hud-corner-tl {
+  top: 6px;
+  left: 6px;
+  border-width: 2px 0 0 2px;
+}
+.hud-corner-br {
+  bottom: 6px;
+  right: 6px;
+  border-width: 0 2px 2px 0;
+}
+
+/* KRX 직결 실시간 핑 레이더 */
+.krx-ping {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 10px #4ade80;
+  position: relative;
+  margin-right: 6px;
+}
+.krx-ping::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 1px solid #4ade80;
+  animation: pingRipple 2s infinite cubic-bezier(0, 0, 0.2, 1);
+}
+@keyframes pingRipple {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+
+/* 인터랙티브 시뮬레이터 버튼들 */
+.hud-sim-btn {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 12px 14px;
+  border-radius: 10px;
+  text-align: center;
+  font-weight: 900;
+  font-size: 13px;
+  cursor: pointer;
+  color: #fff;
+  transition: transform 0.15s, box-shadow 0.25s, filter 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.hud-sim-btn:hover {
+  filter: brightness(1.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
+}
+.hud-sim-btn:active {
+  transform: scale(0.95);
+}
+
+.hud-btn-meritz {
+  background: linear-gradient(135deg, #be123c, #9f1239);
+}
+.hud-btn-buy {
+  background: linear-gradient(135deg, #0284c7, #2563eb);
+  box-shadow: 0 0 16px rgba(37, 99, 235, 0.45);
+}
+
+/* 인터랙티브 체결 알림 토스트 */
+.hud-live-toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(120px);
+  opacity: 0;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1.5px solid #38bdf8;
+  border-radius: 16px;
+  padding: 14px 22px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), 0 0 35px rgba(56, 189, 248, 0.45);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  z-index: 9999;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+  pointer-events: none;
+}
+.hud-live-toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+.hud-live-toast .toast-content {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.hud-live-toast .toast-icon {
+  font-size: 22px;
+  background: rgba(56, 189, 248, 0.2);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #38bdf8;
+}
+.hud-live-toast .toast-title {
+  font-size: 15px;
+  font-weight: 900;
+  color: #fff;
+}
+.hud-live-toast .toast-sub {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+/* 차트 드래그 힌트 오버레이 */
+.chart-drag-hint {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 20px;
+  padding: 3px 12px;
+  font-size: 11px;
+  color: #38bdf8;
+  pointer-events: none;
+  font-weight: 700;
+  transition: opacity 0.3s;
+}
+
+/* 7중 안전 감시 그리드 & 배지 */
+.safety-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.safety-badge-item {
+  background: #0f172a;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border-left: 3px solid #38bdf8;
+  transition: transform 0.2s, background 0.2s, border-color 0.2s;
+}
+.safety-badge-item:hover {
+  background: #1e293b;
+  transform: translateX(4px);
+}
+.safety-badge-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+.safety-icon { font-size: 14px; }
+.safety-title { font-weight: 900; font-size: 13.5px; color: #fff; }
+.safety-status {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+.safety-status.ok {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+.safety-status.alert {
+  background: rgba(244, 63, 94, 0.2);
+  color: #fb7185;
+  border: 1px solid rgba(244, 63, 94, 0.4);
+}
+.safety-desc {
+  font-size: 11.5px;
+  color: #94a3b8;
+  padding-left: 22px;
+}
+
+/* 초보자 쉬운 모드 탭 칩 */
+.easy-chip {
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #94a3b8;
+  font-weight: 800;
+  font-size: 12px;
+  padding: 6px 14px;
+  border-radius: 18px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.easy-chip:hover {
+  color: #fff;
+  border-color: #38bdf8;
+}
+.easy-chip.active {
+  background: rgba(56, 189, 248, 0.2);
+  border-color: #38bdf8;
+  color: #38bdf8;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
 }
 
 /* 4대 플랫폼 다운로드 섹션 */
