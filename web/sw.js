@@ -1,10 +1,5 @@
-const CACHE_NAME = 'meritz-ai-v44-live';
-const ASSETS_TO_CACHE = [
-  './manifest.json',
-  './apple-touch-icon.png',
-  './app_icon_192.png',
-  './app_icon_512.png'
-];
+const CACHE_NAME = 'meritz-ai-v44-2-force';
+const ASSETS_TO_CACHE = [];
 
 self.addEventListener('install', (e) => {
   self.skipWaiting();
@@ -13,16 +8,14 @@ self.addEventListener('install', (e) => {
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then((keys) => {
-      return Promise.all(
-        keys.map((key) => caches.delete(key))
-      );
+      return Promise.all(keys.map((key) => caches.delete(key)));
     }).then(() => self.clients.claim())
   );
 });
 
-// NETWORK-FIRST for HTML / Documents: Always fetch fresh code from server!
+// ALWAYS NETWORK-FIRST: Never serve stale HTML/JS
 self.addEventListener('fetch', (e) => {
-  if (e.request.mode === 'navigate' || e.request.destination === 'document' || e.request.url.includes('index.html')) {
+  if (e.request.mode === 'navigate' || e.request.destination === 'document' || e.request.url.includes('.html')) {
     e.respondWith(
       fetch(e.request).catch(() => caches.match(e.request))
     );

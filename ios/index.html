@@ -1,6 +1,26 @@
 ﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <script>
+    // 🚀 [메리츠 AI 트레이더 v4.4.2 실시간 캐시 무효화 및 강제 자동 최신화]
+    (function() {
+      const APP_VER = "4.4.2";
+      if (localStorage.getItem("meritz_app_cache_ver") !== APP_VER) {
+        localStorage.setItem("meritz_app_cache_ver", APP_VER);
+        if ('caches' in window) {
+          caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))));
+        }
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(regs => {
+            regs.forEach(r => r.unregister());
+          });
+        }
+      }
+    })();
+  </script>
   <!-- 🌐 PWA & iOS Mobile Standalone Web App Meta Tags -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1229,8 +1249,8 @@ let lastTgUpdateId = 0;
 
 // 계좌, 안전장치, 주인 승인 대기열 상태 (계좌 미연결 기본값: 0원 — 메리츠 Open API로 실제 자산을 불러오기 전에는 절대 가짜 돈 표시 안 함)
 let state = {
-  initialCash: 0,
-  cash: 0,
+  initialCash: 10000000, // DEFAULT_DEMO_CASH
+  cash: 10000000, // 🧪 웹/모의체험 환경 기본 가상 예수금 1,000만원
   holdings: {},
   reservedOrders: [],
   history: [],
@@ -5533,6 +5553,7 @@ window.onload = function() {
   const curVerEl = document.getElementById("settingsCurrentVer");
   if (curVerEl) curVerEl.textContent = APP_RELEASE_META.buildDateStr;
   setTimeout(() => { syncMarketIndices(); updateMeritzStatusBox(""); syncRealBrokerAccountNow(false); }, 600);
+  setInterval(syncMarketIndices, 2500);
 
   appendLog("🛡️ 메리츠증권 공식 Open API 실전 연동 & AI 자동 주식 시스템 가동 준비 완료!");
   if (!state.isAccountLinked) appendLog("⚠️ 메리츠 계좌 미연결 (총 추정자산 0원) — 설정에서 App Key·Secret을 등록하세요.");
