@@ -1366,3 +1366,39 @@ section {
   border-style: solid;
   border-color: rgba(234, 179, 8, 0.85) transparent transparent transparent;
 }
+
+
+/* 🌟 다운로드 버튼 보안 안내 호버 툴팁 (Windows & APK 공용) */
+.download-tooltip-wrap {
+  position: relative !important;
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+}
+
+.download-security-tooltip {
+  position: absolute !important;
+  bottom: calc(100% + 14px) !important;
+  left: 50% !important;
+  transform: translateX(-50%) translateY(12px) !important;
+  width: 270px !important;
+  max-width: calc(100vw - 36px) !important;
+  background: linear-gradient(165deg, rgba(13, 20, 36, 0.98) 0%, rgba(20, 29, 48, 0.96) 100%) !important;
+  border-radius: 16px !important;
+  padding: 14px 15px !important;
+  text-align: left !important;
+  z-index: 100 !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.35s !important;
+}
+
+.download-tooltip-wrap:hover .download-security-tooltip,
+.download-tooltip-wrap:focus-within .download-security-tooltip {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transform: translateX(-50%) translateY(0) !important;
+}
