@@ -173,7 +173,32 @@ del "%~f0"
         except Exception:
             return ""
 
+_single_instance_mutex = None
+
+def enforce_single_instance():
+    global _single_instance_mutex
+    try:
+        import ctypes
+        ERROR_ALREADY_EXISTS = 183
+        mutex_name = "Local\\MeritzAIStockSingleInstanceMutex"
+        kernel32 = ctypes.windll.kernel32
+        _single_instance_mutex = kernel32.CreateMutexW(None, False, mutex_name)
+        last_error = kernel32.GetLastError()
+        if last_error == ERROR_ALREADY_EXISTS:
+            try:
+                user32 = ctypes.windll.user32
+                hwnd = user32.FindWindowW(None, "메리츠 AI 자동 주식 트레이더")
+                if hwnd:
+                    user32.ShowWindow(hwnd, 9)
+                    user32.SetForegroundWindow(hwnd)
+            except Exception:
+                pass
+            sys.exit(0)
+    except Exception:
+        pass
+
 def main():
+    enforce_single_instance()
     base_dir = get_base_dir()
     candidates = [
         os.path.join(base_dir, "assets", "index.html"),
