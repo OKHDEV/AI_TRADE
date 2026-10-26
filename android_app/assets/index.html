@@ -529,6 +529,30 @@
   /* 🔤 폰트 크기 조절 */
   body.font-small { font-size: 11.5px !important; }
   body.font-large { font-size: 14.5px !important; }
+
+.chart-btn {
+  padding: 4px 9px;
+  font-size: 11.5px;
+  font-weight: 700;
+  border-radius: 6px;
+  background: #1e293b;
+  color: #94a3b8;
+  border: 1px solid #334155;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.chart-btn:hover {
+  background: #334155;
+  color: #f8fafc;
+}
+.chart-btn.active {
+  background: #0284c7;
+  color: #ffffff;
+  border-color: #38bdf8;
+  font-weight: 800;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.35);
+}
+
 </style>
 </head>
 <body>
@@ -901,7 +925,57 @@
     <div id="candleDetailBar" style="background:#0f172a; border:1.5px solid #38bdf8; border-radius:10px; padding:9px 12px; margin-bottom:8px; font-size:13px; line-height:1.5; color:#e2e8f0; box-shadow:0 0 10px rgba(56,189,248,0.15);">
       <span style="color:#38bdf8; font-weight:700;">👆 <b>그래프를 터치하거나 손가락으로 꾹 누른 채 옆으로 드래그</b>하면 캔들 상세정보가 실시간으로 표시됩니다.</span>
     </div>
-    <canvas id="stockCanvas" width="680" height="520" style="cursor:crosshair; touch-action:none;"></canvas>
+        <canvas id="stockCanvas" width="680" height="520" style="cursor:crosshair; touch-action:none;"></canvas>
+
+    <!-- 🎛️ 차트 상세 설정 & 기간 조회 바 (몇주/몇달 보기) -->
+    <div id="chartDetailSettingsPanel" style="margin-top:10px; background:#0b1329; border:1px solid #1e293b; border-radius:10px; padding:10px 12px;">
+      <!-- 1행: 주기(일/주/월) & 기간 범위 선택 바 -->
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:9px; border-bottom:1px solid #1e293b; padding-bottom:9px;">
+        <div style="display:flex; align-items:center; gap:5px; flex-wrap:wrap;">
+          <span style="font-size:12px; font-weight:800; color:#38bdf8; margin-right:2px;">📊 주기:</span>
+          <button class="chart-btn active" id="tf-day" onclick="setChartTimeframe('DAY')">일봉</button>
+          <button class="chart-btn" id="tf-week" onclick="setChartTimeframe('WEEK')">주봉 (몇주)</button>
+          <button class="chart-btn" id="tf-month" onclick="setChartTimeframe('MONTH')">월봉 (몇달)</button>
+        </div>
+        <div style="display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
+          <span style="font-size:12px; font-weight:800; color:#94a3b8; margin-right:2px;">기간:</span>
+          <button class="chart-btn" id="cp-1w" onclick="setChartPeriod('1W')">1주</button>
+          <button class="chart-btn" id="cp-1m" onclick="setChartPeriod('1M')">1개월</button>
+          <button class="chart-btn active" id="cp-3m" onclick="setChartPeriod('3M')">3개월</button>
+          <button class="chart-btn" id="cp-6m" onclick="setChartPeriod('6M')">6개월</button>
+          <button class="chart-btn" id="cp-1y" onclick="setChartPeriod('1Y')">1년</button>
+          <button class="chart-btn" id="cp-all" onclick="setChartPeriod('ALL')">전체</button>
+        </div>
+      </div>
+
+      <!-- 2행: 기술적 지표 & 캔들 확대/축소 상세 설정 -->
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <div style="display:flex; align-items:center; flex-wrap:wrap; gap:8px;">
+          <span style="font-size:11.5px; font-weight:800; color:#94a3b8;">상세 지표:</span>
+          <label style="display:inline-flex; align-items:center; gap:4px; font-size:11.5px; cursor:pointer; color:#fbbf24;">
+            <input type="checkbox" id="chkChartMA" onchange="toggleChartIndicator('MA', this.checked)" checked style="accent-color:#fbbf24;">
+            이동평균선(5/20/60)
+          </label>
+          <label style="display:inline-flex; align-items:center; gap:4px; font-size:11.5px; cursor:pointer; color:#38bdf8;">
+            <input type="checkbox" id="chkChartBB" onchange="toggleChartIndicator('BB', this.checked)" style="accent-color:#38bdf8;">
+            볼린저밴드
+          </label>
+          <label style="display:inline-flex; align-items:center; gap:4px; font-size:11.5px; cursor:pointer; color:#c084fc;">
+            <input type="checkbox" id="chkChartRSI" onchange="toggleChartIndicator('RSI', this.checked)" checked style="accent-color:#c084fc;">
+            RSI
+          </label>
+          <label style="display:inline-flex; align-items:center; gap:4px; font-size:11.5px; cursor:pointer; color:#34d399;">
+            <input type="checkbox" id="chkChartTargets" onchange="toggleChartIndicator('TARGETS', this.checked)" checked style="accent-color:#34d399;">
+            목표/손절선
+          </label>
+        </div>
+        <div style="display:flex; align-items:center; gap:5px;">
+          <button class="btn btn-dark" style="padding:4px 8px; font-size:11px; border:1px solid #334155; border-radius:6px;" onclick="zoomChart(-5)">➕ 확대</button>
+          <button class="btn btn-dark" style="padding:4px 8px; font-size:11px; border:1px solid #334155; border-radius:6px;" onclick="zoomChart(5)">➖ 축소</button>
+          <button class="btn btn-dark" style="padding:4px 8px; font-size:11px; border:1px solid #334155; border-radius:6px;" onclick="resetChartSettings()">🔄 기본값</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- AI 종목 안전도 & 타점 진단 리포트 -->
@@ -2589,7 +2663,7 @@ function initMarketData() {
     const candles = [];
     let cur = p;
     const rev = [cur];
-    for (let i = 1; i < 45; i++) {
+    for (let i = 1; i < 260; i++) {
       const r = Math.sin(seed + i * 1.7) * 0.020 + 0.0012;
       cur = Math.max(1000, cur / (1 + r));
       rev.push(roundTick(cur));
@@ -4772,7 +4846,7 @@ function setupCanvasInteractions() {
 
     const padL = 14, padR = 76;
     const chartW = canvas.width - padL - padR;
-    const candles = dailyCandles[currentChartCode] || dailyCandles["005930"] || [];
+    const candles = getActiveChartCandles();
     if (candles.length === 0) return;
     const stepX = chartW / candles.length;
 
@@ -4834,6 +4908,186 @@ function renderQuickStockChips() {
   ).join("");
 }
 
+let chartTimeframe = "DAY"; // 'DAY' | 'WEEK' | 'MONTH'
+let chartPeriod = "3M";     // '1W' | '1M' | '3M' | '6M' | '1Y' | 'ALL'
+let chartSettings = {
+  showMA: true,
+  showBB: false,
+  showRSI: true,
+  showTargets: true,
+  zoomOffset: 0
+};
+
+function getActiveChartCandles() {
+  const rawCandles = dailyCandles[currentChartCode] || dailyCandles["005930"] || [];
+  return getAggregatedCandles(rawCandles, chartTimeframe, chartPeriod, chartSettings.zoomOffset);
+}
+
+function getAggregatedCandles(rawCandles, timeframe, period, zoomOffset) {
+  if (!rawCandles || rawCandles.length === 0) return [];
+  let list = rawCandles;
+
+  if (timeframe === "WEEK") {
+    const weeks = [];
+    for (let i = 0; i < rawCandles.length; i += 5) {
+      const chunk = rawCandles.slice(i, i + 5);
+      if (chunk.length === 0) continue;
+      const o = chunk[0].o;
+      const c = chunk[chunk.length - 1].c;
+      const h = Math.max(...chunk.map(x => x.h));
+      const l = Math.min(...chunk.map(x => x.l));
+      const v = chunk.reduce((acc, x) => acc + (x.v || 0), 0);
+      const d1 = chunk[0].date ? `${chunk[0].date.substring(4,6)}/${chunk[0].date.substring(6,8)}` : `W${Math.floor(i/5)+1}`;
+      const d2 = chunk[chunk.length - 1].date ? `${chunk[chunk.length - 1].date.substring(4,6)}/${chunk[chunk.length - 1].date.substring(6,8)}` : "";
+      const date = d2 ? `${d1}~${d2}` : d1;
+      weeks.push({ o, h, l, c, v, date, isWeek: true });
+    }
+    list = weeks;
+  } else if (timeframe === "MONTH") {
+    const months = [];
+    for (let i = 0; i < rawCandles.length; i += 20) {
+      const chunk = rawCandles.slice(i, i + 20);
+      if (chunk.length === 0) continue;
+      const o = chunk[0].o;
+      const c = chunk[chunk.length - 1].c;
+      const h = Math.max(...chunk.map(x => x.h));
+      const l = Math.min(...chunk.map(x => x.l));
+      const v = chunk.reduce((acc, x) => acc + (x.v || 0), 0);
+      const d = chunk[chunk.length - 1].date;
+      const date = d ? `${d.substring(0,4)}.${d.substring(4,6)}월` : `M${Math.floor(i/20)+1}`;
+      months.push({ o, h, l, c, v, date, isMonth: true });
+    }
+    list = months;
+  }
+
+  let count = list.length;
+  if (timeframe === "DAY") {
+    if (period === "1W") count = 5;
+    else if (period === "1M") count = 20;
+    else if (period === "3M") count = 60;
+    else if (period === "6M") count = 120;
+    else if (period === "1Y") count = 240;
+  } else if (timeframe === "WEEK") {
+    if (period === "1W") count = 4;
+    else if (period === "1M") count = 8;
+    else if (period === "3M") count = 13;
+    else if (period === "6M") count = 26;
+    else if (period === "1Y") count = 52;
+  } else if (timeframe === "MONTH") {
+    if (period === "1W" || period === "1M") count = 3;
+    else if (period === "3M") count = 6;
+    else if (period === "6M") count = 9;
+    else if (period === "1Y") count = 12;
+  }
+
+  count = Math.max(5, count + (zoomOffset || 0));
+  return list.slice(Math.max(0, list.length - count));
+}
+
+function setChartTimeframe(tf) {
+  chartTimeframe = tf;
+  document.querySelectorAll("#chartDetailSettingsPanel .chart-btn[id^='tf-']").forEach(b => b.classList.remove("active"));
+  const btn = document.getElementById("tf-" + tf.toLowerCase());
+  if (btn) btn.classList.add("active");
+  selectedCandleIdx = null;
+  drawChart(currentChartCode);
+}
+
+function setChartPeriod(p) {
+  chartPeriod = p;
+  document.querySelectorAll("#chartDetailSettingsPanel .chart-btn[id^='cp-']").forEach(b => b.classList.remove("active"));
+  const btn = document.getElementById("cp-" + p.toLowerCase());
+  if (btn) btn.classList.add("active");
+  selectedCandleIdx = null;
+  drawChart(currentChartCode);
+}
+
+function toggleChartIndicator(type, val) {
+  if (type === "MA") chartSettings.showMA = val;
+  if (type === "BB") chartSettings.showBB = val;
+  if (type === "RSI") chartSettings.showRSI = val;
+  if (type === "TARGETS") chartSettings.showTargets = val;
+  drawChart(currentChartCode);
+}
+
+function zoomChart(delta) {
+  chartSettings.zoomOffset = (chartSettings.zoomOffset || 0) + delta;
+  drawChart(currentChartCode);
+}
+
+function resetChartSettings() {
+  chartTimeframe = "DAY";
+  chartPeriod = "3M";
+  chartSettings.showMA = true;
+  chartSettings.showBB = false;
+  chartSettings.showRSI = true;
+  chartSettings.showTargets = true;
+  chartSettings.zoomOffset = 0;
+  document.querySelectorAll("#chartDetailSettingsPanel .chart-btn").forEach(b => b.classList.remove("active"));
+  const bTf = document.getElementById("tf-day"); if (bTf) bTf.classList.add("active");
+  const bP = document.getElementById("cp-3m"); if (bP) bP.classList.add("active");
+  const chkMA = document.getElementById("chkChartMA"); if (chkMA) chkMA.checked = true;
+  const chkBB = document.getElementById("chkChartBB"); if (chkBB) chkBB.checked = false;
+  const chkRSI = document.getElementById("chkChartRSI"); if (chkRSI) chkRSI.checked = true;
+  const chkTar = document.getElementById("chkChartTargets"); if (chkTar) chkTar.checked = true;
+  selectedCandleIdx = null;
+  drawChart(currentChartCode);
+}
+
+function drawMovingAverage(ctx, candles, period, color, padL, stepX, yPrice) {
+  if (candles.length < period) return;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.3;
+  ctx.beginPath();
+  let started = false;
+  for (let i = period - 1; i < candles.length; i++) {
+    let sum = 0;
+    for (let j = 0; j < period; j++) sum += candles[i - j].c;
+    const avg = sum / period;
+    const x = padL + i * stepX + stepX / 2;
+    const y = yPrice(avg);
+    if (!started) { ctx.moveTo(x, y); started = true; }
+    else { ctx.lineTo(x, y); }
+  }
+  ctx.stroke();
+}
+
+function drawBollingerBands(ctx, candles, period, mult, padL, stepX, yPrice) {
+  if (candles.length < period) return;
+  const uppers = [], lowers = [];
+  for (let i = period - 1; i < candles.length; i++) {
+    let sum = 0;
+    for (let j = 0; j < period; j++) sum += candles[i - j].c;
+    const mean = sum / period;
+    let variance = 0;
+    for (let j = 0; j < period; j++) variance += Math.pow(candles[i - j].c - mean, 2);
+    const stdDev = Math.sqrt(variance / period);
+    const x = padL + i * stepX + stepX / 2;
+    uppers.push({ x, y: yPrice(mean + mult * stdDev) });
+    lowers.push({ x, y: yPrice(mean - mult * stdDev) });
+  }
+
+  ctx.save();
+  ctx.fillStyle = "rgba(56, 189, 248, 0.08)";
+  ctx.beginPath();
+  uppers.forEach((pt, idx) => { if (idx === 0) ctx.moveTo(pt.x, pt.y); else ctx.lineTo(pt.x, pt.y); });
+  for (let idx = lowers.length - 1; idx >= 0; idx--) { ctx.lineTo(lowers[idx].x, lowers[idx].y); }
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.strokeStyle = "rgba(56, 189, 248, 0.45)";
+  ctx.lineWidth = 1;
+  ctx.setLineDash([2, 2]);
+  ctx.beginPath();
+  uppers.forEach((pt, idx) => { if (idx === 0) ctx.moveTo(pt.x, pt.y); else ctx.lineTo(pt.x, pt.y); });
+  ctx.stroke();
+  ctx.beginPath();
+  lowers.forEach((pt, idx) => { if (idx === 0) ctx.moveTo(pt.x, pt.y); else ctx.lineTo(pt.x, pt.y); });
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+}
+
 function drawChart(code) {
   currentChartCode = code;
   syncSingleStockQuote(code);
@@ -4841,7 +5095,7 @@ function drawChart(code) {
   setupCanvasInteractions();
 
   const ana = analyzeStock(code);
-  const candles = dailyCandles[code] || dailyCandles["005930"];
+  const candles = getActiveChartCandles();
 
   if (selectedCandleIdx === null || selectedCandleIdx >= candles.length) {
     selectedCandleIdx = candles.length - 1;
@@ -4849,7 +5103,8 @@ function drawChart(code) {
 
   const sign = ana.change >= 0 ? "▲" : "▼";
   const hdr = document.getElementById("chartHeaderTitle");
-  hdr.textContent = `${ana.name} (${code}) | 현재가 ${fmt(ana.price)}원 (${sign}${fmt(Math.abs(ana.change))}원 ${ana.changePct >= 0 ? "+" : ""}${ana.changePct}%)`;
+  const tfName = chartTimeframe === "WEEK" ? "주봉" : (chartTimeframe === "MONTH" ? "월봉" : "일봉");
+  hdr.textContent = `${ana.name} (${code}) | [${tfName}] 현재가 ${fmt(ana.price)}원 (${sign}${fmt(Math.abs(ana.change))}원 ${ana.changePct >= 0 ? "+" : ""}${ana.changePct}%)`;
   hdr.className = ana.changePct >= 0 ? "up-txt" : "down-txt";
 
   // 터치/클릭된 캔들 일자별 세부정보 바 갱신
@@ -4863,7 +5118,10 @@ function drawChart(code) {
     const cls = isUp ? "up-txt" : "down-txt";
     const chgSign = isUp ? "+" : "";
     const isToday = (selectedCandleIdx === candles.length - 1);
-    const dayLabel = isToday ? "오늘 (실시간 KRX)" : `${candles.length - 1 - selectedCandleIdx}영업일 전`;
+    let dayLabel = "일봉";
+    if (sc.isWeek) dayLabel = "주봉 (주간)";
+    else if (sc.isMonth) dayLabel = "월봉 (월간)";
+    else dayLabel = isToday ? "오늘 (실시간 KRX)" : `${candles.length - 1 - selectedCandleIdx}영업일 전`;
 
     detailBar.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-bottom:5px; flex-wrap:wrap; gap:6px;">
@@ -4935,8 +5193,24 @@ function drawChart(code) {
     ctx.fillRect(x - stepX * 0.3, vTop + vH - vh, stepX * 0.6, vh);
   });
 
+  // 이동평균선(MA) 그리기
+  if (chartSettings.showMA) {
+    drawMovingAverage(ctx, candles, 5, "#fbbf24", padL, stepX, yPrice);
+    drawMovingAverage(ctx, candles, 20, "#f43f5e", padL, stepX, yPrice);
+    drawMovingAverage(ctx, candles, 60, "#38bdf8", padL, stepX, yPrice);
+    ctx.font = "bold 10px sans-serif";
+    ctx.fillStyle = "#fbbf24"; ctx.fillText("— MA5", W - padR - 170, padT - 5);
+    ctx.fillStyle = "#f43f5e"; ctx.fillText("— MA20", W - padR - 125, padT - 5);
+    ctx.fillStyle = "#38bdf8"; ctx.fillText("— MA60", W - padR - 75, padT - 5);
+  }
+
+  // 볼린저 밴드 그리기
+  if (chartSettings.showBB && candles.length >= 20) {
+    drawBollingerBands(ctx, candles, 20, 2, padL, stepX, yPrice);
+  }
+
   // 목표가 라인 (초록 점선)
-  if (ana.targetPrice >= minP && ana.targetPrice <= maxP) {
+  if (chartSettings.showTargets && ana.targetPrice >= minP && ana.targetPrice <= maxP) {
     const yTp = yPrice(ana.targetPrice);
     ctx.strokeStyle = "rgba(52, 211, 153, 0.75)";
     ctx.lineWidth = 1;
@@ -4947,7 +5221,7 @@ function drawChart(code) {
     ctx.fillText("목표 " + fmt(ana.targetPrice), W - padR + 4, yTp + 3);
   }
   // 손절가 라인 (빨간 점선)
-  if (ana.stopPrice >= minP && ana.stopPrice <= maxP) {
+  if (chartSettings.showTargets && ana.stopPrice >= minP && ana.stopPrice <= maxP) {
     const ySl = yPrice(ana.stopPrice);
     ctx.strokeStyle = "rgba(248, 113, 113, 0.75)";
     ctx.lineWidth = 1;
@@ -5029,6 +5303,7 @@ function drawChart(code) {
   }
 
   // RSI
+  if (chartSettings.showRSI) {
   ctx.strokeStyle = "#334155";
   ctx.strokeRect(padL, rTop, chartW, rH);
   ctx.strokeStyle = "#c084fc";
@@ -5043,6 +5318,7 @@ function drawChart(code) {
   ctx.stroke();
   ctx.fillStyle = "#c084fc";
   ctx.fillText("RSI " + ana.rsi, W - padR + 4, rTop + rH / 2);
+  }
 }
 
 // =========================================================================
@@ -5343,7 +5619,7 @@ function registerNewStockToUniverse(code, name, market, price, naverBasic) {
   const candles = [];
   let cur = price;
   const rev = [cur];
-  for (let i = 1; i < 45; i++) {
+  for (let i = 1; i < 260; i++) {
     const r = Math.sin(seed + i * 1.7) * 0.015 + 0.001;
     cur = Math.max(100, cur / (1 + r));
     rev.push(roundTick(cur));
@@ -6268,6 +6544,18 @@ function renderBeginnerDashboard() {
 }
 
 window.onload = function() {
+  const forceLocked = (typeof localStorage !== 'undefined' && localStorage.getItem('force_update_locked') === 'true');
+  if (forceLocked) {
+    let cached = null;
+    try { cached = JSON.parse(localStorage.getItem('force_update_info') || '{}'); } catch(e) {}
+    window.isUpdatePendingInstall = true;
+    window.isUpdateDownloading = true;
+    stopLoadingAndForceUpdate(cached || {
+      version: '최신 필수 업데이트',
+      downloadUrl: `https://github.com/${APP_RELEASE_META.githubRepo}/releases/latest`
+    });
+    return;
+  }
   loadState();
   initMarketData();
 
@@ -6734,9 +7022,7 @@ function stopLoadingAndForceUpdate(foundUpdate) {
       </div>
 
       <div id="forceUpdateActionArea" style="width:100%; max-width:280px; display:flex; flex-direction:column; gap:8px;">
-        <button class="btn btn-dark" style="padding:9px 14px; font-size:11.5px; font-weight:700; border-radius:10px; width:100%; border:1px solid #475569;" onclick="skipOrFinishUpdate()">
-          ✨ 닫기 및 앱 바로 시작하기 (건너뛰기)
-        </button>
+        
       </div>
     `;
   }
@@ -6793,9 +7079,7 @@ window.onUpdateComplete = function(success) {
       <button class="btn btn-green" style="padding:13px 18px; font-size:14px; font-weight:900; border-radius:12px; width:100%; box-shadow:0 4px 15px rgba(34,197,94,0.4); margin-bottom:5px;" onclick="promptInstallNow()">
         🚀 시스템 설치 창 다시 열기
       </button>
-      <button class="btn btn-dark" style="padding:11px 16px; font-size:12.5px; font-weight:900; border-radius:10px; width:100%; border:1.5px solid #38bdf8; color:#38bdf8; margin-bottom:5px;" onclick="skipOrFinishUpdate()">
-        ✨ 설치 완료 / 지금 바로 앱 시작하기
-      </button>
+      
       <button class="btn btn-meritz" style="padding:8px 12px; font-size:11px; font-weight:700; border-radius:8px; width:100%;" onclick="openDownloadInBrowserFallback('${webUrl}')">
         🌐 브라우저에서 직접 다운로드
       </button>
@@ -6825,9 +7109,7 @@ window.onUpdateFailed = function(errMsg) {
       <button class="btn btn-meritz" style="padding:10px 14px; font-size:12px; font-weight:800; border-radius:10px; width:100%;" onclick="openDownloadInBrowserFallback('${(latestRemoteUpdateInfo && (latestRemoteUpdateInfo.webUrl || latestRemoteUpdateInfo.downloadUrl)) || ''}')">
         🌐 브라우저에서 직접 받기
       </button>
-      <button class="btn btn-dark" style="padding:8px 12px; font-size:11px; border-radius:8px; width:100%; margin-top:4px;" onclick="skipOrFinishUpdate()">
-        현재 버전으로 시작
-      </button>
+      
     `;
   }
 };
