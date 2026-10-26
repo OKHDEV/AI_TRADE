@@ -111,7 +111,21 @@
     padding: 5px 9px; border-radius: 6px; font-size: 11px; font-weight: 700; gap: 6px;
     overflow-x: auto; white-space: nowrap;
   }
-  .idx-bar.collapsed { display: none; }
+  .idx-bar.collapsed { display: none !important; }
+  body.font-small {
+    zoom: 0.9;
+    font-size: 11px !important;
+  }
+  body.font-small .card, body.font-small .stock-card, body.font-small .kpi-box, body.font-small .chip, body.font-small .btn {
+    font-size: 92% !important;
+  }
+  body.font-large {
+    zoom: 1.12;
+    font-size: 15px !important;
+  }
+  body.font-large .card, body.font-large .stock-card, body.font-large .kpi-box, body.font-large .chip, body.font-large .btn {
+    font-size: 112% !important;
+  }
   .up-txt { color: var(--up); }
   .down-txt { color: var(--down); }
 
@@ -676,7 +690,7 @@
     <button class="btn btn-meritz" onclick="openMeritzMtsQuick()">📱 메리츠앱</button>
     <button class="btn btn-red pro-only" onclick="panicSell()">🚨 긴급매도</button>
   </div>
-  <div id="idxBarBox" class="idx-bar pro-only" onclick="toggleIdxBar()" title="터치하면 접거나 펼칩니다" style="display:flex; justify-content:space-between; align-items:center; background:var(--card); padding:5px 8px; border-radius:6px; font-size:10.5px; font-weight:700; gap:5px; overflow-x:auto;">
+  <div id="idxBarBox" class="idx-bar pro-only" onclick="toggleIdxBar()" title="터치하면 접거나 펼칩니다" style="justify-content:space-between; align-items:center; background:var(--card); padding:5px 8px; border-radius:6px; font-size:10.5px; font-weight:700; gap:5px; overflow-x:auto; cursor:pointer;">
     <span id="idxKospi" class="up-txt" style="flex-shrink:0;">KOSPI 2,580.42 (▲1.24%)</span>
     <span id="idxKosdaq" class="up-txt" style="flex-shrink:0;">KOSDAQ 742.15 (▲0.88%)</span>
     <span id="hdrSecurityBadge" style="color:#34d399; flex-shrink:0;">🔒 <span class="owner-name-label">고객님</span>승인 ON</span>
@@ -754,14 +768,15 @@
     </div>
   </div>
 
-  <!-- 👑 대한민국 시가총액 TOP 10 순위 보드 -->
+  <!-- 👑 대한민국 시가총액 순위 보드 (접기/펼치기 지원: 기본 1~3위, 펼치면 1~10위) -->
   <div class="card">
-    <div class="card-title">
-      <span>👑 대한민국 시가총액 TOP 10 순위</span>
-      <span class="badge badge-gold" style="font-size:10px; cursor:pointer;" onclick="switchTab('recommend', document.querySelectorAll('.nav-item')[1]); selectRecCat('MARKET_CAP_TOP10')">전체보기 ▶</span>
+    <div class="card-title" style="cursor:pointer;" onclick="toggleHomeMarcap()">
+      <span>👑 대한민국 시가총액 순위</span>
+      <span id="homeMarcapBadge" class="badge badge-gold" style="font-size:10px; cursor:pointer;">1~3위 표시중 (펼치기 ▼)</span>
     </div>
-    <div style="font-size:11px; color:var(--sub); margin-bottom:8px;">
-      코스피 시총 1~10위 대장주 실시간 시세 및 AI 안전 진단 순위
+    <div style="font-size:11px; color:var(--sub); margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+      <span>코스피 시총 대장주 실시간 시세 (접기/펼치기 가능)</span>
+      <span style="color:#38bdf8; cursor:pointer; font-size:10.5px; font-weight:700;" onclick="switchTab('recommend', document.querySelectorAll('.nav-item')[1]); selectRecCat('MARKET_CAP_TOP10')">추천탭에서 전체보기 ▶</span>
     </div>
     <div id="homeMarcapTop10List"></div>
   </div>
@@ -1941,6 +1956,7 @@ function cancelRealReservedOrder(rsevId, code, rsevDate, rsevNo) {
       saveState();
       renderDashboard();
       renderReservedOrdersList();
+  renderHomeMarcapTop10();
       return;
     } else {
       appendLog(`❌ [메리츠 예약 취소 실패] ${res.msg}`);
@@ -1956,6 +1972,7 @@ function cancelRealReservedOrder(rsevId, code, rsevDate, rsevNo) {
   saveState();
   renderDashboard();
   renderReservedOrdersList();
+  renderHomeMarcapTop10();
 }
 
 function syncRealReservedOrdersManual() {
@@ -1967,6 +1984,7 @@ function syncRealReservedOrdersManual() {
   saveState();
   renderDashboard();
   renderReservedOrdersList();
+  renderHomeMarcapTop10();
   showNativeToast(`예약주문 ${state.reservedOrders.length}건 동기화 완료!`);
 }
 
@@ -2123,6 +2141,7 @@ function syncRealBrokerAccountNow(showToastMsg) {
   updateMeritzStatusBox("");
   renderDashboard();
   renderReservedOrdersList();
+  renderHomeMarcapTop10();
   appendLog(`🏦 [메리츠 Open API 실전 조회] 총 추정자산 ${fmt(totalAsset)}원 | 주문가능 ${fmt(realCash)}원 | 보유 ${Object.keys(newHoldings).length}종목 | 예약 ${state.reservedOrders.length}건`);
   if (showToastMsg) showNativeToast(`메리츠 실전자산 ${fmt(totalAsset)}원 동기화 완료!`);
   return true;
@@ -3761,6 +3780,7 @@ function quickOrderShares(qty, isBuy, explicitCode) {
         renderDashboard();
         renderHistory();
         renderReservedOrdersList();
+  renderHomeMarcapTop10();
         return { ok: true, msg: `예약 ${actionLabel} 접수 완료 (예약번호 #${rsevNo})` };
       } else {
         appendLog(`⚠️ [메리츠 예약 API 거부] ${resvRes.msg}`);
@@ -4055,15 +4075,31 @@ function toggleBot() {
   }
 }
 
+var isHomeMarcapCollapsed = true;
+if (typeof window !== 'undefined') window.isHomeMarcapCollapsed = true;
+
+function toggleHomeMarcap() {
+  isHomeMarcapCollapsed = !isHomeMarcapCollapsed;
+  if (typeof window !== 'undefined') window.isHomeMarcapCollapsed = isHomeMarcapCollapsed;
+  renderHomeMarcapTop10();
+}
+
 function renderHomeMarcapTop10() {
   const box = document.getElementById("homeMarcapTop10List");
   if (!box) return;
 
-  const top10 = STOCK_UNIVERSE
+  const allTop10 = STOCK_UNIVERSE
     .filter(s => s.marcapRank && s.marcapRank >= 1 && s.marcapRank <= 10)
     .sort((a, b) => a.marcapRank - b.marcapRank);
 
-  box.innerHTML = top10.map(s => {
+  const badgeEl = document.getElementById("homeMarcapBadge");
+  if (badgeEl) {
+    badgeEl.textContent = isHomeMarcapCollapsed ? "1~3위 표시중 (펼치기 ▼)" : "1~10위 전체 표시중 (접기 ▲)";
+  }
+
+  const visibleList = isHomeMarcapCollapsed ? allTop10.slice(0, 3) : allTop10;
+
+  const itemsHtml = visibleList.map(s => {
     const q = marketQuotes[s.code] || { price: s.base, change: 0, changePct: 0 };
     const isUp = q.changePct >= 0;
     const cls = isUp ? "up-txt" : "down-txt";
@@ -4097,6 +4133,17 @@ function renderHomeMarcapTop10() {
       </div>
     `;
   }).join("");
+
+  const toggleBtnText = isHomeMarcapCollapsed ? "▼ 4~10위 더보기 (펼치기)" : "▲ 3위까지 접기";
+  const toggleBtn = `
+    <div style="text-align:center; margin-top:6px; padding-top:4px;">
+      <button class="btn btn-dark" style="width:100%; padding:7px 10px; font-size:11.5px; font-weight:800; border:1px solid var(--border); color:#38bdf8;" onclick="toggleHomeMarcap()">
+        ${toggleBtnText}
+      </button>
+    </div>
+  `;
+
+  box.innerHTML = itemsHtml + toggleBtn;
 }
 
 function runOneBotCycle(isManual) {
@@ -4419,6 +4466,7 @@ function renderDashboard() {
 
   // 2-B) 정규장 개장 예약주문 대기 목록 렌더링
   renderReservedOrdersList();
+  renderHomeMarcapTop10();
 
   // 3) 보유 종목 리스트
   document.getElementById("holdingCountBadge").textContent = `${hKeys.length} / ${state.config.maxPositions || 4} 종목`;
@@ -4890,9 +4938,23 @@ function toggleIdxBar() {
   const bar = document.getElementById("idxBarBox");
   const btn = document.getElementById("btnFoldIdx");
   if (!bar) return;
-  const isCollapsed = bar.classList.toggle("collapsed");
-  if (btn) {
-    btn.textContent = isCollapsed ? "▼ 지수보기" : "▲ 지수접기";
+  const isCurrentlyHidden = bar.style.display === "none" || bar.classList.contains("collapsed");
+  if (isCurrentlyHidden) {
+    bar.classList.remove("collapsed");
+    bar.style.display = "flex";
+    if (btn) {
+      btn.textContent = "▲ 지수접기";
+      btn.style.color = "";
+      btn.style.borderColor = "";
+    }
+  } else {
+    bar.classList.add("collapsed");
+    bar.style.display = "none";
+    if (btn) {
+      btn.textContent = "▼ 지수보기";
+      btn.style.color = "#38bdf8";
+      btn.style.borderColor = "#38bdf8";
+    }
   }
 }
 
@@ -6842,7 +6904,8 @@ const DEFAULT_USER_PREFS = {
   fontScale: "normal" // small, normal, large
 };
 
-let userPrefs = Object.assign({}, DEFAULT_USER_PREFS);
+var userPrefs = Object.assign({}, DEFAULT_USER_PREFS);
+if (typeof window !== 'undefined') window.userPrefs = userPrefs;
 
 function loadUserPrefs() {
   try {
@@ -6864,6 +6927,8 @@ function saveUserPrefs() {
 function applyUserPrefs(showToast) {
   const body = document.body;
   if (!body) return;
+  if (!body.style) body.style = {};
+  if (typeof body.style.setProperty !== 'function') body.style.setProperty = () => {};
 
   // 1. Theme
   body.classList.remove("theme-light", "theme-oled", "theme-mocha");
@@ -6896,8 +6961,20 @@ function applyUserPrefs(showToast) {
 
   // 6. Font Scale
   body.classList.remove("font-small", "font-large");
-  if (userPrefs.fontScale === "small") body.classList.add("font-small");
-  else if (userPrefs.fontScale === "large") body.classList.add("font-large");
+  if (typeof document !== 'undefined' && document.documentElement) {
+    document.documentElement.classList.remove("font-small", "font-large");
+  }
+  if (userPrefs.fontScale === "small") {
+    body.classList.add("font-small");
+    if (document.documentElement) document.documentElement.classList.add("font-small");
+    body.style.zoom = "0.9";
+  } else if (userPrefs.fontScale === "large") {
+    body.classList.add("font-large");
+    if (document.documentElement) document.documentElement.classList.add("font-large");
+    body.style.zoom = "1.12";
+  } else {
+    body.style.zoom = "1";
+  }
 
   // Update UI Elements in Settings Tab
   updatePrefsUiIndicators();
@@ -6928,7 +7005,23 @@ function updatePrefsUiIndicators() {
   const fontScaleBadge = document.getElementById("fontScaleBadge");
   if (fontScaleBadge) {
     const labels = { small: "작게 (90%)", normal: "보통 (100%)", large: "크게 (112%)" };
-    fontScaleBadge.textContent = labels[userPrefs.fontScale] || "보통";
+    fontScaleBadge.textContent = labels[userPrefs.fontScale] || "보통 (100%)";
+  }
+  const btnSmall = document.getElementById("btnFontSmall");
+  const btnNorm = document.getElementById("btnFontNormal");
+  const btnLarge = document.getElementById("btnFontLarge");
+  if (btnSmall && btnNorm && btnLarge) {
+    [btnSmall, btnNorm, btnLarge].forEach(b => {
+      b.style.border = "1px solid var(--border)";
+      b.style.background = "";
+      b.style.color = "";
+      b.style.fontWeight = "";
+    });
+    const curBtn = userPrefs.fontScale === "small" ? btnSmall : (userPrefs.fontScale === "large" ? btnLarge : btnNorm);
+    curBtn.style.border = "1.5px solid #10b981";
+    curBtn.style.background = "rgba(16, 185, 129, 0.2)";
+    curBtn.style.color = "#a7f3d0";
+    curBtn.style.fontWeight = "800";
   }
 
   const chkSound = document.getElementById("chkPrefsSound");
