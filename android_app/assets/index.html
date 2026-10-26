@@ -7,7 +7,7 @@
   <script>
     // 🚀 [메리츠 AI 트레이더 v4.4.2 실시간 캐시 무효화 및 강제 자동 최신화]
     (function() {
-      const APP_VER = "4.4.2";
+      const APP_VER = "4.5.1";
       if (localStorage.getItem("meritz_app_cache_ver") !== APP_VER) {
         localStorage.setItem("meritz_app_cache_ver", APP_VER);
         if ('caches' in window) {
@@ -7021,13 +7021,13 @@ window.onload = function() {
 // =========================================================================
 const APP_RELEASE_META = {
   appName: "메리츠 AI 주식",
-  currentVersion: "4.5.0",
-  buildDateStr: "2026-10-26 (v4.5.0)",
+  currentVersion: "4.5.1",
+  buildDateStr: "2026-10-26 (v4.5.1)",
   githubRepo: "OKHDEV/AI_TRADE",
   defaultExeName: "Meritz-AI-Stock.exe",
-  defaultSetupName: "Meritz-AI-Stock-Setup-v4.5.0.exe",
-  defaultApkName: "Meritz-AI-Stock-v4.5.0.apk",
-  defaultIpaName: "Meritz-AI-Stock-v4.5.0.ipa"
+  defaultSetupName: "Meritz-AI-Stock-Setup-v4.5.1.exe",
+  defaultApkName: "Meritz-AI-Stock-v4.5.1.apk",
+  defaultIpaName: "Meritz-AI-Stock-v4.5.1.ipa"
 };
 
 function compareSemver(v1, v2) {
@@ -7280,7 +7280,7 @@ async function checkAppUpdateFromGitHub(isManual = false) {
       };
       stopLoadingAndForceUpdate(foundUpdate);
     } else {
-      // ✅ 이미 최신 버전(v4.5.0)임! -> 인트로 완료 후 정상 진입
+      // ✅ 이미 최신 버전(v4.5.1)임! -> 인트로 완료 후 정상 진입
       updateCheckFinished = true;
       window.isUpdatePendingInstall = false;
       window.isUpdateDownloading = false;

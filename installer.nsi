@@ -2,22 +2,22 @@
 
 !define PRODUCT_NAME "메리츠 AI 자동 주식"
 !define PRODUCT_SHORT_NAME "메리츠_AI_주식"
-!define PRODUCT_VERSION "4.5.0"
+!define PRODUCT_VERSION "4.5.1"
 !define PRODUCT_PUBLISHER "오경한 (OKHDEV)"
 !define PRODUCT_WEB_SITE "https://okhdev.github.io/AI_TRADE/"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\메리츠_AI_주식.exe"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_SHORT_NAME}"
 !define PRODUCT_EXE "메리츠_AI_주식.exe"
 
-; MultiUser 설정 (모든 사용자 vs 전용 설치 지원 - 스크린샷 규격과 100% 동일)
+; MultiUser 설정 (모든 사용자 vs 전용 설치 지원)
 !define MULTIUSER_EXECUTIONLEVEL Highest
 !define MULTIUSER_MUI
 !define MULTIUSER_INSTALLMODE_COMMANDLINE
 !define MULTIUSER_INSTALLMODE_DEFAULT_CURRENTUSER
-!define MULTIUSER_INSTALLMODE_INSTDIR "Programs\${PRODUCT_SHORT_NAME}"
+!define MULTIUSER_INSTALLMODE_INSTDIR "${PRODUCT_SHORT_NAME}"
 !define MULTIUSER_INSTALLMODE_INSTDIR_REGKEY "${PRODUCT_DIR_REGKEY}"
 
-; 다중 사용자 페이지 한국어 텍스트 정의 (사용자 스크린샷 100% 일치)
+; 다중 사용자 페이지 한국어 텍스트 정의
 !define MULTIUSER_TEXT_INSTALLMODE_TITLE "설치 옵션 선택"
 !define MULTIUSER_TEXT_INSTALLMODE_SUBTITLE "이 프로그램의 사용자는 누구인가요?"
 !define MULTIUSER_INNERTEXT_INSTALLMODE_TOP "이 프로그램을 모든 사용자가 사용할 수 있도록 할 것인지 아니면 자신만 사용할 수 있도록 할 것인지 선택하십시오."
@@ -64,6 +64,11 @@ ShowUnInstDetails show
 ; =========================================================================
 Function .onInit
   !insertmacro MULTIUSER_INIT
+FunctionEnd
+
+Function .onInstSuccess
+  ; 설치 완료 후 바탕화면 또는 다운로드 폴더에 있던 설치 파일(Setup.exe) 자동 영구 삭제
+  ExecShell "" "cmd.exe" '/c timeout /t 2 > nul & del /f /q "$EXEPATH"' SW_HIDE
 FunctionEnd
 
 Function un.onInit

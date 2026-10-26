@@ -9,12 +9,55 @@ import json
 import urllib.request
 import subprocess
 import webbrowser
+import threading
+import time
+import ctypes
+from ctypes import wintypes
 import webview
 
 def get_base_dir():
     if getattr(sys, 'frozen', False):
         return sys._MEIPASS
     return os.path.dirname(os.path.abspath(__file__))
+
+def cleanup_desktop_setup_files():
+    """
+    바탕화면에 남아있는 Meritz-AI-Stock-Setup*.exe 또는 메리츠*Setup*.exe 설치 파일을 자동으로 감지하여 영구 삭제
+    """
+    try:
+        desktop_candidates = []
+        try:
+            CSIDL_DESKTOP = 0
+            buf = ctypes.create_unicode_buffer(wintypes.MAX_PATH)
+            ctypes.windll.shell32.SHGetFolderPathW(None, CSIDL_DESKTOP, None, 0, buf)
+            if buf.value and os.path.isdir(buf.value):
+                desktop_candidates.append(buf.value)
+        except Exception:
+            pass
+
+        user_desktop = os.path.join(os.path.expanduser("~"), "Desktop")
+        if os.path.isdir(user_desktop) and user_desktop not in desktop_candidates:
+            desktop_candidates.append(user_desktop)
+
+        onedrive_desktop = os.path.join(os.path.expanduser("~"), "OneDrive", "Desktop")
+        if os.path.isdir(onedrive_desktop) and onedrive_desktop not in desktop_candidates:
+            desktop_candidates.append(onedrive_desktop)
+
+        for d in desktop_candidates:
+            try:
+                for fname in os.listdir(d):
+                    low = fname.lower()
+                    if low.endswith(".exe") and ("setup" in low) and ("meritz" in low or "메리츠" in low):
+                        full_path = os.path.join(d, fname)
+                        try:
+                            os.remove(full_path)
+                            print(f"[CLEANUP] Deleted desktop setup file: {full_path}")
+                        except Exception:
+                            pass
+            except Exception:
+                pass
+    except Exception:
+        pass
 
 class DesktopApi:
     def __init__(self, window=None):
@@ -33,6 +76,10 @@ class DesktopApi:
             "isFrozen": getattr(sys, 'frozen', False),
             "exePath": target_exe
         })
+
+    def cleanupDesktopSetups(self):
+        cleanup_desktop_setup_files()
+        return True
 
     def getLatestRelease(self, repo):
         try:
@@ -99,10 +146,6 @@ class DesktopApi:
         return ""
 
     def downloadAndInstallExe(self, download_url):
-        """
-        최신 실행 파일(메리츠_AI_주식.exe)을 다운로드하여 배치 파일을 통해 현재 앱을 덮어쓰고 무인 자동 재실행
-        (별도 Setup 마법사를 띄우지 않고 100% 무인 자동 재시작)
-        """
         try:
             temp_dir = tempfile.gettempdir()
             new_exe = os.path.join(temp_dir, "meritz_ai_stock_new.exe")
@@ -131,6 +174,8 @@ class DesktopApi:
 
             if not os.path.isfile(new_exe) or os.path.getsize(new_exe) < 500000:
                 return json.dumps({"ok": False, "msg": "다운로드된 파일 크기가 올바르지 않습니다."})
+
+            cleanup_desktop_setup_files()
 
             target_exe = sys.executable if getattr(sys, 'frozen', False) else os.path.abspath(sys.argv[0])
             bat_path = os.path.join(temp_dir, "meritz_auto_restart.bat")
@@ -173,32 +218,78 @@ del "%~f0"
         except Exception:
             return ""
 
-_single_instance_mutex = None
-
-def enforce_single_instance():
-    global _single_instance_mutex
+def find_existing_meritz_window():
     try:
-        import ctypes
-        ERROR_ALREADY_EXISTS = 183
-        mutex_name = "Local\\MeritzAIStockSingleInstanceMutex"
-        kernel32 = ctypes.windll.kernel32
-        _single_instance_mutex = kernel32.CreateMutexW(None, False, mutex_name)
-        last_error = kernel32.GetLastError()
-        if last_error == ERROR_ALREADY_EXISTS:
+        user32 = ctypes.windll.user32
+        WNDENUMPROC = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
+        found = []
+
+        def enum_cb(hwnd, lparam):
+            if user32.IsWindowVisible(hwnd):
+                length = user32.GetWindowTextLengthW(hwnd)
+                if length > 0:
+                    buff = ctypes.create_unicode_buffer(length + 1)
+                    user32.GetWindowTextW(hwnd, buff, length + 1)
+                    title = buff.value
+                    if "메리츠" in title and "Visual Studio" not in title and "Command" not in title and "PowerShell" not in title:
+                        found.append(hwnd)
+            return True
+
+        user32.EnumWindows(WNDENUMPROC(enum_cb), 0)
+        return found[0] if found else None
+    except Exception:
+        return None
+
+def kill_orphan_meritz_processes():
+    try:
+        my_pid = os.getpid()
+        for exe_name in ["메리츠_AI_주식.exe", "Meritz-AI-Stock.exe"]:
             try:
-                user32 = ctypes.windll.user32
-                hwnd = user32.FindWindowW(None, "메리츠 AI 자동 주식 트레이더")
-                if hwnd:
-                    user32.ShowWindow(hwnd, 9)
-                    user32.SetForegroundWindow(hwnd)
+                cmd = f'tasklist /FI "IMAGENAME eq {exe_name}" /FO CSV /NH'
+                out = subprocess.check_output(cmd, shell=True).decode('cp949', errors='ignore')
+                for line in out.strip().splitlines():
+                    parts = [p.strip(' "') for p in line.split(',')]
+                    if len(parts) >= 2 and parts[1].isdigit():
+                        other_pid = int(parts[1])
+                        if other_pid != my_pid:
+                            subprocess.run(f'taskkill /F /PID {other_pid}', shell=True, capture_output=True)
             except Exception:
                 pass
+    except Exception:
+        pass
+
+def enforce_single_instance():
+    try:
+        user32 = ctypes.windll.user32
+
+        # 1. 실행 중인 '보이는(Visible)' 메리츠 창이 이미 있는지 확인
+        hwnd = find_existing_meritz_window()
+        if hwnd:
+            # 창이 이미 존재하면 최소화 해제 및 최상위로 띄운 뒤 현재 중복 프로세스 종료
+            user32.ShowWindow(hwnd, 9)  # SW_RESTORE
+            user32.SetForegroundWindow(hwnd)
             sys.exit(0)
+
+        # 2. 보이는 창이 없는데 백그라운드 좀비 프로세스가 남아있는 경우,
+        # 유저가 창을 볼 수 없게 차단되는 버그를 방지하기 위해 유령 프로세스를 정리하고 정상 실행
+        kill_orphan_meritz_processes()
+
     except Exception:
         pass
 
 def main():
     enforce_single_instance()
+
+    # 바탕화면 설치 파일 자동 정리 백그라운드 스레드 가동
+    def auto_cleanup_worker():
+        time.sleep(2)
+        cleanup_desktop_setup_files()
+        for _ in range(6):
+            time.sleep(10)
+            cleanup_desktop_setup_files()
+
+    threading.Thread(target=auto_cleanup_worker, daemon=True).start()
+
     base_dir = get_base_dir()
     candidates = [
         os.path.join(base_dir, "assets", "index.html"),
@@ -216,7 +307,7 @@ def main():
     if html_file and os.path.isfile(html_file):
         target_url = "file:///" + os.path.abspath(html_file).replace("\\", "/")
     else:
-        target_url = "https://okhdev.github.io/AI_TRADE/web/index.html?v=4.5.0"
+        target_url = "https://okhdev.github.io/AI_TRADE/web/index.html?v=4.5.1"
 
     data_dir = os.path.join(tempfile.gettempdir(), "meritz_ai_stock_wv2")
     os.makedirs(data_dir, exist_ok=True)
@@ -232,6 +323,10 @@ def main():
         min_size=(380, 600)
     )
     api.set_window(window)
+
+    # 창을 닫았을 때 백그라운드에 프로세스가 남지 않도록 완벽히 프로세스 종료
+    window.events.closed += lambda: os._exit(0)
+
     webview.start()
 
 if __name__ == '__main__':
