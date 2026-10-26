@@ -533,26 +533,6 @@
 </head>
 <body>
 
-<!-- 🍎 iOS 전용 상단 홈 화면 추가 안내 바 -->
-<div id="iosInstallBanner" style="display:none; background:linear-gradient(90deg, #1e1b4b, #0f172a); border-bottom:1.5px solid #38bdf8; padding:10px 14px; align-items:center; justify-content:space-between; font-size:12px; color:#f1f5f9; z-index:999999; position:sticky; top:0;">
-  <div style="display:flex; align-items:center; gap:8px;">
-    <span style="font-size:20px;">🍎</span>
-    <div>
-      <div style="font-weight:800; color:#38bdf8;">아이폰 정식 앱으로 홈 화면에 추가하기</div>
-      <div style="font-size:10.5px; color:#94a3b8;">사파리 하단 [공유] ➔ [홈 화면에 추가]를 누르면 네이티브 앱으로 구동됩니다!</div>
-    </div>
-  </div>
-  <button onclick="document.getElementById('iosInstallBanner').style.display='none'" style="background:none; border:none; color:#64748b; font-size:16px; padding:4px 8px; cursor:pointer;">✕</button>
-</div>
-<script>
-  if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
-    if (!window.navigator.standalone) {
-      document.getElementById('iosInstallBanner').style.display = 'flex';
-    }
-  }
-</script>
-
-
 <!-- 앱 진입 1.5초 로딩 화면 (버전 점검 & 최신 APK 확인) -->
 <div id="appSplashScreen" style="position:fixed; top:0; left:0; right:0; bottom:0; background:radial-gradient(circle at 50% 32%, #1e1b4b 0%, #090d16 65%, #030712 100%); z-index:99999999 !important; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:24px; text-align:center; transition:opacity 0.4s ease, visibility 0.4s ease; overflow:hidden; pointer-events:auto !important; touch-action:none; -webkit-user-select:none; user-select:none;">
   <!-- 은은한 배경 금융 그리드 라인 -->
@@ -665,7 +645,7 @@
   <!-- 하단 공식 빌드 및 보안 배지 -->
   <div style="margin-top:26px; display:flex; flex-direction:column; align-items:center; gap:6px;">
     <div id="splashBuildDate" style="font-size:11px; color:#94a3b8; background:rgba(15,23,42,0.85); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:3px 12px;">
-      📱 공식 실전 빌드: 2026-10-25 11:55 (최신)
+      📱 공식 실전 빌드: <span id="splashBuildDateText">2026-10-26 14:15 (최신)</span>
     </div>
     <div style="font-size:10px; color:#64748b; display:flex; align-items:center; gap:4px;">
       <span>🔒</span><span>계좌 명의자 100% 승인 주문 · 금융 보안 암호화 가동</span>
@@ -1316,18 +1296,19 @@
     <div class="card" style="border:1.5px solid #38bdf8; background:#0f172a; margin-top:12px;">
       <div class="card-title">
         <span style="color:#38bdf8;">🔄 앱 빌드 일시 및 GitHub 자동 업데이트</span>
-        <span class="badge badge-blue">2026-10-25 최신</span>
+        <span id="settingsVerBadge" class="badge badge-blue">최신 정식 빌드</span>
       </div>
       <div style="font-size:12px; color:#cbd5e1; line-height:1.6; margin-bottom:12px;">
-        • 현재 설치된 빌드 일시: <b id="settingsCurrentVer" style="color:#38bdf8;">2026-10-25 04:55</b><br>
+        • 현재 설치된 빌드 일시: <b id="settingsCurrentVer" style="color:#38bdf8;">2026-10-26 14:15</b><br>
+        • 실행 환경: <b id="settingsPlatformLabel" style="color:#38bdf8;">Windows 무설치 데스크톱 앱</b><br>
+        • 배포 파일명: <b id="settingsTargetFileName" style="color:#34d399;">메리츠_AI_주식.exe</b><br>
         • GitHub 배포 저장소: <b style="color:#38bdf8;">OKHDEV/AI_TRADE</b><br>
-        • 배포 파일명: <b style="color:#34d399;">메리츠_AI_주식.apk</b><br>
         • 💡 <b>자동 업데이트:</b> 앱을 켤 때 로딩 중 최신 버전이 감지되면 즉시 로딩을 멈추고 자동으로 다운로드 및 재실행 설치 창을 엽니다.
       </div>
-      <button class="btn btn-blue" style="width:100%; padding:11px; font-weight:800; margin-bottom:8px;" onclick="checkAppUpdateFromGitHub(true)">
-        🔍 지금 GitHub 최신 APK 업데이트 확인
+      <button id="btnSettingsCheckUpdate" class="btn btn-blue" style="width:100%; padding:11px; font-weight:800; margin-bottom:8px;" onclick="checkAppUpdateFromGitHub(true)">
+        🔍 지금 GitHub 최신 업데이트 확인
       </button>
-      <button class="btn btn-meritz" style="width:100%; padding:10px; font-size:12px; font-weight:800;" onclick="openDownloadInBrowserFallback('https://github.com/OKHDEV/AI_TRADE/blob/main/%EB%A9%94%EB%A6%AC%EC%B8%A0_AI_%EC%A3%BC%EC%8B%9D.apk')">
+      <button id="btnSettingsWebDownload" class="btn btn-meritz" style="width:100%; padding:10px; font-size:12px; font-weight:800;" onclick="openDownloadInBrowserFallback('https://github.com/OKHDEV/AI_TRADE/blob/main/%EB%A9%94%EB%A6%AC%EC%B8%A0_AI_%EC%A3%BC%EC%8B%9D.exe')">
         🌐 GitHub 웹에서 직접 다운로드
       </button>
     </div>
@@ -6318,16 +6299,18 @@ window.onload = function() {
 };
 
 // =========================================================================
-// 8. GitHub APK 최신 버전 자동 감지 & 강제 자동 다운로드/설치 시스템
+// 8. GitHub 멀티플랫폼(Windows EXE / Android APK / iOS / Web) 자동 감지 & 강제 업데이트 시스템
 // 저장소: https://github.com/OKHDEV/AI_TRADE
 // =========================================================================
 const APP_RELEASE_META = {
   appName: "메리츠 AI 주식",
-  buildDateStr: "2026-10-26 09:15",
-  buildTimestamp: 1792973736042,
-  buildSha: "28d5ba2",
+  buildDateStr: "2026-10-26 14:15",
+  buildTimestamp: 1792991700000,
+  buildSha: "42eaccc",
   githubRepo: "OKHDEV/AI_TRADE",
-  defaultApkName: "메리츠_AI_주식.apk"
+  defaultExeName: "메리츠_AI_주식.exe",
+  defaultApkName: "메리츠_AI_주식.apk",
+  defaultIpaName: "메리츠_AI_주식.ipa"
 };
 
 let latestRemoteUpdateInfo = null;
@@ -6336,6 +6319,52 @@ let isUpdateDownloading = false;
 window.isUpdateDownloading = false;
 let updateCheckFinished = false;
 window.isUpdatePendingInstall = false;
+
+function getAppPlatformType() {
+  const isIos = (typeof navigator !== 'undefined') && /iphone|ipad|ipod/i.test(navigator.userAgent || "");
+  const isAndroid = !!(window.AndroidBridge && typeof window.AndroidBridge.downloadAndInstallApk === 'function');
+  const isWindows = !!(
+    window.pywebview ||
+    window.isDesktopApp ||
+    (typeof navigator !== 'undefined' && navigator.userAgent.includes("Windows") && (window.location.protocol === "file:" || !window.AndroidBridge))
+  );
+  const isPureWeb = (typeof window !== 'undefined') && window.location.protocol.startsWith("http") && !window.AndroidBridge && !window.pywebview && !window.isDesktopApp;
+  if (isAndroid) return "ANDROID";
+  if (isWindows && !isPureWeb) return "WINDOWS";
+  if (isIos) return "IOS";
+  if (isPureWeb) return "WEB";
+  return isWindows ? "WINDOWS" : "WEB";
+}
+
+function initPlatformSettingsUi() {
+  const p = getAppPlatformType();
+  const curVerEl = document.getElementById("settingsCurrentVer");
+  const platformEl = document.getElementById("settingsPlatformLabel");
+  const fileEl = document.getElementById("settingsTargetFileName");
+  const btnCheck = document.getElementById("btnSettingsCheckUpdate");
+  const splashBuild = document.getElementById("splashBuildDateText");
+
+  if (curVerEl) curVerEl.textContent = APP_RELEASE_META.buildDateStr;
+  if (splashBuild) splashBuild.textContent = APP_RELEASE_META.buildDateStr + " (최신)";
+
+  if (p === "WINDOWS") {
+    if (platformEl) platformEl.textContent = "🖥️ Windows 무설치 데스크톱 앱";
+    if (fileEl) fileEl.textContent = APP_RELEASE_META.defaultExeName;
+    if (btnCheck) btnCheck.textContent = "🔍 지금 GitHub 최신 EXE 업데이트 확인";
+  } else if (p === "ANDROID") {
+    if (platformEl) platformEl.textContent = "🤖 안드로이드 네이티브 앱";
+    if (fileEl) fileEl.textContent = APP_RELEASE_META.defaultApkName;
+    if (btnCheck) btnCheck.textContent = "🔍 지금 GitHub 최신 APK 업데이트 확인";
+  } else if (p === "IOS") {
+    if (platformEl) platformEl.textContent = "🍎 iOS 모바일 웹앱";
+    if (fileEl) fileEl.textContent = APP_RELEASE_META.defaultIpaName;
+    if (btnCheck) btnCheck.textContent = "🔍 지금 최신 버전 확인";
+  } else {
+    if (platformEl) platformEl.textContent = "🌐 웹 브라우저 클라우드 모드";
+    if (fileEl) fileEl.textContent = "실시간 자동 배포";
+    if (btnCheck) btnCheck.textContent = "🔍 최신 웹 빌드 확인";
+  }
+}
 
 function dismissSplashGracefully() {
   // 업데이트 진행 중이거나 최신 버전 확인 미완료이거나 설치 대기 중이면 무조건 앱 진입 차단!
@@ -6354,19 +6383,88 @@ function dismissSplashGracefully() {
   }
 }
 
-function fetchGitHubApi(url) {
+async function fetchRemoteCommitUniversal(repo) {
+  // 1) Windows pywebview DesktopApi
+  if (window.pywebview && window.pywebview.api && window.pywebview.api.getRemoteCommitInfo) {
+    try {
+      const raw = await window.pywebview.api.getRemoteCommitInfo(repo);
+      if (raw) {
+        const obj = typeof raw === "string" ? JSON.parse(raw) : raw;
+        if (obj && obj.sha) {
+          return {
+            sha: obj.sha.trim().toLowerCase(),
+            title: obj.title || "GitHub 최신 배포",
+            date: obj.date ? new Date(obj.date) : new Date(),
+            timestamp: obj.date ? new Date(obj.date).getTime() : Date.now()
+          };
+        }
+      }
+    } catch(e) {}
+  }
+
+  // 2) AndroidBridge
+  if (window.AndroidBridge && window.AndroidBridge.getRemoteCommitInfo) {
+    try {
+      const raw = window.AndroidBridge.getRemoteCommitInfo(repo);
+      if (raw && raw.startsWith("{")) {
+        const obj = JSON.parse(raw);
+        if (obj.sha) {
+          return {
+            sha: obj.sha.trim().toLowerCase(),
+            title: obj.title || "GitHub 최신 배포",
+            date: obj.date ? new Date(obj.date) : new Date(),
+            timestamp: Number(obj.timestamp) || (obj.date ? new Date(obj.date).getTime() : Date.now())
+          };
+        }
+      }
+    } catch(e) {}
+  }
+
+  // 3) Direct fetch to GitHub API (CORS 허용)
   try {
-    let headers = {
-      "User-Agent": "Ai-Trade-Marits-App/3.2",
-      "Accept": "application/vnd.github.v3+json"
-    };
-    if (window.AndroidBridge && window.AndroidBridge.httpRequestWithHeaders) {
-      return window.AndroidBridge.httpRequestWithHeaders("GET", url, JSON.stringify(headers), "");
-    } else if (window.AndroidBridge && window.AndroidBridge.httpGet) {
-      return window.AndroidBridge.httpGet(url);
+    const resp = await fetch(`https://api.github.com/repos/${repo}/commits?per_page=1`, {
+      headers: { "Accept": "application/vnd.github.v3+json", "User-Agent": "Ai-Trade-Marits" }
+    });
+    if (resp.ok) {
+      const arr = await resp.json();
+      if (Array.isArray(arr) && arr.length > 0) {
+        const c = arr[0];
+        const d = c.commit && c.commit.committer ? c.commit.committer.date : null;
+        return {
+          sha: (c.sha || "").toLowerCase().trim(),
+          title: (c.commit && c.commit.message ? (c.commit.message || "").split(String.fromCharCode(10))[0] : "GitHub 최신 배포"),
+          date: d ? new Date(d) : new Date(),
+          timestamp: d ? new Date(d).getTime() : Date.now()
+        };
+      }
     }
-  } catch (e) {}
-  return "";
+  } catch(e) {}
+
+  // 4) Fallback to atom feed
+  try {
+    const atomResp = await fetch(`https://github.com/${repo}/commits/main.atom?_cb=${Date.now()}`);
+    if (atomResp.ok) {
+      const atomTxt = await atomResp.text();
+      const m = atomTxt.match(/Commit\/([0-9a-f]{40})/i);
+      const dMatch = atomTxt.match(/<updated>([^<]+)<\/updated>/);
+      const tMatch = atomTxt.match(/<title>([^<]+)<\/title>/g);
+      let title = "GitHub 최신 배포";
+      if (tMatch && tMatch.length > 1) {
+        title = tMatch[1].replace(/<\/?title>/g, "").trim();
+      }
+      if (m && m[1]) {
+        const d = dMatch && dMatch[1] ? new Date(dMatch[1]) : new Date();
+        return {
+          sha: m[1].toLowerCase().trim(),
+          title: title,
+          date: d,
+          timestamp: d.getTime()
+        };
+      }
+    }
+  } catch(e) {}
+
+  return null;
 }
 
 async function checkAppUpdateFromGitHub(isManual = false) {
@@ -6374,13 +6472,11 @@ async function checkAppUpdateFromGitHub(isManual = false) {
     if (isManual) {
       showNativeToast("🔍 GitHub에서 최신 버전 확인 중...");
     }
+    initPlatformSettingsUi();
+    const platform = getAppPlatformType();
 
-    // 🌐 [웹 브라우저 환경 (Chrome/Safari/iOS/PC) 완벽 지원]:
-    // 웹앱은 서버(클라우드)에서 항상 최신 코드가 실행되므로 Android APK 전용 강제 업데이트에서 제외하고 즉시 가동합니다!
-    // 🌐 [iOS / 웹 브라우저 환경 완벽 보호]:
-    // iOS(아이폰/아이패드) 및 웹 브라우저는 안드로이드 APK 설치가 불가능하므로 강제 잠금에서 즉시 제외!
-    const isIos = (typeof navigator !== 'undefined') && /iphone|ipad|ipod/i.test(navigator.userAgent || "");
-    if (isIos || !window.AndroidBridge || typeof window.AndroidBridge.downloadAndInstallApk !== 'function') {
+    // 🌐 순수 웹 브라우저 (GitHub Pages) 환경은 클라우드에서 최신 코드가 실행되므로 즉시 가동
+    if (platform === "WEB" || platform === "IOS") {
       updateCheckFinished = true;
       window.isUpdatePendingInstall = false;
       window.isUpdateDownloading = false;
@@ -6390,122 +6486,70 @@ async function checkAppUpdateFromGitHub(isManual = false) {
       const splashStatus = document.getElementById("splashStatusText");
       if (splashStep) splashStep.textContent = "✅ 가동 준비 완료";
       if (splashStatus) {
-        splashStatus.textContent = isIos ? "✅ 최신 iOS 환경 가동 완료" : "✅ 최신 웹 환경 가동 완료";
+        splashStatus.textContent = (platform === "IOS") ? "✅ 최신 iOS 환경 가동 완료" : "✅ 최신 웹 환경 가동 완료";
         splashStatus.style.color = "#4ade80";
       }
       if (splashBar) splashBar.style.width = "100%";
       if (splashPct) splashPct.textContent = "100%";
-      setTimeout(() => {
-        dismissSplashGracefully();
-      }, 400);
+      setTimeout(() => { dismissSplashGracefully(); }, 400);
       if (isManual) {
-        showNativeToast(isIos ? "🍎 현재 최신 iOS 버전을 이용 중입니다." : "🌐 현재 최신 웹 환경을 이용 중입니다.");
+        showNativeToast((platform === "IOS") ? "🍎 현재 최신 iOS 버전을 이용 중입니다." : "🌐 현재 최신 웹 환경을 이용 중입니다.");
       }
       return;
     }
 
     const repo = APP_RELEASE_META.githubRepo;
-    const B = window.AndroidBridge || {};
     const splashStatus = document.getElementById("splashStatusText");
     const splash = document.getElementById("appSplashScreen");
 
-    // 이전 오류 액션 박스가 있으면 제거
     const oldErrBox = document.getElementById("splashErrorActionBox");
     if (oldErrBox) oldErrBox.remove();
 
-    let fullSha = "";
-    let commitDate = null;
-    let commitMsg = "";
-    let commitTimestamp = 0;
-
-    // 1) 네이티브 Java getRemoteCommitInfo 호출 (GitHub Atom 피드 100% 실시간 직접 파싱, 레이트리밋 0%)
-    if (B.getRemoteCommitInfo) {
-      try {
-        const infoRaw = B.getRemoteCommitInfo(repo);
-        if (infoRaw && infoRaw.startsWith("{")) {
-          const infoObj = JSON.parse(infoRaw);
-          if (infoObj.sha) {
-            fullSha = infoObj.sha.trim();
-            if (infoObj.date) commitDate = new Date(infoObj.date);
-            if (infoObj.title) commitMsg = infoObj.title;
-            if (infoObj.timestamp) commitTimestamp = Number(infoObj.timestamp);
-          }
-        }
-      } catch (e) {}
+    // 🚀 통합 커밋 정보 조회 (Windows 데스크톱, Android 네이티브 모두 지원)
+    const commitInfo = await fetchRemoteCommitUniversal(repo);
+    if (!commitInfo || !commitInfo.sha) {
+      throw new Error("GitHub 최신 커밋 정보를 수신할 수 없습니다.");
     }
 
-    // 1-A) Fallback: getRemoteHeadSha
-    if (!fullSha && B.getRemoteHeadSha) {
-      try {
-        fullSha = (B.getRemoteHeadSha(repo) || "").trim();
-      } catch (e) {}
-    }
-
-    // 1-B) Fallback: Atom 직접 요청
-    if (!fullSha) {
-      try {
-        const atomTxt = fetchGitHubApi(`https://github.com/${repo}/commits/main.atom?_cb=${Date.now()}`);
-        if (atomTxt) {
-          const m = atomTxt.match(/Commit\/([0-9a-f]{40})/i);
-          if (m && m[1]) fullSha = m[1].toLowerCase().trim();
-          const dMatch = atomTxt.match(/<updated>([^<]+)<\/updated>/);
-          if (dMatch && dMatch[1]) {
-            commitDate = new Date(dMatch[1]);
-            commitTimestamp = commitDate.getTime();
-          }
-          const tMatch = atomTxt.match(/<title>([^<]+)<\/title>/g);
-          if (tMatch && tMatch.length > 1) {
-            commitMsg = tMatch[1].replace(/<\/?title>/g, "").trim();
-          }
-        }
-      } catch (e) {}
-    }
-
-    if (!fullSha) {
-      throw new Error("GitHub 커밋 정보를 수신할 수 없습니다.");
-    }
-
+    const fullSha = commitInfo.sha;
     const commitSha = fullSha.substring(0, 7);
-    const dateStr = commitDate && !isNaN(commitDate.getTime()) ? formatDateKorean(commitDate) : "방금 전 등록";
-    const apkFileName = APP_RELEASE_META.defaultApkName;
+    const dateStr = commitInfo.date && !isNaN(commitInfo.date.getTime()) ? formatDateKorean(commitInfo.date) : "방금 전 등록";
+    const targetFileName = (platform === "WINDOWS") ? APP_RELEASE_META.defaultExeName : APP_RELEASE_META.defaultApkName;
 
-    // 💡 최신 단일 APK 직결 다운로드 링크: 특정 fullSha를 지정하여 CDN 캐시 100% 우회!
-    const directDlUrl = `https://raw.githubusercontent.com/${repo}/${fullSha}/${encodeURIComponent(apkFileName)}?t=${Date.now()}`;
-    const webBlobUrl = `https://github.com/${repo}/blob/${fullSha}/${encodeURIComponent(apkFileName)}`;
+    const directDlUrl = `https://raw.githubusercontent.com/${repo}/${fullSha}/${encodeURIComponent(targetFileName)}?t=${Date.now()}`;
+    const webBlobUrl = `https://github.com/${repo}/blob/${fullSha}/${encodeURIComponent(targetFileName)}`;
 
     const foundUpdate = {
       type: "commit",
+      platform: platform,
       version: `Git (${commitSha})`,
       sha: commitSha,
       fullSha: fullSha,
       dateStr: dateStr,
-      timestamp: commitTimestamp || (commitDate ? commitDate.getTime() : Date.now()),
+      timestamp: commitInfo.timestamp || Date.now(),
       downloadUrl: directDlUrl,
       webUrl: webBlobUrl,
-      fileName: apkFileName,
-      notes: commitMsg ? `최신 내용: ${commitMsg}` : "GitHub 최신 단일 빌드"
+      fileName: targetFileName,
+      notes: commitInfo.title ? `최신 내용: ${commitInfo.title}` : "GitHub 최신 배포 빌드"
     };
 
     latestRemoteUpdateInfo = foundUpdate;
 
-    // 💡 [초정밀 최신 업데이트 판정 로직]:
-    // 원격 최신 커밋이 현재 앱의 빌드 시점보다 최신인 경우 무조건 강제 업데이트 발동!
-    // 💡 [초정밀 최신 업데이트 판정 & 무한 루프 원천 차단]:
-    // 1) 이미 사용자가 설치/적용한 커밋이면 업데이트 패스!
+    // 설치된 커밋/시간 비교
     let installedSha = "";
     let installedTime = 0;
     try {
       installedSha = (localStorage.getItem("installed_git_commit_sha") || "").trim().toLowerCase();
       installedTime = Number(localStorage.getItem("installed_git_commit_time") || "0");
-    } catch (e) {}
+    } catch(e) {}
 
     let needUpdate = false;
     if (installedSha && (installedSha === fullSha.toLowerCase() || fullSha.toLowerCase().startsWith(installedSha) || installedSha.startsWith(commitSha.toLowerCase()))) {
       needUpdate = false;
-    } else if (installedTime > 0 && commitTimestamp > 0 && installedTime >= (commitTimestamp - 5000)) {
+    } else if (installedTime > 0 && commitInfo.timestamp > 0 && installedTime >= (commitInfo.timestamp - 5000)) {
       needUpdate = false;
-    } else if (commitTimestamp > 0 && APP_RELEASE_META.buildTimestamp > 0) {
-      if (commitTimestamp > APP_RELEASE_META.buildTimestamp + 5000) {
+    } else if (commitInfo.timestamp > 0 && APP_RELEASE_META.buildTimestamp > 0) {
+      if (commitInfo.timestamp > APP_RELEASE_META.buildTimestamp + 5000) {
         needUpdate = true;
       } else {
         needUpdate = false;
@@ -6515,10 +6559,10 @@ async function checkAppUpdateFromGitHub(isManual = false) {
     }
 
     if (needUpdate) {
-      // 🚀 최신 배포 버전 감지됨 -> 즉시 앱 진입 차단 & 강제 업데이트 화면으로 고정!
+      // 🚀 최신 배포 버전 감지됨 -> 즉시 앱 진입 차단 & 강제 업데이트 화면 고정!
       stopLoadingAndForceUpdate(foundUpdate);
     } else {
-      // ✅ 이미 최신 버전임이 확인되었을 때만 정상 진입 허용!
+      // ✅ 이미 최신 버전임이 확인됨
       updateCheckFinished = true;
       window.isUpdatePendingInstall = false;
       const splashBar = document.getElementById("splashProgressBar");
@@ -6529,14 +6573,17 @@ async function checkAppUpdateFromGitHub(isManual = false) {
         splashStatus.textContent = `✅ 최신 빌드 검증 완료 (${dateStr})`;
         splashStatus.style.color = "#4ade80";
       }
+      const badgeEl = document.getElementById("settingsVerBadge");
+      if (badgeEl) {
+        badgeEl.textContent = "최신 빌드 (검증됨)";
+        badgeEl.className = "badge badge-green";
+      }
       if (splashBar) splashBar.style.width = "100%";
       if (splashPct) splashPct.textContent = "100%";
-      setTimeout(() => {
-        dismissSplashGracefully();
-      }, 600);
+      setTimeout(() => { dismissSplashGracefully(); }, 600);
       if (isManual) showManualUpdateDialog(foundUpdate, false);
     }
-  } catch (err) {
+  } catch(err) {
     console.warn("[UPDATE] checkAppUpdateFromGitHub catch:", err);
     updateCheckFinished = false;
     const splash = document.getElementById("appSplashScreen");
@@ -6547,8 +6594,6 @@ async function checkAppUpdateFromGitHub(isManual = false) {
       splashStatus.textContent = "⚠️ GitHub 최신 버전 연결 확인 대기 중...";
       splashStatus.style.color = "#fbbf24";
     }
-
-    // 💡 절대 저절로 앱 화면으로 넘어가지 않고 로딩 화면에서 멈춰 있음!
     if (splash && !document.getElementById("splashErrorActionBox")) {
       const box = document.createElement("div");
       box.id = "splashErrorActionBox";
@@ -6579,7 +6624,6 @@ function bypassOfflineMode() {
 }
 
 function stopLoadingAndForceUpdate(foundUpdate) {
-  // 1) 로딩 멈춤: 스플래시 종료 타이머 즉시 취소하여 메인 대시보드 진입 차단!
   if (splashDismissTimer) {
     clearTimeout(splashDismissTimer);
     splashDismissTimer = null;
@@ -6588,34 +6632,43 @@ function stopLoadingAndForceUpdate(foundUpdate) {
   window.isUpdateDownloading = true;
   window.isUpdatePendingInstall = true;
 
-  // 2) 스플래시 화면을 "강제 다운로드 및 자동 재시작" 실시간 진행 화면으로 전환
   const splash = document.getElementById("appSplashScreen");
+  const isWindows = foundUpdate.platform === "WINDOWS";
+  const targetName = isWindows ? APP_RELEASE_META.defaultExeName : APP_RELEASE_META.defaultApkName;
+  const platformTitle = isWindows ? "Windows EXE 최신 버전 필수 업데이트" : "새 최신 버전 발견! 필수 업데이트";
+
   if (splash) {
     splash.style.opacity = "1";
     splash.style.display = "flex";
     splash.style.pointerEvents = "auto";
     splash.innerHTML = `
       <div style="font-size:52px; margin-bottom:12px; animation:bounce 1.2s infinite ease-in-out;">🚀</div>
-      <div style="font-size:20px; font-weight:900; color:#38bdf8; letter-spacing:-0.5px; margin-bottom:6px;">새 최신 버전 발견! 필수 업데이트</div>
+      <div style="font-size:19px; font-weight:900; color:#38bdf8; letter-spacing:-0.5px; margin-bottom:6px;">${platformTitle}</div>
       <div style="font-size:12.5px; color:#cbd5e1; margin-bottom:16px; line-height:1.5; max-width:320px;">
-        GitHub 최신 빌드 (<b>${foundUpdate.dateStr}</b>)를 감지했습니다.<br>
-        <b style="color:#f87171;">업데이트 완료 전까지 앱 진입이 완전 차단됩니다.</b>
+        GitHub 최신 빌드 (<b>${foundUpdate.dateStr}</b>)가 등록되었습니다.<br>
+        <span style="color:#fbbf24; font-size:11.5px;">${foundUpdate.notes || ""}</span><br>
+        <b style="color:#f87171;">최신 버전 적용 전까지 앱 진입이 차단됩니다.</b>
       </div>
 
-<div style="width:260px; height:8px; background:#1e293b; border-radius:10px; overflow:hidden; margin-bottom:8px; box-shadow:0 0 14px rgba(56,189,248,0.5);">
+      <div style="width:260px; height:8px; background:#1e293b; border-radius:10px; overflow:hidden; margin-bottom:8px; box-shadow:0 0 14px rgba(56,189,248,0.5);">
         <div id="forceUpdateBar" style="width:5%; height:100%; background:linear-gradient(90deg, #38bdf8, #10b981); transition:width 0.15s ease;"></div>
       </div>
 
       <div id="forceUpdateProgressTxt" style="font-size:13.5px; color:#38bdf8; font-weight:900; min-height:22px; margin-bottom:3px;">
-        ⬇️ 업데이트 다운로드 중... (0%)
+        ⬇️ 업데이트 준비 중...
       </div>
       <div id="forceUpdateKbTxt" style="font-size:11px; color:#94a3b8; margin-bottom:14px;">
-        GitHub 서버 연결 중...
+        대상 파일: ${targetName}
       </div>
 
       <div id="forceUpdateActionArea" style="width:100%; max-width:280px; display:flex; flex-direction:column; gap:8px;">
+        ${isWindows ? `
+          <button class="btn btn-green" style="padding:12px 16px; font-size:13px; font-weight:900; border-radius:10px; width:100%; box-shadow:0 4px 15px rgba(34,197,94,0.4);" onclick="triggerUniversalDownloadAndInstall()">
+            ⬇️ 최신 EXE 자동 다운로드 및 재실행
+          </button>
+        ` : ''}
         <button class="btn btn-meritz" style="padding:10px 16px; font-size:12px; font-weight:800; border-radius:10px; width:100%;" onclick="openDownloadInBrowserFallback('${foundUpdate.webUrl || foundUpdate.downloadUrl}')">
-          🌐 브라우저에서 직접 받기 (보조)
+          🌐 브라우저에서 직접 받기
         </button>
         <button class="btn btn-dark" style="padding:9px 14px; font-size:11.5px; font-weight:700; border-radius:10px; width:100%; border:1px solid #475569;" onclick="skipOrFinishUpdate()">
           ✨ 닫기 및 앱 바로 시작하기 (건너뛰기)
@@ -6624,19 +6677,18 @@ function stopLoadingAndForceUpdate(foundUpdate) {
     `;
   }
 
-  // 3) 다운로드 시작
-  showNativeToast("🚀 최신 버전 감지! 다운로드 후 설치를 진행합니다.");
-
-  const dlUrl = foundUpdate.downloadUrl || `https://raw.githubusercontent.com/${APP_RELEASE_META.githubRepo}/${foundUpdate.fullSha || "main"}/%EB%A9%94%EB%A6%AC%EC%B8%A0_AI_%EC%A3%BC%EC%8B%9D.apk`;
-
-  if (window.AndroidBridge && window.AndroidBridge.downloadAndApplyUpdate) {
-    window.AndroidBridge.downloadAndApplyUpdate(dlUrl);
-  } else if (window.AndroidBridge && window.AndroidBridge.downloadAndInstallApk) {
-    window.AndroidBridge.downloadAndInstallApk(dlUrl, foundUpdate.fileName || APP_RELEASE_META.defaultApkName);
-  } else if (window.AndroidBridge && window.AndroidBridge.openInBrowser) {
-    window.AndroidBridge.openInBrowser(foundUpdate.webUrl || dlUrl);
+  showNativeToast("🚀 최신 버전 감지! 다운로드를 준비합니다.");
+  if (isWindows) {
+    if (window.pywebview && window.pywebview.api && window.pywebview.api.downloadAndInstallExe) {
+      triggerUniversalDownloadAndInstall();
+    }
   } else {
-    window.open(foundUpdate.webUrl || dlUrl, "_blank");
+    const dlUrl = foundUpdate.downloadUrl || `https://raw.githubusercontent.com/${APP_RELEASE_META.githubRepo}/${foundUpdate.fullSha || "main"}/%EB%A9%94%EB%A6%AC%EC%B8%A0_AI_%EC%A3%BC%EC%8B%9D.apk`;
+    if (window.AndroidBridge && window.AndroidBridge.downloadAndApplyUpdate) {
+      window.AndroidBridge.downloadAndApplyUpdate(dlUrl);
+    } else if (window.AndroidBridge && window.AndroidBridge.downloadAndInstallApk) {
+      window.AndroidBridge.downloadAndInstallApk(dlUrl, targetName);
+    }
   }
 }
 
@@ -6667,7 +6719,7 @@ window.onUpdateComplete = function(success) {
     bar.style.background = "#10b981";
   }
   if (txt) {
-    txt.textContent = "📦 최신 APK 다운로드 완료!";
+    txt.textContent = "📦 최신 업데이트 파일 다운로드 완료!";
     txt.style.color = "#4ade80";
   }
   if (kb) {
@@ -6686,7 +6738,7 @@ window.onUpdateComplete = function(success) {
       <button class="btn btn-green" style="padding:13px 18px; font-size:14px; font-weight:900; border-radius:12px; width:100%; box-shadow:0 4px 15px rgba(34,197,94,0.4); margin-bottom:5px;" onclick="promptInstallNow()">
         🚀 시스템 설치 창 다시 열기
       </button>
-<button class="btn btn-dark" style="padding:11px 16px; font-size:12.5px; font-weight:900; border-radius:10px; width:100%; border:1.5px solid #38bdf8; color:#38bdf8; margin-bottom:5px;" onclick="skipOrFinishUpdate()">
+      <button class="btn btn-dark" style="padding:11px 16px; font-size:12.5px; font-weight:900; border-radius:10px; width:100%; border:1.5px solid #38bdf8; color:#38bdf8; margin-bottom:5px;" onclick="skipOrFinishUpdate()">
         ✨ 설치 완료 / 지금 바로 앱 시작하기
       </button>
       <button class="btn btn-meritz" style="padding:8px 12px; font-size:11px; font-weight:700; border-radius:8px; width:100%;" onclick="openDownloadInBrowserFallback('${webUrl}')">
@@ -6717,6 +6769,9 @@ window.onUpdateFailed = function(errMsg) {
       </button>
       <button class="btn btn-meritz" style="padding:10px 14px; font-size:12px; font-weight:800; border-radius:10px; width:100%;" onclick="openDownloadInBrowserFallback('${(latestRemoteUpdateInfo && (latestRemoteUpdateInfo.webUrl || latestRemoteUpdateInfo.downloadUrl)) || ''}')">
         🌐 브라우저에서 직접 받기
+      </button>
+      <button class="btn btn-dark" style="padding:8px 12px; font-size:11px; border-radius:8px; width:100%; margin-top:4px;" onclick="skipOrFinishUpdate()">
+        현재 버전으로 시작
       </button>
     `;
   }
@@ -6757,34 +6812,12 @@ function skipOrFinishUpdate() {
     }, 300);
   }
   if (typeof showNativeToast === "function") {
-    showNativeToast("✨ 앱을 시작합니다.");
-  }
-}
-
-function applyExtractedNow() {
-  if (latestRemoteUpdateInfo && latestRemoteUpdateInfo.fullSha) {
-    try {
-      localStorage.setItem("installed_git_commit_sha", latestRemoteUpdateInfo.fullSha);
-      localStorage.setItem("installed_git_commit_time", String(Date.now()));
-    } catch (e) {}
-  }
-  isUpdateDownloading = false;
-  window.isUpdateDownloading = false;
-  window.isUpdatePendingInstall = false;
-  updateCheckFinished = true;
-  if (window.AndroidBridge && window.AndroidBridge.reloadApp) {
-    window.AndroidBridge.reloadApp();
-  } else {
-    skipOrFinishUpdate();
+    showNativeToast("메리츠 AI 자동 주식 시스템을 시작합니다.");
   }
 }
 
 function formatDateKorean(d) {
-  if (!d || isNaN(d.getTime())) return "방금 전";
-  const now = Date.now();
-  const diffSec = Math.floor((now - d.getTime()) / 1000);
-  if (diffSec >= 0 && diffSec < 60) return "방금 전 (1초 전)";
-  if (diffSec >= 60 && diffSec < 3600) return `${Math.floor(diffSec / 60)}분 전`;
+  if (!d || isNaN(d.getTime())) return "방금 전 등록";
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
@@ -6796,18 +6829,29 @@ function formatDateKorean(d) {
 function showManualUpdateDialog(info, isPrivate = false) {
   const modal = document.getElementById("apkUpdateModal");
   if (!modal) return;
-  document.getElementById("updateCurVer").textContent = APP_RELEASE_META.buildDateStr + " 빌드";
+  const platform = info.platform || getAppPlatformType();
+  const isWindows = platform === "WINDOWS";
+  const targetName = isWindows ? APP_RELEASE_META.defaultExeName : APP_RELEASE_META.defaultApkName;
+
+  document.getElementById("updateCurVer").textContent = APP_RELEASE_META.buildDateStr + " 정식 빌드";
   document.getElementById("updateNewVer").textContent = (info.dateStr || "최근") + (info.version ? ` [${info.version}]` : "");
-  document.getElementById("updateNewFile").textContent = info.fileName || APP_RELEASE_META.defaultApkName;
+  document.getElementById("updateNewFile").textContent = targetName;
   document.getElementById("updateNotes").textContent = info.notes || "현재 상태를 확인했습니다.";
-  document.getElementById("updateBtnArea").innerHTML = `
-    <button class="btn btn-green" style="width:100%; padding:13px; font-size:14px; font-weight:900; margin-bottom:8px;" onclick="triggerApkDownloadAndInstall()">
-      ⬇️ 최신 APK 다운로드 및 재시작
-    </button>
-    <button class="btn btn-dark" style="width:100%; padding:10px; font-size:12px;" onclick="closeUpdateDialog()">
-      닫기
-    </button>
-  `;
+
+  const btnArea = document.getElementById("updateBtnArea");
+  if (btnArea) {
+    btnArea.innerHTML = `
+      <button class="btn btn-green" style="width:100%; padding:13px; font-size:14px; font-weight:900; margin-bottom:8px;" onclick="triggerUniversalDownloadAndInstall()">
+        ⬇️ 최신 ${isWindows ? 'EXE' : 'APK'} 다운로드 및 재시작
+      </button>
+      <button class="btn btn-meritz" style="width:100%; padding:10px; font-size:12px; font-weight:800; margin-bottom:8px;" onclick="openDownloadInBrowserFallback('${info.webUrl || info.downloadUrl}')">
+        🌐 GitHub 웹에서 직접 다운로드
+      </button>
+      <button class="btn btn-dark" style="width:100%; padding:10px; font-size:12px;" onclick="closeUpdateDialog()">
+        닫기
+      </button>
+    `;
+  }
   modal.style.display = "flex";
 }
 
@@ -6816,42 +6860,70 @@ function closeUpdateDialog() {
   if (modal) modal.style.display = "none";
 }
 
-function triggerApkDownloadAndInstall() {
-  if (latestRemoteUpdateInfo && latestRemoteUpdateInfo.sha) {
-    localStorage.setItem("installed_git_commit_sha", latestRemoteUpdateInfo.sha);
+async function triggerUniversalDownloadAndInstall() {
+  if (!latestRemoteUpdateInfo) return;
+  const info = latestRemoteUpdateInfo;
+  const platform = info.platform || getAppPlatformType();
+  const isWindows = platform === "WINDOWS";
+  const targetName = isWindows ? APP_RELEASE_META.defaultExeName : APP_RELEASE_META.defaultApkName;
+  const dlUrl = info.downloadUrl || `https://raw.githubusercontent.com/${APP_RELEASE_META.githubRepo}/${info.fullSha || "main"}/${encodeURIComponent(targetName)}`;
+  const webUrl = info.webUrl || `https://github.com/${APP_RELEASE_META.githubRepo}/blob/main/${encodeURIComponent(targetName)}`;
+
+  if (info.sha) {
+    try {
+      localStorage.setItem("installed_git_commit_sha", info.sha);
+      localStorage.setItem("installed_git_commit_time", String(Date.now()));
+    } catch(e) {}
   }
-  const fileName = (latestRemoteUpdateInfo && latestRemoteUpdateInfo.fileName) ? latestRemoteUpdateInfo.fileName : APP_RELEASE_META.defaultApkName;
-  const rawUrl = (latestRemoteUpdateInfo && latestRemoteUpdateInfo.downloadUrl) ? latestRemoteUpdateInfo.downloadUrl : `https://raw.githubusercontent.com/${APP_RELEASE_META.githubRepo}/main/%EB%A9%94%EB%A6%AC%EC%B8%A0_AI_%EC%A3%BC%EC%8B%9D.apk`;
-  const webUrl = (latestRemoteUpdateInfo && latestRemoteUpdateInfo.webUrl) ? latestRemoteUpdateInfo.webUrl : `https://github.com/${APP_RELEASE_META.githubRepo}/blob/main/%EB%A9%94%EB%A6%AC%EC%B8%A0_AI_%EC%A3%BC%EC%8B%9D.apk`;
 
-  document.getElementById("updateBtnArea").innerHTML = `
-    <div style="background:#1e293b; border:1.5px solid #38bdf8; padding:12px; border-radius:12px; text-align:center;">
-      <div id="modalDlStatus" style="font-size:14px; font-weight:800; color:#38bdf8; margin-bottom:4px;">⬇️ 최신 업데이트 다운로드 진행 중...</div>
-      <div id="modalDlSub" style="font-size:12px; color:#cbd5e1; line-height:1.5;">
-        다운로드 완료 즉시 화면이 새로고침되며 최신 버전으로 자동 재실행됩니다!
+  const btnArea = document.getElementById("updateBtnArea");
+  if (btnArea) {
+    btnArea.innerHTML = `
+      <div style="background:#1e293b; border:1.5px solid #38bdf8; padding:12px; border-radius:12px; text-align:center;">
+        <div id="modalDlStatus" style="font-size:14px; font-weight:800; color:#38bdf8; margin-bottom:4px;">⬇️ 최신 업데이트 파일 전송 중...</div>
+        <div id="modalDlSub" style="font-size:12px; color:#cbd5e1; line-height:1.5;">
+          ${isWindows ? "최신 Windows EXE 다운로드 완료 즉시 자동으로 재실행됩니다!" : "다운로드 완료 후 시스템 설치 창이 호출됩니다."}
+        </div>
+        <button class="btn btn-meritz" style="margin-top:10px; width:100%; padding:10px; font-weight:800;" onclick="openDownloadInBrowserFallback('${webUrl}')">
+          🌐 웹 직접 다운로드 (보조)
+        </button>
+        <button class="btn btn-dark" style="margin-top:6px; width:100%;" onclick="closeUpdateDialog()">
+          닫기
+        </button>
       </div>
-      <button class="btn btn-meritz" style="margin-top:10px; width:100%; padding:10px; font-weight:800;" onclick="openDownloadInBrowserFallback('${webUrl}')">
-        🌐 GitHub 웹 다운로드 (보조)
-      </button>
-      <button class="btn btn-dark" style="margin-top:6px; width:100%;" onclick="closeUpdateDialog()">
-        닫기
-      </button>
-    </div>
-  `;
+    `;
+  }
 
-  if (window.AndroidBridge && window.AndroidBridge.downloadAndApplyUpdate) {
-    window.AndroidBridge.downloadAndApplyUpdate(rawUrl);
-  } else if (window.AndroidBridge && window.AndroidBridge.downloadAndInstallApk) {
-    window.AndroidBridge.downloadAndInstallApk(rawUrl, fileName);
-  } else if (window.AndroidBridge && window.AndroidBridge.openInBrowser) {
-    window.AndroidBridge.openInBrowser(webUrl);
+  if (isWindows) {
+    if (window.pywebview && window.pywebview.api && window.pywebview.api.downloadAndInstallExe) {
+      showNativeToast("🖥️ 최신 Windows EXE 다운로드 중... 잠시 후 자동 재실행됩니다.");
+      try {
+        await window.pywebview.api.downloadAndInstallExe(dlUrl);
+        return;
+      } catch(e) {
+        console.warn("pywebview download error:", e);
+      }
+    }
+    showNativeToast("🌐 브라우저를 통해 최신 EXE 다운로드를 시작합니다.");
+    openDownloadInBrowserFallback(dlUrl);
   } else {
-    window.open(webUrl, "_blank");
+    if (window.AndroidBridge && window.AndroidBridge.downloadAndApplyUpdate) {
+      window.AndroidBridge.downloadAndApplyUpdate(dlUrl);
+    } else if (window.AndroidBridge && window.AndroidBridge.downloadAndInstallApk) {
+      window.AndroidBridge.downloadAndInstallApk(dlUrl, targetName);
+    } else {
+      openDownloadInBrowserFallback(webUrl);
+    }
   }
 }
 
+// 기존 APK 다운로드 핸들러 호환용
+function triggerApkDownloadAndInstall() {
+  triggerUniversalDownloadAndInstall();
+}
+
 function openDownloadInBrowserFallback(url) {
-  let cleanUrl = url || "";
+  let cleanUrl = url || `https://github.com/${APP_RELEASE_META.githubRepo}/releases`;
   while (cleanUrl.includes("%25")) {
     cleanUrl = cleanUrl.replace(/%25/g, "%");
   }
@@ -6860,8 +6932,7 @@ function openDownloadInBrowserFallback(url) {
   } else {
     window.open(cleanUrl, "_blank");
   }
-}
-</script>
+}</script>
 
 <!-- ⚡ 실전 매매 / 1주 주문 안내 모달 -->
 <div id="realTradingGuideModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.85); z-index:9999; align-items:center; justify-content:center; padding:16px;">
