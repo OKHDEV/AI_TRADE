@@ -929,15 +929,15 @@
 
     <!-- 🎛️ 차트 상세 설정 & 기간 조회 바 (몇주/몇달 보기, 접기/펼치기 지원) -->
     <div id="chartDetailSettingsPanel" style="margin-top:10px; background:#0b1329; border:1px solid #1e293b; border-radius:10px; padding:10px 12px;">
-      <!-- 접기/펼치기 헤더 바 -->
-      <div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; user-select:none; margin-bottom:8px;" onclick="toggleChartDetailSettings()">
+      <!-- 접기/펼치기 헤더 바 (기본 닫힘 상태) -->
+      <div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; user-select:none;" onclick="toggleChartDetailSettings()">
         <span style="font-size:12.5px; font-weight:800; color:#38bdf8; display:flex; align-items:center; gap:6px;">
           📊 차트 상세 설정 (주기·기간·지표)
         </span>
-        <span id="chartSettingsFoldIcon" style="font-size:11px; font-weight:700; color:#94a3b8; background:#1e293b; border:1px solid #334155; padding:2px 8px; border-radius:6px;">접기 🔼</span>
+        <span id="chartSettingsFoldIcon" style="font-size:11px; font-weight:700; color:#94a3b8; background:#1e293b; border:1px solid #334155; padding:2px 8px; border-radius:6px;">펼치기 🔽</span>
       </div>
 
-      <div id="chartDetailSettingsBody">
+      <div id="chartDetailSettingsBody" style="display:none; margin-top:8px;">
         <!-- 1행: 주기(일/주/월) & 기간 범위 선택 바 -->
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:9px; border-bottom:1px solid #1e293b; padding-bottom:9px;">
           <div style="display:flex; align-items:center; gap:5px; flex-wrap:wrap;">
