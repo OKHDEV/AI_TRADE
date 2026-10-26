@@ -923,7 +923,7 @@
       삼성전자 (005930) | 실시간 KRX 시세 연동 중...
     </div>
     <div id="candleDetailBar" style="background:#0f172a; border:1.5px solid #38bdf8; border-radius:10px; padding:9px 12px; margin-bottom:8px; font-size:13px; line-height:1.5; color:#e2e8f0; box-shadow:0 0 10px rgba(56,189,248,0.15);">
-      <span style="color:#38bdf8; font-weight:700;">💡 <b>PC:</b> 마우스 휠(확대/축소) & 드래그(좌우 이동) | <b>모바일:</b> 두손가락(확대/축소) & 드래그(좌우 이동)</span>
+      <span style="color:#38bdf8; font-weight:700;">💡 <b>PC:</b> 마우스 호버(상세정보 추적) · 좌클릭(정보 고정/해제) · 길게 드래그(좌우 이동) · 휠(확대/축소) | <b>모바일:</b> 탭(고정) · 드래그(이동) · 핀치(확대/축소)</span>
     </div>
         <canvas id="stockCanvas" width="680" height="520" style="cursor:crosshair; touch-action:none;"></canvas>
 
@@ -4855,6 +4855,8 @@ function renderRecommendations(cat) {
 }
 
 let selectedCandleIdx = null;
+let isCandleDetailPinned = false;
+let chartMousePos = null;
 
 function setupCanvasInteractions() {
   const canvas = document.getElementById("stockCanvas");
@@ -4862,16 +4864,33 @@ function setupCanvasInteractions() {
   canvas._hasInteraction = true;
 
   let isMouseDragging = false;
-  let mouseStartX = 0;
+  let mouseDownTime = 0;
+  let mouseDownX = 0;
+  let mouseDownY = 0;
   let mouseStartPan = 0;
+  let hasMouseMoved = false;
 
   let touchMode = "none";
   let lastPinchDist = 0;
   let touchStartX = 0;
+  let touchStartY = 0;
+  let touchStartTime = 0;
   let touchStartPan = 0;
+  let hasTouchMoved = false;
 
-  function updateCandleFromClientX(clientX) {
+  function getCanvasCoords(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    return {
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top) * scaleY
+    };
+  }
+
+  function updateCandleFromClientX(clientX, force) {
     if (clientX === undefined) return;
+    if (isCandleDetailPinned && !force) return;
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const x = (clientX - rect.left) * scaleX;
@@ -4892,39 +4911,83 @@ function setupCanvasInteractions() {
   // --- 1. PC 마우스 휠 확대/축소 ---
   canvas.addEventListener("wheel", function(e) {
     e.preventDefault();
-    // 휠 올림(deltaY < 0): 확대 (캔들 수 감소: -3)
-    // 휠 내림(deltaY > 0): 축소 (캔들 수 증가: +3)
     const delta = e.deltaY < 0 ? -3 : 3;
     zoomChart(delta);
   }, { passive: false });
 
-  // --- 2. PC 마우스 클릭 후 드래그 (좌우 이동 및 탐색) ---
+  // --- 2. PC 마우스 호버 (마우스 위치에 따라 상세 정보 동적 추적) ---
+  canvas.addEventListener("mousemove", function(e) {
+    if (isMouseDragging) return;
+    chartMousePos = getCanvasCoords(e);
+    if (!isCandleDetailPinned) {
+      updateCandleFromClientX(e.clientX, false);
+      drawChart(currentChartCode);
+    }
+  });
+
+  // --- 3. PC 마우스 캔버스 이탈 시 (고정 아닐 때 해제) ---
+  canvas.addEventListener("mouseleave", function() {
+    if (!isCandleDetailPinned && !isMouseDragging) {
+      chartMousePos = null;
+      drawChart(currentChartCode);
+    }
+  });
+
+  // --- 4. PC 마우스 클릭(고정/해제) & 길게 누르고 드래그(그래프 옆으로 이동) ---
   canvas.addEventListener("mousedown", function(e) {
+    if (e.button !== 0) return; // 좌클릭만 처리
     isMouseDragging = true;
-    mouseStartX = e.clientX;
+    hasMouseMoved = false;
+    mouseDownTime = Date.now();
+    mouseDownX = e.clientX;
+    mouseDownY = e.clientY;
     mouseStartPan = chartSettings.panOffset || 0;
-    updateCandleFromClientX(e.clientX);
+    chartMousePos = getCanvasCoords(e);
   });
 
   window.addEventListener("mousemove", function(e) {
     if (!isMouseDragging) return;
-    const dx = e.clientX - mouseStartX;
-    const rect = canvas.getBoundingClientRect();
-    const padL = 14, padR = 76;
-    const chartW = canvas.width - padL - padR;
-    const candles = getActiveChartCandles();
-    const stepPixels = Math.max(3, (chartW / Math.max(1, candles.length)) * (rect.width / canvas.width));
-    const candlesMoved = Math.round(dx / stepPixels);
-    chartSettings.panOffset = mouseStartPan + candlesMoved;
-    updateCandleFromClientX(e.clientX);
-    drawChart(currentChartCode);
+    const dx = e.clientX - mouseDownX;
+    const dy = e.clientY - mouseDownY;
+    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+      hasMouseMoved = true;
+    }
+    if (hasMouseMoved) {
+      // 좌클릭 누른 채 드래그 시 그래프 옆으로 패닝(이동)
+      const rect = canvas.getBoundingClientRect();
+      const padL = 14, padR = 76;
+      const chartW = canvas.width - padL - padR;
+      const candles = getActiveChartCandles();
+      const stepPixels = Math.max(3, (chartW / Math.max(1, candles.length)) * (rect.width / canvas.width));
+      const candlesMoved = Math.round(dx / stepPixels);
+      chartSettings.panOffset = mouseStartPan + candlesMoved;
+      isCandleDetailPinned = false; // 드래그 시 고정 해제하여 자유 이동
+      updateCandleFromClientX(e.clientX, true);
+      chartMousePos = getCanvasCoords(e);
+      drawChart(currentChartCode);
+    }
   });
 
-  window.addEventListener("mouseup", function() {
+  window.addEventListener("mouseup", function(e) {
+    if (!isMouseDragging) return;
     isMouseDragging = false;
+    const clickDuration = Date.now() - mouseDownTime;
+    // 짧은 좌클릭 (이동 없이 350ms 이내 클릭): 상세 정보 고정/해제 토글!
+    if (!hasMouseMoved && clickDuration < 350) {
+      const rect = canvas.getBoundingClientRect();
+      if (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom) {
+        chartMousePos = getCanvasCoords(e);
+        updateCandleFromClientX(e.clientX, true);
+        isCandleDetailPinned = !isCandleDetailPinned;
+        drawChart(currentChartCode);
+        if (typeof showNativeToast === "function") {
+          showNativeToast(isCandleDetailPinned ? "📌 상세 정보가 고정되었습니다. (다시 클릭 시 해제)" : "🔓 상세 정보 고정이 해제되었습니다.");
+        }
+      }
+    }
   });
 
-  // --- 3. 모바일 터치 (두손가락 핀치 줌 / 한손가락 드래그 좌우 이동) ---
+  // --- 5. 모바일 터치 (핀치 줌 / 탭 고정 / 드래그 좌우 이동) ---
   canvas.addEventListener("touchstart", function(e) {
     if (e.touches.length === 2) {
       touchMode = "pinch";
@@ -4935,8 +4998,17 @@ function setupCanvasInteractions() {
     } else if (e.touches.length === 1) {
       touchMode = "pan";
       touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      touchStartTime = Date.now();
+      hasTouchMoved = false;
       touchStartPan = chartSettings.panOffset || 0;
-      updateCandleFromClientX(e.touches[0].clientX);
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      chartMousePos = {
+        x: (e.touches[0].clientX - rect.left) * scaleX,
+        y: (e.touches[0].clientY - rect.top) * scaleY
+      };
     }
   }, { passive: true });
 
@@ -4953,27 +5025,50 @@ function setupCanvasInteractions() {
         lastPinchDist = curDist;
       }
     } else if (e.touches.length === 1 && touchMode === "pan") {
-      if (e.cancelable) e.preventDefault();
       const curX = e.touches[0].clientX;
+      const curY = e.touches[0].clientY;
       const dx = curX - touchStartX;
-      const rect = canvas.getBoundingClientRect();
-      const padL = 14, padR = 76;
-      const chartW = canvas.width - padL - padR;
-      const candles = getActiveChartCandles();
-      const stepPixels = Math.max(3, (chartW / Math.max(1, candles.length)) * (rect.width / canvas.width));
-      const candlesMoved = Math.round(dx / stepPixels);
-      chartSettings.panOffset = touchStartPan + candlesMoved;
-      updateCandleFromClientX(curX);
-      drawChart(currentChartCode);
+      const dy = curY - touchStartY;
+      if (Math.abs(dx) > 6 || Math.abs(dy) > 6) {
+        hasTouchMoved = true;
+      }
+      if (hasTouchMoved) {
+        if (e.cancelable) e.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        const padL = 14, padR = 76;
+        const chartW = canvas.width - padL - padR;
+        const candles = getActiveChartCandles();
+        const stepPixels = Math.max(3, (chartW / Math.max(1, candles.length)) * (rect.width / canvas.width));
+        const candlesMoved = Math.round(dx / stepPixels);
+        chartSettings.panOffset = touchStartPan + candlesMoved;
+        isCandleDetailPinned = false;
+        updateCandleFromClientX(curX, true);
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        chartMousePos = {
+          x: (curX - rect.left) * scaleX,
+          y: (curY - rect.top) * scaleY
+        };
+        drawChart(currentChartCode);
+      }
     }
   }, { passive: false });
 
   canvas.addEventListener("touchend", function(e) {
+    if (touchMode === "pan" && !hasTouchMoved && (Date.now() - touchStartTime) < 350) {
+      isCandleDetailPinned = !isCandleDetailPinned;
+      updateCandleFromClientX(touchStartX, true);
+      drawChart(currentChartCode);
+      if (typeof showNativeToast === "function") {
+        showNativeToast(isCandleDetailPinned ? "📌 상세 정보가 고정되었습니다. (다시 탭 시 해제)" : "🔓 상세 정보 고정이 해제되었습니다.");
+      }
+    }
     if (e.touches.length === 0) {
       touchMode = "none";
     } else if (e.touches.length === 1) {
       touchMode = "pan";
       touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
       touchStartPan = chartSettings.panOffset || 0;
     }
   }, { passive: true });
@@ -5138,6 +5233,8 @@ function resetChartSettings() {
   chartSettings.showTargets = true;
   chartSettings.zoomOffset = 0;
   chartSettings.panOffset = 0;
+  isCandleDetailPinned = false;
+  chartMousePos = null;
   document.querySelectorAll("#chartDetailSettingsPanel .chart-btn").forEach(b => b.classList.remove("active"));
   const bTf = document.getElementById("tf-day"); if (bTf) bTf.classList.add("active");
   const bP = document.getElementById("cp-3m"); if (bP) bP.classList.add("active");
@@ -5403,33 +5500,66 @@ function drawChart(code) {
     const chgSign = diff >= 0 ? "+" : "";
 
     ctx.save();
-    const boxW = Math.min(520, chartW - 10);
-    const boxH = 50;
-    const boxX = padL + 6;
-    const boxY = padT + 6;
+    const boxW = Math.min(380, chartW - 12);
+    const boxH = 54;
 
-    // 반투명 고대비 딥네이비 배경 + 2px 시안 외곽선
-    ctx.fillStyle = "rgba(11, 19, 41, 0.95)";
-    ctx.strokeStyle = "#38bdf8";
-    ctx.lineWidth = 2;
+    // 마우스 위치 또는 선택 캔들 기준 동적 좌표 계산 (마우스 위치에 따라 따라다님)
+    const anchorX = (chartMousePos && chartMousePos.x !== undefined) ? chartMousePos.x : selX;
+    const anchorY = (chartMousePos && chartMousePos.y !== undefined) ? chartMousePos.y : selY;
+
+    let boxX = anchorX + 16;
+    let boxY = anchorY - 60;
+
+    // 우측 화면 밖으로 넘치면 마우스 좌측으로 반전
+    if (boxX + boxW > W - padR - 4) {
+      boxX = anchorX - boxW - 16;
+    }
+    if (boxX < padL + 4) {
+      boxX = padL + 4;
+    }
+    // 상단 화면 밖으로 넘치면 마우스 하단으로 반전
+    if (boxY < padT + 4) {
+      boxY = anchorY + 18;
+    }
+    // 하단 보조지표 영역 침범 방지
+    if (boxY + boxH > vTop - 10) {
+      boxY = vTop - boxH - 10;
+    }
+
+    // 배경: 고정 상태(골드 테두리 + 핀 뱃지) vs 자유 추적(시안 테두리)
+    ctx.fillStyle = isCandleDetailPinned ? "rgba(15, 23, 42, 0.96)" : "rgba(11, 19, 41, 0.94)";
+    ctx.strokeStyle = isCandleDetailPinned ? "#fbbf24" : "#38bdf8";
+    ctx.lineWidth = isCandleDetailPinned ? 2.2 : 1.8;
     ctx.setLineDash([]);
     ctx.fillRect(boxX, boxY, boxW, boxH);
     ctx.strokeRect(boxX, boxY, boxW, boxH);
 
-    // 1행: [날짜/오늘] 종가 및 등락률 (크고 선명한 15px 볼드, 흰색 + 레드/블루)
+    // 고정 상태 표시 뱃지 (우측 상단)
+    ctx.font = "bold 9.5px sans-serif";
+    ctx.textAlign = "right";
+    if (isCandleDetailPinned) {
+      ctx.fillStyle = "#fbbf24";
+      ctx.fillText("📌 고정됨 (클릭하여 해제)", boxX + boxW - 8, boxY + 16);
+    } else {
+      ctx.fillStyle = "#94a3b8";
+      ctx.fillText("💡 클릭하여 고정", boxX + boxW - 8, boxY + 16);
+    }
+    ctx.textAlign = "left";
+
+    // 1행: [날짜/오늘] 종가 및 등락률
     ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 15px sans-serif";
+    ctx.font = "bold 13px sans-serif";
     const titleTxt = `[📅 ${dayLabel}${scDate ? ' ' + scDate : ''}]  종가: `;
-    ctx.fillText(titleTxt, boxX + 10, boxY + 21);
+    ctx.fillText(titleTxt, boxX + 8, boxY + 20);
     const titleW = ctx.measureText(titleTxt).width;
 
     ctx.fillStyle = diff >= 0 ? "#ff4d4f" : "#60a5fa";
-    ctx.fillText(`${fmt(sc.c)}원 (${chgSign}${fmt(diff)}원, ${chgSign}${diffPct}%)`, boxX + 10 + titleW, boxY + 21);
+    ctx.fillText(`${fmt(sc.c)}원 (${chgSign}${diffPct}%)`, boxX + 8 + titleW, boxY + 20);
 
-    // 2행: 시가 / 고가 / 저가 / 거래량 (선명한 13px 볼드, 밝은 골드/화이트)
+    // 2행: 시가 / 고가 / 저가 / 거래량
     ctx.fillStyle = "#fbbf24";
-    ctx.font = "bold 13px sans-serif";
-    ctx.fillText(`시가 ${fmt(sc.o)}  |  고가 ${fmt(sc.h)}  |  저가 ${fmt(sc.l)}  |  거래량 ${fmt(sc.v || 0)}주`, boxX + 10, boxY + 41);
+    ctx.font = "bold 11px sans-serif";
+    ctx.fillText(`시가 ${fmt(sc.o)} | 고가 ${fmt(sc.h)} | 저가 ${fmt(sc.l)} | 량 ${fmt(sc.v || 0)}주`, boxX + 8, boxY + 41);
     ctx.restore();
   }
 
