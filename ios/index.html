@@ -6409,14 +6409,26 @@ window.onload = function() {
 // =========================================================================
 const APP_RELEASE_META = {
   appName: "메리츠 AI 주식",
-  buildDateStr: "2026-10-26 15:00",
-  buildTimestamp: 1792998000000,
-  buildSha: "b3cf5cd",
+  currentVersion: "4.5.0",
+  buildDateStr: "2026-10-26 (v4.5.0)",
   githubRepo: "OKHDEV/AI_TRADE",
-  defaultExeName: "메리츠_AI_주식_Setup.exe",
-  defaultApkName: "메리츠_AI_주식.apk",
-  defaultIpaName: "메리츠_AI_주식.ipa"
+  defaultExeName: "Meritz-AI-Stock.exe",
+  defaultSetupName: "Meritz-AI-Stock-Setup-v4.5.0.exe",
+  defaultApkName: "Meritz-AI-Stock-v4.5.0.apk",
+  defaultIpaName: "Meritz-AI-Stock-v4.5.0.ipa"
 };
+
+function compareSemver(v1, v2) {
+  const p1 = (v1 || "").replace(/^v/i, "").split(".").map(Number);
+  const p2 = (v2 || "").replace(/^v/i, "").split(".").map(Number);
+  for (let i = 0; i < Math.max(p1.length, p2.length); i++) {
+    const num1 = p1[i] || 0;
+    const num2 = p2[i] || 0;
+    if (num1 > num2) return 1;
+    if (num1 < num2) return -1;
+  }
+  return 0;
+}
 
 let latestRemoteUpdateInfo = null;
 let splashDismissTimer = null;
@@ -6575,13 +6587,13 @@ async function fetchRemoteCommitUniversal(repo) {
 async function checkAppUpdateFromGitHub(isManual = false) {
   try {
     if (isManual) {
-      showNativeToast("🔍 GitHub에서 최신 버전 확인 중...");
+      showNativeToast("🔍 GitHub에서 최신 릴리즈 버전 확인 중...");
     }
     initPlatformSettingsUi();
     const platform = getAppPlatformType();
 
-    // 🌐 순수 웹 브라우저, iOS 및 🖥️ Windows 데스크톱 시작 시 즉시 진입
-    if (platform === "WEB" || platform === "IOS" || (platform === "WINDOWS" && !isManual)) {
+    // 🌐 순수 웹 브라우저 (GitHub Pages) 환경 및 iOS
+    if (platform === "WEB" || platform === "IOS") {
       updateCheckFinished = true;
       window.isUpdatePendingInstall = false;
       window.isUpdateDownloading = false;
@@ -6591,166 +6603,99 @@ async function checkAppUpdateFromGitHub(isManual = false) {
       const splashStatus = document.getElementById("splashStatusText");
       if (splashStep) splashStep.textContent = "✅ 가동 준비 완료";
       if (splashStatus) {
-        splashStatus.textContent = (platform === "WINDOWS") ? "✅ Windows 전용 엔진 로드 완료" : (platform === "IOS" ? "✅ 최신 iOS 환경 가동 완료" : "✅ 최신 웹 환경 가동 완료");
+        splashStatus.textContent = (platform === "IOS") ? "✅ 최신 iOS 환경 가동 완료" : "✅ 최신 웹 환경 가동 완료";
         splashStatus.style.color = "#4ade80";
       }
       if (splashBar) splashBar.style.width = "100%";
       if (splashPct) splashPct.textContent = "100%";
-      setTimeout(() => { dismissSplashGracefully(); }, 250);
+      setTimeout(() => { dismissSplashGracefully(); }, 300);
       if (isManual) {
-        showNativeToast((platform === "WINDOWS") ? "🖥️ 현재 최신 Windows 정식 버전을 이용 중입니다." : (platform === "IOS" ? "🍎 현재 최신 iOS 버전을 이용 중입니다." : "🌐 현재 최신 웹 환경을 이용 중입니다."));
+        showNativeToast((platform === "IOS") ? "🍎 현재 최신 iOS 버전을 이용 중입니다." : "🌐 현재 최신 웹 환경을 이용 중입니다.");
       }
       return;
     }
 
     const repo = APP_RELEASE_META.githubRepo;
+    const splashBar = document.getElementById("splashProgressBar");
+    const splashPct = document.getElementById("splashPctCounter");
+    const splashStep = document.getElementById("splashStepText");
     const splashStatus = document.getElementById("splashStatusText");
-    const splash = document.getElementById("appSplashScreen");
 
-    const oldErrBox = document.getElementById("splashErrorActionBox");
-    if (oldErrBox) oldErrBox.remove();
+    if (splashStep) splashStep.textContent = "🔍 최신 릴리즈 점검";
+    if (splashStatus) splashStatus.textContent = "GitHub 최신 배포 버전 확인 중...";
 
-    // 🚀 통합 커밋 정보 조회 (Windows 데스크톱, Android 네이티브 모두 지원)
-    const commitInfo = await fetchRemoteCommitUniversal(repo);
-    if (!commitInfo || !commitInfo.sha) {
-      throw new Error("GitHub 최신 커밋 정보를 수신할 수 없습니다.");
+    let latestRelease = null;
+    if (window.pywebview && window.pywebview.api && window.pywebview.api.getLatestRelease) {
+      try {
+        const raw = await window.pywebview.api.getLatestRelease(repo);
+        if (raw) latestRelease = (typeof raw === 'string') ? JSON.parse(raw) : raw;
+      } catch(e) {}
     }
 
-    const fullSha = commitInfo.sha;
-    const commitSha = fullSha.substring(0, 7);
-    const dateStr = commitInfo.date && !isNaN(commitInfo.date.getTime()) ? formatDateKorean(commitInfo.date) : "방금 전 등록";
-    const targetFileName = (platform === "WINDOWS") ? APP_RELEASE_META.defaultExeName : APP_RELEASE_META.defaultApkName;
-
-    const directDlUrl = `https://raw.githubusercontent.com/${repo}/${fullSha}/${encodeURIComponent(targetFileName)}?t=${Date.now()}`;
-    const webBlobUrl = `https://github.com/${repo}/blob/${fullSha}/${encodeURIComponent(targetFileName)}`;
-
-    const foundUpdate = {
-      type: "commit",
-      platform: platform,
-      version: `Git (${commitSha})`,
-      sha: commitSha,
-      fullSha: fullSha,
-      dateStr: dateStr,
-      timestamp: commitInfo.timestamp || Date.now(),
-      downloadUrl: directDlUrl,
-      webUrl: webBlobUrl,
-      fileName: targetFileName,
-      notes: commitInfo.title ? `최신 내용: ${commitInfo.title}` : "GitHub 최신 배포 빌드"
-    };
-
-    latestRemoteUpdateInfo = foundUpdate;
-
-    // 설치된 커밋/시간 비교
-    let installedSha = "";
-    let installedTime = 0;
-    try {
-      installedSha = (localStorage.getItem("installed_git_commit_sha") || "").trim().toLowerCase();
-      installedTime = Number(localStorage.getItem("installed_git_commit_time") || "0");
-    } catch(e) {}
-
-    let needUpdate = false;
-    if (installedSha && (installedSha === fullSha.toLowerCase() || fullSha.toLowerCase().startsWith(installedSha) || installedSha.startsWith(commitSha.toLowerCase()))) {
-      needUpdate = false;
-    } else if (installedTime > 0 && commitInfo.timestamp > 0 && installedTime >= (commitInfo.timestamp - 5000)) {
-      needUpdate = false;
-    } else if (commitInfo.timestamp > 0 && APP_RELEASE_META.buildTimestamp > 0) {
-      if (commitInfo.timestamp > APP_RELEASE_META.buildTimestamp + 5000) {
-        needUpdate = true;
-      } else {
-        needUpdate = false;
-      }
-    } else {
-      needUpdate = (APP_RELEASE_META.buildSha !== commitSha && !fullSha.startsWith(APP_RELEASE_META.buildSha));
+    if (!latestRelease || !latestRelease.tag) {
+      try {
+        const res = await fetch(`https://api.github.com/repos/${repo}/releases/latest`);
+        if (res.ok) {
+          const d = await res.json();
+          let exeUrl = "";
+          for (const a of (d.assets || [])) {
+            if (a.name === "Meritz-AI-Stock.exe" || a.name === "메리츠_AI_주식.exe") {
+              exeUrl = a.browser_download_url;
+              break;
+            }
+          }
+          latestRelease = {
+            tag: d.tag_name || `v${APP_RELEASE_META.currentVersion}`,
+            name: d.name || "",
+            downloadUrl: exeUrl || `https://github.com/${repo}/releases/download/v${APP_RELEASE_META.currentVersion}/Meritz-AI-Stock.exe`,
+            publishedAt: d.published_at || ""
+          };
+        }
+      } catch(e) {}
     }
 
-    if (needUpdate) {
-      if (isManual) {
-        // 🚀 사용자가 종합설정에서 직접 확인 버튼을 눌렀을 때만 업데이트 화면 호출
-        stopLoadingAndForceUpdate(foundUpdate);
-      } else {
-        // ✅ 앱 시작 시 백그라운드 점검: 앱 진입을 차단하지 않고 정상적으로 메인 화면 진입
-        updateCheckFinished = true;
-        window.isUpdatePendingInstall = false;
-        window.isUpdateDownloading = false;
-        const splashBar = document.getElementById("splashProgressBar");
-        const splashPct = document.getElementById("splashPctCounter");
-        const splashStep = document.getElementById("splashStepText");
-        const splashStatus = document.getElementById("splashStatusText");
-        if (splashStep) splashStep.textContent = "✅ 가동 준비 완료";
-        if (splashStatus) {
-          splashStatus.textContent = "✅ 최신 버전 점검 완료";
-          splashStatus.style.color = "#4ade80";
-        }
-        if (splashBar) splashBar.style.width = "100%";
-        if (splashPct) splashPct.textContent = "100%";
-        setTimeout(() => { dismissSplashGracefully(); }, 350);
-        const badgeEl = document.getElementById("settingsVerBadge");
-        if (badgeEl) {
-          badgeEl.textContent = "새 버전 등록됨";
-          badgeEl.className = "badge badge-blue";
-        }
-        showNativeToast("✨ 새로운 버전이 등록되었습니다. 종합설정에서 확인하실 수 있습니다.");
-      }
+    const remoteTag = (latestRelease && latestRelease.tag) ? latestRelease.tag : `v${APP_RELEASE_META.currentVersion}`;
+    const needUpdate = compareSemver(remoteTag, APP_RELEASE_META.currentVersion) > 0;
+
+    if (needUpdate && latestRelease && latestRelease.downloadUrl) {
+      // 🚀 실제 최신 릴리즈(v4.5.1 등) 발견 -> 인트로에서 자동 다운로드 & 무인 재실행
+      const foundUpdate = {
+        platform: platform,
+        version: remoteTag,
+        dateStr: latestRelease.publishedAt ? formatDateKorean(new Date(latestRelease.publishedAt)) : "최신",
+        downloadUrl: latestRelease.downloadUrl,
+        notes: latestRelease.name || "최신 정식 릴리즈"
+      };
+      stopLoadingAndForceUpdate(foundUpdate);
     } else {
-      // ✅ 이미 최신 버전임이 확인됨
+      // ✅ 이미 최신 버전(v4.5.0)임! -> 인트로 완료 후 정상 진입
       updateCheckFinished = true;
       window.isUpdatePendingInstall = false;
-      const splashBar = document.getElementById("splashProgressBar");
-      const splashPct = document.getElementById("splashPctCounter");
-      const splashStep = document.getElementById("splashStepText");
-      if (splashStep) splashStep.textContent = "✅ 가동 준비 완료";
+      window.isUpdateDownloading = false;
+      if (splashStep) splashStep.textContent = "✅ 최신 버전 확인 완료";
       if (splashStatus) {
-        splashStatus.textContent = `✅ 최신 빌드 검증 완료 (${dateStr})`;
+        splashStatus.textContent = `✅ 최신 정식 버전 (${remoteTag}) 확인 완료`;
         splashStatus.style.color = "#4ade80";
-      }
-      const badgeEl = document.getElementById("settingsVerBadge");
-      if (badgeEl) {
-        badgeEl.textContent = "최신 빌드 (검증됨)";
-        badgeEl.className = "badge badge-green";
       }
       if (splashBar) splashBar.style.width = "100%";
       if (splashPct) splashPct.textContent = "100%";
-      setTimeout(() => { dismissSplashGracefully(); }, 600);
-      if (isManual) showManualUpdateDialog(foundUpdate, false);
+      setTimeout(() => { dismissSplashGracefully(); }, 350);
+      const badgeEl = document.getElementById("settingsVerBadge");
+      if (badgeEl) {
+        badgeEl.textContent = `최신 버전 (${remoteTag})`;
+        badgeEl.className = "badge badge-green";
+      }
+      if (isManual) {
+        showNativeToast(`🖥️ 현재 최신 정식 버전(${remoteTag})을 이용 중입니다.`);
+      }
     }
   } catch(err) {
-    console.warn("[UPDATE] checkAppUpdateFromGitHub catch:", err);
-    updateCheckFinished = false;
-    const splash = document.getElementById("appSplashScreen");
-    const splashStatus = document.getElementById("splashStatusText");
-    const splashStep = document.getElementById("splashStepText");
-    if (splashStep) splashStep.textContent = "⚠️ 연결 확인 중";
-    if (splashStatus) {
-      splashStatus.textContent = "⚠️ GitHub 최신 버전 연결 확인 대기 중...";
-      splashStatus.style.color = "#fbbf24";
-    }
-    if (splash && !document.getElementById("splashErrorActionBox")) {
-      const box = document.createElement("div");
-      box.id = "splashErrorActionBox";
-      box.style.marginTop = "14px";
-      box.style.display = "flex";
-      box.style.flexDirection = "column";
-      box.style.gap = "8px";
-      box.style.width = "220px";
-      box.innerHTML = `
-        <button class="btn btn-green" style="padding:10px; font-size:12px; font-weight:800; border-radius:10px;" onclick="checkAppUpdateFromGitHub(false)">
-          🔄 최신 버전 다시 확인
-        </button>
-        <button class="btn btn-dark" style="padding:8px; font-size:11px; border-radius:10px;" onclick="bypassOfflineMode()">
-          오프라인 모드로 실행
-        </button>
-      `;
-      splash.appendChild(box);
-    }
-    if (isManual) showNativeToast("인터넷 연결 상태를 확인해주세요.");
+    console.warn("[UPDATE] check error:", err);
+    updateCheckFinished = true;
+    window.isUpdatePendingInstall = false;
+    window.isUpdateDownloading = false;
+    dismissSplashGracefully();
   }
-}
-
-function bypassOfflineMode() {
-  updateCheckFinished = true;
-  isUpdateDownloading = false;
-  window.isUpdatePendingInstall = false;
-  dismissSplashGracefully();
 }
 
 function stopLoadingAndForceUpdate(foundUpdate) {
@@ -6764,8 +6709,6 @@ function stopLoadingAndForceUpdate(foundUpdate) {
 
   const splash = document.getElementById("appSplashScreen");
   const isWindows = foundUpdate.platform === "WINDOWS";
-  const targetName = isWindows ? APP_RELEASE_META.defaultExeName : APP_RELEASE_META.defaultApkName;
-  const platformTitle = isWindows ? "Windows Setup 최신 버전 안내" : "새 최신 버전 발견! 필수 업데이트";
 
   if (splash) {
     splash.style.opacity = "1";
@@ -6773,10 +6716,10 @@ function stopLoadingAndForceUpdate(foundUpdate) {
     splash.style.pointerEvents = "auto";
     splash.innerHTML = `
       <div style="font-size:52px; margin-bottom:12px; animation:bounce 1.2s infinite ease-in-out;">🚀</div>
-      <div style="font-size:19px; font-weight:900; color:#38bdf8; letter-spacing:-0.5px; margin-bottom:6px;">${platformTitle}</div>
+      <div style="font-size:19px; font-weight:900; color:#38bdf8; letter-spacing:-0.5px; margin-bottom:6px;">새 최신 버전(${foundUpdate.version}) 자동 업데이트</div>
       <div style="font-size:12.5px; color:#cbd5e1; margin-bottom:16px; line-height:1.5; max-width:320px;">
-        GitHub 최신 빌드 (<b>${foundUpdate.dateStr}</b>)가 등록되었습니다.<br>
-        <span style="color:#94a3b8; font-size:11.5px;">최신 기능과 안정성이 향상된 새 버전입니다.</span>
+        최신 빌드가 등록되어 자동으로 업데이트를 진행합니다.<br>
+        <span style="color:#34d399; font-size:11.5px; font-weight:800;">다운로드 완료 후 자동으로 재시작됩니다.</span>
       </div>
 
       <div style="width:260px; height:8px; background:#1e293b; border-radius:10px; overflow:hidden; margin-bottom:8px; box-shadow:0 0 14px rgba(56,189,248,0.5);">
@@ -6784,26 +6727,23 @@ function stopLoadingAndForceUpdate(foundUpdate) {
       </div>
 
       <div id="forceUpdateProgressTxt" style="font-size:13.5px; color:#38bdf8; font-weight:900; min-height:22px; margin-bottom:3px;">
-        ⬇️ 업데이트 준비 완료
+        ⬇️ 업데이트 다운로드 중...
       </div>
       <div id="forceUpdateKbTxt" style="font-size:11px; color:#94a3b8; margin-bottom:14px;">
-        대상 파일: ${targetName}
+        버전: ${foundUpdate.version}
       </div>
 
       <div id="forceUpdateActionArea" style="width:100%; max-width:280px; display:flex; flex-direction:column; gap:8px;">
-        ${isWindows ? `
-          <button class="btn btn-green" style="padding:11px 16px; font-size:12.5px; font-weight:800; border-radius:10px; width:100%; box-shadow:0 4px 15px rgba(34,197,94,0.3);" onclick="triggerUniversalDownloadAndInstall()">
-            ⬇️ 최신 Setup 설치파일 다운로드
-          </button>
-        ` : ''}
-        <button class="btn btn-meritz" style="padding:10px 16px; font-size:12px; font-weight:800; border-radius:10px; width:100%;" onclick="openDownloadInBrowserFallback('${foundUpdate.webUrl || foundUpdate.downloadUrl}')">
-          🌐 브라우저에서 직접 받기
-        </button>
         <button class="btn btn-dark" style="padding:9px 14px; font-size:11.5px; font-weight:700; border-radius:10px; width:100%; border:1px solid #475569;" onclick="skipOrFinishUpdate()">
           ✨ 닫기 및 앱 바로 시작하기 (건너뛰기)
         </button>
       </div>
     `;
+  }
+
+  // Windows 데스크톱인 경우 즉시 백그라운드 다운로드 및 자동 재실행 트리거!
+  if (isWindows && window.pywebview && window.pywebview.api && window.pywebview.api.downloadAndInstallExe) {
+    window.pywebview.api.downloadAndInstallExe(foundUpdate.downloadUrl);
   }
 }
 

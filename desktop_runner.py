@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-메리츠 AI 주식 트레이더 - Windows 데스크톱 네이티브 GUI 실행 엔진
+메리츠 AI 주식 트레이더 - Windows 데스크톱 네이티브 GUI 실행 엔진 & 무인 자동 업데이트
 """
 import os
 import sys
@@ -34,6 +34,48 @@ class DesktopApi:
             "exePath": target_exe
         })
 
+    def getLatestRelease(self, repo):
+        try:
+            req = urllib.request.Request(
+                f"https://api.github.com/repos/{repo}/releases/latest",
+                headers={
+                    "User-Agent": "Ai-Trade-Marits-Desktop/4.5",
+                    "Accept": "application/vnd.github.v3+json"
+                }
+            )
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                data = json.loads(resp.read().decode('utf-8'))
+                tag = data.get("tag_name", "")
+                assets = data.get("assets", [])
+
+                exe_url = ""
+                for a in assets:
+                    name = a.get("name", "")
+                    if name in ["Meritz-AI-Stock.exe", "메리츠_AI_주식.exe"]:
+                        exe_url = a.get("browser_download_url")
+                        break
+                if not exe_url:
+                    for a in assets:
+                        name = a.get("name", "")
+                        if name.endswith(".exe") and "setup" not in name.lower():
+                            exe_url = a.get("browser_download_url")
+                            break
+                if not exe_url:
+                    for a in assets:
+                        if a.get("name", "").endswith(".exe"):
+                            exe_url = a.get("browser_download_url")
+                            break
+
+                return json.dumps({
+                    "tag": tag,
+                    "name": data.get("name", ""),
+                    "body": data.get("body", ""),
+                    "downloadUrl": exe_url,
+                    "publishedAt": data.get("published_at", "")
+                })
+        except Exception:
+            return ""
+
     def getRemoteCommitInfo(self, repo):
         try:
             req = urllib.request.Request(
@@ -58,12 +100,12 @@ class DesktopApi:
 
     def downloadAndInstallExe(self, download_url):
         """
-        Setup 설치 파일을 임시 디렉터리에 다운로드한 후 독립 실행 마법사로 구동합니다.
-        (절대 현재 실행 중인 메리츠_AI_주식.exe를 Setup.exe로 덮어쓰지 않습니다!)
+        최신 실행 파일(메리츠_AI_주식.exe)을 다운로드하여 배치 파일을 통해 현재 앱을 덮어쓰고 무인 자동 재실행
+        (별도 Setup 마법사를 띄우지 않고 100% 무인 자동 재시작)
         """
         try:
             temp_dir = tempfile.gettempdir()
-            setup_installer = os.path.join(temp_dir, "메리츠_AI_주식_Setup.exe")
+            new_exe = os.path.join(temp_dir, "meritz_ai_stock_new.exe")
             req = urllib.request.Request(
                 download_url,
                 headers={"User-Agent": "Ai-Trade-Marits-Desktop/4.5"}
@@ -73,7 +115,7 @@ class DesktopApi:
                 total_size = int(total_len) if total_len else 0
                 downloaded = 0
                 block_size = 65536
-                with open(setup_installer, "wb") as f:
+                with open(new_exe, "wb") as f:
                     while True:
                         chunk = resp.read(block_size)
                         if not chunk:
@@ -87,13 +129,33 @@ class DesktopApi:
                             except Exception:
                                 pass
 
-            if not os.path.isfile(setup_installer) or os.path.getsize(setup_installer) < 500000:
-                return json.dumps({"ok": False, "msg": "다운로드된 설치 파일 크기가 올바르지 않습니다."})
+            if not os.path.isfile(new_exe) or os.path.getsize(new_exe) < 500000:
+                return json.dumps({"ok": False, "msg": "다운로드된 파일 크기가 올바르지 않습니다."})
 
-            # Setup 설치 마법사 독립 실행
-            subprocess.Popen([setup_installer], shell=True)
-            if self._window:
-                self._window.destroy()
+            target_exe = sys.executable if getattr(sys, 'frozen', False) else os.path.abspath(sys.argv[0])
+            bat_path = os.path.join(temp_dir, "meritz_auto_restart.bat")
+            bat_content = f"""@echo off
+chcp 65001 > nul
+timeout /t 1 /nobreak > nul
+:retry
+move /y "{new_exe}" "{target_exe}" > nul 2>&1
+if errorlevel 1 (
+    timeout /t 1 /nobreak > nul
+    goto retry
+)
+start "" "{target_exe}"
+del "%~f0"
+"""
+            with open(bat_path, "w", encoding="cp949") as f:
+                f.write(bat_content)
+
+            DETACHED_PROCESS = 0x00000008
+            CREATE_NO_WINDOW = 0x08000000
+            subprocess.Popen(
+                ["cmd.exe", "/c", bat_path],
+                creationflags=DETACHED_PROCESS | CREATE_NO_WINDOW,
+                close_fds=True
+            )
             os._exit(0)
             return json.dumps({"ok": True})
         except Exception as e:
