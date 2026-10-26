@@ -1541,12 +1541,13 @@
             <div style="font-size: 11px; color: var(--sub);">체결 및 신호 발생 시 재생할 음색 선택</div>
           </div>
           <select id="selPrefsSoundType" onchange="setSoundType(this.value)" style="background: #1e293b; color: #f8fafc; border: 1px solid #334155; border-radius: 6px; padding: 5px 8px; font-size: 12px; font-weight: 700; outline: none; cursor: pointer;">
-            <option value="chime">🔔 맑은 차임벨 (기본)</option>
-            <option value="arcade">👾 아케이드 8비트 레트로</option>
-            <option value="digital">📟 디지털 비프 (트레이딩룸)</option>
-            <option value="marimba">🪵 마림바 어쿠스틱</option>
-            <option value="crystal">✨ 크리스탈 글래스 벨</option>
-            <option value="laser">⚡ SF 퓨처리스틱 레이저</option>
+            <option value="hts_fill">📈 HTS 클래식 체결음 (찰칵 딩동 - 추천)</option>
+            <option value="meritz_mts">🔔 메리츠 스마트 MTS (크리스프 벨)</option>
+            <option value="vip_gold">✨ 증권사 VIP 프리미엄 (골드 듀얼벨)</option>
+            <option value="bloomberg">📟 블룸버그 트레이딩룸 (기관 체결 펄스)</option>
+            <option value="exchange_bell">🏛️ 거래소 체결 벨 (월스트리트 브라스)</option>
+            <option value="cash_register">💰 캐시 레지스터 체결 (수익 실현 틴)</option>
+            <option value="stealth_tick">🎧 미니멀 스텔스 (클린 틱)</option>
           </select>
         </div>
 
@@ -2700,6 +2701,7 @@ function initMarketData() {
       rev.push(roundTick(cur));
     }
     rev.reverse();
+    const today = new Date();
     for (let i = 0; i < rev.length; i++) {
       const c = rev[i];
       const prev = i > 0 ? rev[i - 1] : c;
@@ -2707,7 +2709,16 @@ function initMarketData() {
       const h = roundTick(Math.max(o, c) * (1 + Math.abs(Math.sin(i * 2.1)) * 0.019));
       const l = roundTick(Math.min(o, c) * (1 - Math.abs(Math.cos(i * 1.9)) * 0.017));
       const v = Math.round((300000 + (seed % 900000)) * (c > o * 1.02 ? 2.2 : 1.0));
-      candles.push({ o, h, l, c, v });
+      const diffTradingDays = (rev.length - 1 - i);
+      const d = new Date(today);
+      d.setDate(today.getDate() - Math.floor(diffTradingDays * 1.45));
+      if (d.getDay() === 0) d.setDate(d.getDate() - 2);
+      else if (d.getDay() === 6) d.setDate(d.getDate() - 1);
+      const yy = String(d.getFullYear()).slice(-2);
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+      const date = `${yy}/${mm}/${dd}`;
+      candles.push({ o, h, l, c, v, date });
     }
     dailyCandles[st.code] = candles;
   });
@@ -5302,6 +5313,28 @@ function drawBollingerBands(ctx, candles, period, mult, padL, stepX, yPrice) {
   ctx.restore();
 }
 
+function getCandleDateLabel(c, idx, total) {
+  if (c && c.date) {
+    if (c.date.includes("/") || c.date.includes("~")) return c.date;
+    const clean = String(c.date).replace(/[^0-9]/g, "");
+    if (clean.length === 8) {
+      return `${clean.substring(2, 4)}/${clean.substring(4, 6)}/${clean.substring(6, 8)}`;
+    }
+    if (clean.length === 6) {
+      return `${clean.substring(0, 2)}/${clean.substring(2, 4)}/${clean.substring(4, 6)}`;
+    }
+  }
+  const diffDays = (total && idx !== undefined) ? (total - 1 - idx) : 0;
+  const d = new Date();
+  d.setDate(d.getDate() - Math.floor(diffDays * 1.45));
+  if (d.getDay() === 0) d.setDate(d.getDate() - 2);
+  else if (d.getDay() === 6) d.setDate(d.getDate() - 1);
+  const yy = String(d.getFullYear()).slice(-2);
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yy}/${mm}/${dd}`;
+}
+
 function drawChart(code) {
   currentChartCode = code;
   syncSingleStockQuote(code);
@@ -5332,10 +5365,8 @@ function drawChart(code) {
     const cls = isUp ? "up-txt" : "down-txt";
     const chgSign = isUp ? "+" : "";
     const isToday = (selectedCandleIdx === candles.length - 1);
-    let dayLabel = "일봉";
-    if (sc.isWeek) dayLabel = "주봉 (주간)";
-    else if (sc.isMonth) dayLabel = "월봉 (월간)";
-    else dayLabel = isToday ? "오늘 (실시간 KRX)" : `${candles.length - 1 - selectedCandleIdx}영업일 전`;
+    const curDateStr = getCandleDateLabel(sc, selectedCandleIdx, candles.length);
+    let dayLabel = `${curDateStr}${isToday ? " (실시간 KRX)" : ""}`;
 
     detailBar.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-bottom:5px; flex-wrap:wrap; gap:6px;">
@@ -5478,8 +5509,8 @@ function drawChart(code) {
 
     // 차트 좌상단 오버레이 상세 박스 (고대비 대형 2단 HUD 카드)
     const isToday = (selectedCandleIdx === candles.length - 1);
-    const dayLabel = isToday ? "오늘" : `${candles.length - 1 - selectedCandleIdx}일전`;
-    const scDate = sc.date ? (sc.date.length === 8 ? `${sc.date.substring(4,6)}/${sc.date.substring(6,8)}` : (sc.isWeek && sc.date.includes("~") ? sc.date.split("~")[0] : sc.date)) : (isToday ? "오늘" : `D-${candles.length - 1 - selectedCandleIdx}`);
+    const scDate = getCandleDateLabel(sc, selectedCandleIdx, candles.length);
+    const dayLabel = scDate;
 
     // 하단 선택 캔들 날짜 뱃지 (날짜 표시 켜짐 시)
     if (chartSettings.showDates && scDate) {
@@ -5549,7 +5580,7 @@ function drawChart(code) {
     // 1행: [날짜/오늘] 종가 및 등락률
     ctx.fillStyle = "#ffffff";
     ctx.font = "bold 13px sans-serif";
-    const titleTxt = `[📅 ${dayLabel}${scDate ? ' ' + scDate : ''}]  종가: `;
+    const titleTxt = `[📅 ${scDate}]  종가: `;
     ctx.fillText(titleTxt, boxX + 8, boxY + 20);
     const titleW = ctx.measureText(titleTxt).width;
 
@@ -5593,18 +5624,7 @@ function drawChart(code) {
       const c = candles[i];
       if (!c) continue;
       const x = padL + i * stepX + stepX / 2;
-      let label = "";
-      if (c.date) {
-        if (c.date.length === 8) {
-          label = `${c.date.substring(4,6)}/${c.date.substring(6,8)}`;
-        } else if (c.isWeek && c.date.includes("~")) {
-          label = c.date.split("~")[0];
-        } else {
-          label = c.date;
-        }
-      } else {
-        label = `D-${candles.length - 1 - i}`;
-      }
+      const label = getCandleDateLabel(c, i, candles.length);
       ctx.fillText(label, x, vTop - 4);
       ctx.strokeStyle = "rgba(148, 163, 184, 0.2)";
       ctx.lineWidth = 1;
@@ -5617,7 +5637,7 @@ function drawChart(code) {
     if (lastIdx > 0 && (lastIdx % interval) > (interval / 2)) {
       const lc = candles[lastIdx];
       const lx = padL + lastIdx * stepX + stepX / 2;
-      let lLabel = lc.date ? (lc.date.length === 8 ? `${lc.date.substring(4,6)}/${lc.date.substring(6,8)}` : (lc.isWeek && lc.date.includes("~") ? lc.date.split("~")[0] : lc.date)) : "오늘";
+      const lLabel = getCandleDateLabel(lc, lastIdx, candles.length);
       ctx.fillText(lLabel, Math.min(W - padR - 16, lx), vTop - 4);
     }
     ctx.restore();
@@ -7629,7 +7649,7 @@ const DEFAULT_USER_PREFS = {
   accent: "red", // red, blue, green, purple, gold
   priceMode: "kr", // kr, global
   soundEnabled: true,
-  soundType: "chime", // chime, arcade, digital, marimba, crystal, laser
+  soundType: "hts_fill", // chime, arcade, digital, marimba, crystal, laser
   hapticEnabled: true,
   tickFlash: true,
   fontScale: "normal" // small, normal, large
@@ -7836,12 +7856,13 @@ function setSoundType(type) {
   saveUserPrefs();
   playTradingSound('buy');
   const names = {
-    chime: "맑은 차임벨",
-    arcade: "아케이드 8비트 레트로",
-    digital: "디지털 비프",
-    marimba: "마림바 어쿠스틱",
-    crystal: "크리스탈 글래스 벨",
-    laser: "SF 퓨처리스틱 레이저"
+    hts_fill: "HTS 클래식 체결음 (찰칵 딩동)",
+    meritz_mts: "메리츠 스마트 MTS (크리스프 벨)",
+    vip_gold: "증권사 VIP 프리미엄 (골드 듀얼벨)",
+    bloomberg: "블룸버그 트레이딩룸 (기관 체결 펄스)",
+    exchange_bell: "거래소 체결 벨 (월스트리트 브라스)",
+    cash_register: "캐시 레지스터 체결 (수익 실현 틴)",
+    stealth_tick: "미니멀 스텔스 (클린 틱)"
   };
   showNativeToast(`🎵 효과음이 [${names[type] || type}](으)로 설정되었습니다.`);
 }
@@ -7853,110 +7874,134 @@ function playTradingSound(type) {
     if (!AudioCtx) return;
     const ctx = new AudioCtx();
     const now = ctx.currentTime;
-    const st = userPrefs.soundType || 'chime';
+    const st = userPrefs.soundType || 'hts_fill';
 
-    if (st === 'arcade') {
+    if (st === 'hts_fill') {
+      // 📈 HTS 클래식 체결음: 실제 증권사 HTS의 '체결 찰칵 딩동'
+      const oscClick = ctx.createOscillator();
+      const gainClick = ctx.createGain();
+      oscClick.type = 'triangle';
+      oscClick.frequency.setValueAtTime(1400, now);
+      oscClick.frequency.exponentialRampToValueAtTime(300, now + 0.02);
+      gainClick.gain.setValueAtTime(0.22, now);
+      gainClick.gain.exponentialRampToValueAtTime(0.001, now + 0.025);
+      oscClick.connect(gainClick);
+      gainClick.connect(ctx.destination);
+      oscClick.start(now);
+      oscClick.stop(now + 0.025);
+
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.type = 'square';
+      osc.type = 'sine';
       osc.connect(gain);
       gain.connect(ctx.destination);
-      if (type === 'buy') {
-        osc.frequency.setValueAtTime(392, now);
-        osc.frequency.setValueAtTime(523.25, now + 0.05);
-        osc.frequency.setValueAtTime(659.25, now + 0.10);
-        osc.frequency.setValueAtTime(1046.5, now + 0.15);
-      } else {
-        osc.frequency.setValueAtTime(587.33, now);
-        osc.frequency.setValueAtTime(880, now + 0.08);
-      }
-      gain.gain.setValueAtTime(0.12, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
-      osc.start(now);
-      osc.stop(now + 0.32);
-    } else if (st === 'digital') {
+      osc.frequency.setValueAtTime(659.25, now + 0.02);
+      osc.frequency.setValueAtTime(880.00, now + 0.08);
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.setValueAtTime(0.24, now + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+      osc.start(now + 0.02);
+      osc.stop(now + 0.38);
+    } else if (st === 'meritz_mts') {
+      // 🔔 메리츠 스마트 MTS: 크리스프 듀얼 오버톤 체결벨 (880Hz + 1760Hz)
+      const osc1 = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc1.type = 'sine';
+      osc2.type = 'sine';
+      osc1.frequency.setValueAtTime(880, now);
+      osc2.frequency.setValueAtTime(1760, now);
+      osc1.connect(gain);
+      osc2.connect(gain);
+      gain.connect(ctx.destination);
+      gain.gain.setValueAtTime(0.22, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+      osc1.start(now);
+      osc2.start(now);
+      osc1.stop(now + 0.35);
+      osc2.stop(now + 0.35);
+    } else if (st === 'vip_gold') {
+      // ✨ 증권사 VIP 프리미엄: 풍성하고 따뜻한 D5/A5 골드 화음 (587Hz & 880Hz)
+      const osc1 = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc1.type = 'sine';
+      osc2.type = 'sine';
+      osc1.frequency.setValueAtTime(587.33, now);
+      osc2.frequency.setValueAtTime(880.00, now);
+      osc1.connect(gain);
+      osc2.connect(gain);
+      gain.connect(ctx.destination);
+      gain.gain.setValueAtTime(0.18, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+      osc1.start(now);
+      osc2.start(now);
+      osc1.stop(now + 0.45);
+      osc2.stop(now + 0.45);
+    } else if (st === 'bloomberg') {
+      // 📟 블룸버그 트레이딩룸: 기관용 초단타 체결 듀얼 펄스 (1046Hz & 1318Hz, 각 35ms)
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sine';
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.frequency.setValueAtTime(1046.5, now);
-      if (type === 'buy') {
-        osc.frequency.setValueAtTime(1318.5, now + 0.06);
-      }
-      gain.gain.setValueAtTime(0.16, now);
-      gain.gain.setValueAtTime(0.01, now + 0.05);
-      gain.gain.setValueAtTime(0.16, now + 0.06);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+      osc.frequency.setValueAtTime(1318.5, now + 0.05);
+      gain.gain.setValueAtTime(0.20, now);
+      gain.gain.setValueAtTime(0.01, now + 0.04);
+      gain.gain.setValueAtTime(0.20, now + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
       osc.start(now);
-      osc.stop(now + 0.22);
-    } else if (st === 'marimba') {
+      osc.stop(now + 0.18);
+    } else if (st === 'exchange_bell') {
+      // 🏛️ 거래소 체결 벨: 월스트리트 플로어 브라스 벨 (440Hz + 880Hz + 1320Hz)
+      const osc1 = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc1.type = 'sine';
+      osc2.type = 'triangle';
+      osc1.frequency.setValueAtTime(440, now);
+      osc2.frequency.setValueAtTime(880, now);
+      osc1.connect(gain);
+      osc2.connect(gain);
+      gain.connect(ctx.destination);
+      gain.gain.setValueAtTime(0.22, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.50);
+      osc1.start(now);
+      osc2.start(now);
+      osc1.stop(now + 0.50);
+      osc2.stop(now + 0.50);
+    } else if (st === 'cash_register') {
+      // 💰 캐시 레지스터 체결: 수익 실현 메탈릭 틴 (1568Hz + 2093Hz)
+      const osc1 = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc1.type = 'triangle';
+      osc2.type = 'sine';
+      osc1.frequency.setValueAtTime(1567.98, now);
+      osc2.frequency.setValueAtTime(2093.00, now);
+      osc1.connect(gain);
+      osc2.connect(gain);
+      gain.connect(ctx.destination);
+      gain.gain.setValueAtTime(0.18, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+      osc1.start(now);
+      osc2.start(now);
+      osc1.stop(now + 0.32);
+      osc2.stop(now + 0.32);
+    } else {
+      // 🎧 미니멀 스텔스: 묵직하고 깔끔한 250Hz 무소음 틱
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sine';
       osc.connect(gain);
       gain.connect(ctx.destination);
-      const baseFreq = type === 'buy' ? 523.25 : 440;
-      osc.frequency.setValueAtTime(baseFreq, now);
+      osc.frequency.setValueAtTime(320, now);
+      osc.frequency.exponentialRampToValueAtTime(140, now + 0.05);
       gain.gain.setValueAtTime(0.24, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
       osc.start(now);
-      osc.stop(now + 0.28);
-    } else if (st === 'crystal') {
-      const osc1 = ctx.createOscillator();
-      const osc2 = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc1.type = 'sine';
-      osc2.type = 'sine';
-      osc1.frequency.setValueAtTime(1318.5, now);
-      osc2.frequency.setValueAtTime(1760.0, now);
-      if (type === 'buy') {
-        osc1.frequency.exponentialRampToValueAtTime(1567.98, now + 0.12);
-        osc2.frequency.exponentialRampToValueAtTime(2093.0, now + 0.12);
-      }
-      osc1.connect(gain);
-      osc2.connect(gain);
-      gain.connect(ctx.destination);
-      gain.gain.setValueAtTime(0.12, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
-      osc1.start(now);
-      osc2.start(now);
-      osc1.stop(now + 0.45);
-      osc2.stop(now + 0.45);
-    } else if (st === 'laser') {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sawtooth';
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.frequency.setValueAtTime(type === 'buy' ? 1400 : 900, now);
-      osc.frequency.exponentialRampToValueAtTime(type === 'buy' ? 350 : 200, now + 0.20);
-      gain.gain.setValueAtTime(0.12, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
-      osc.start(now);
-      osc.stop(now + 0.25);
-    } else {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      if (type === 'buy') {
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(523.25, now);
-        osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.08);
-        osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.16);
-        gain.gain.setValueAtTime(0.18, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
-        osc.start(now);
-        osc.stop(now + 0.35);
-      } else {
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(880, now);
-        gain.gain.setValueAtTime(0.18, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-        osc.start(now);
-        osc.stop(now + 0.4);
-      }
+      osc.stop(now + 0.06);
     }
   } catch(e) {}
 }
