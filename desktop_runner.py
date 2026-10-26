@@ -9,6 +9,7 @@ import json
 import urllib.request
 import subprocess
 import webbrowser
+import shutil
 import webview
 
 def get_base_dir():
@@ -35,7 +36,7 @@ class DesktopApi:
         })
 
     def getRemoteCommitInfo(self, repo):
-        # 1) GitHub API (가장 정확하고 빠른 최신 커밋 조회)
+        # 1) GitHub API
         try:
             req = urllib.request.Request(
                 f"https://api.github.com/repos/{repo}/commits?per_page=1",
@@ -64,7 +65,6 @@ class DesktopApi:
             )
             with urllib.request.urlopen(req, timeout=5) as response:
                 content = response.read().decode('utf-8')
-                import re
                 m_sha = re.search(r'Commit/([0-9a-f]{40})', content, re.I)
                 m_date = re.search(r'<updated>([^<]+)</updated>', content)
                 m_title = re.search(r'<title>([^<]+)</title>', content)
@@ -78,11 +78,11 @@ class DesktopApi:
 
     def downloadAndInstallExe(self, download_url):
         """
-        최신 Windows EXE를 다운로드 후 배치 파일을 구동하여 현재 프로세스 종료 후 파일 교체 및 자동 재실행
+        Windows 최신 Setup 설치 파일을 다운로드하여 실행 (기존 설치 앱을 임의로 덮어쓰지 않고 안전하게 Setup 마법사 구동)
         """
         try:
             temp_dir = tempfile.gettempdir()
-            new_exe = os.path.join(temp_dir, "meritz_ai_stock_new.exe")
+            setup_installer = os.path.join(temp_dir, "메리츠_AI_주식_Setup.exe")
             req = urllib.request.Request(
                 download_url,
                 headers={"User-Agent": "Ai-Trade-Marits-Desktop/4.5"}
@@ -92,7 +92,7 @@ class DesktopApi:
                 total_size = int(total_len) if total_len else 0
                 downloaded = 0
                 block_size = 65536
-                with open(new_exe, "wb") as f:
+                with open(setup_installer, "wb") as f:
                     while True:
                         chunk = resp.read(block_size)
                         if not chunk:
@@ -106,21 +106,14 @@ class DesktopApi:
                             except Exception:
                                 pass
 
-            if not os.path.isfile(new_exe) or os.path.getsize(new_exe) < 500000:
-                return json.dumps({"ok": False, "msg": "다운로드된 파일 크기가 올바르지 않습니다."})
+            if not os.path.isfile(setup_installer) or os.path.getsize(setup_installer) < 500000:
+                return json.dumps({"ok": False, "msg": "다운로드된 설치 파일 크기가 올바르지 않습니다."})
 
-            target_exe = sys.executable if getattr(sys, 'frozen', False) else os.path.abspath(sys.argv[0])
             bat_path = os.path.join(temp_dir, "meritz_update_restart.bat")
             bat_content = f"""@echo off
 chcp 65001 > nul
 timeout /t 1 /nobreak > nul
-:retry
-move /y "{new_exe}" "{target_exe}" > nul 2>&1
-if errorlevel 1 (
-    timeout /t 1 /nobreak > nul
-    goto retry
-)
-start "" "{target_exe}"
+start "" "{setup_installer}"
 del "%~f0"
 """
             with open(bat_path, "w", encoding="cp949") as f:
@@ -168,7 +161,7 @@ def main():
     if html_file and os.path.isfile(html_file):
         target_url = "file:///" + os.path.abspath(html_file).replace("\\", "/")
     else:
-        target_url = "https://okhdev.github.io/AI_TRADE/web/index.html?v=4.4.2"
+        target_url = "https://okhdev.github.io/AI_TRADE/web/index.html?v=4.5.0"
 
     # WebView2 사용자 데이터 디렉터리 설정 (독립 격리)
     data_dir = os.path.join(tempfile.gettempdir(), "meritz_ai_stock_wv2")

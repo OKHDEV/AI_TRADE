@@ -6409,9 +6409,9 @@ window.onload = function() {
 // =========================================================================
 const APP_RELEASE_META = {
   appName: "메리츠 AI 주식",
-  buildDateStr: "2026-10-26 14:15",
-  buildTimestamp: 1792991700000,
-  buildSha: "42eaccc",
+  buildDateStr: "2026-10-26 15:00",
+  buildTimestamp: 1792998000000,
+  buildSha: "b3cf5cd",
   githubRepo: "OKHDEV/AI_TRADE",
   defaultExeName: "메리츠_AI_주식_Setup.exe",
   defaultApkName: "메리츠_AI_주식.apk",
@@ -6664,8 +6664,33 @@ async function checkAppUpdateFromGitHub(isManual = false) {
     }
 
     if (needUpdate) {
-      // 🚀 최신 배포 버전 감지됨 -> 즉시 앱 진입 차단 & 강제 업데이트 화면 고정!
-      stopLoadingAndForceUpdate(foundUpdate);
+      if (isManual) {
+        // 🚀 사용자가 종합설정에서 직접 확인 버튼을 눌렀을 때만 업데이트 화면 호출
+        stopLoadingAndForceUpdate(foundUpdate);
+      } else {
+        // ✅ 앱 시작 시 백그라운드 점검: 앱 진입을 차단하지 않고 정상적으로 메인 화면 진입
+        updateCheckFinished = true;
+        window.isUpdatePendingInstall = false;
+        window.isUpdateDownloading = false;
+        const splashBar = document.getElementById("splashProgressBar");
+        const splashPct = document.getElementById("splashPctCounter");
+        const splashStep = document.getElementById("splashStepText");
+        const splashStatus = document.getElementById("splashStatusText");
+        if (splashStep) splashStep.textContent = "✅ 가동 준비 완료";
+        if (splashStatus) {
+          splashStatus.textContent = "✅ 최신 버전 점검 완료";
+          splashStatus.style.color = "#4ade80";
+        }
+        if (splashBar) splashBar.style.width = "100%";
+        if (splashPct) splashPct.textContent = "100%";
+        setTimeout(() => { dismissSplashGracefully(); }, 350);
+        const badgeEl = document.getElementById("settingsVerBadge");
+        if (badgeEl) {
+          badgeEl.textContent = "새 버전 등록됨";
+          badgeEl.className = "badge badge-blue";
+        }
+        showNativeToast("✨ 새로운 버전이 등록되었습니다. 종합설정에서 확인하실 수 있습니다.");
+      }
     } else {
       // ✅ 이미 최신 버전임이 확인됨
       updateCheckFinished = true;
@@ -6740,7 +6765,7 @@ function stopLoadingAndForceUpdate(foundUpdate) {
   const splash = document.getElementById("appSplashScreen");
   const isWindows = foundUpdate.platform === "WINDOWS";
   const targetName = isWindows ? APP_RELEASE_META.defaultExeName : APP_RELEASE_META.defaultApkName;
-  const platformTitle = isWindows ? "Windows EXE 최신 버전 필수 업데이트" : "새 최신 버전 발견! 필수 업데이트";
+  const platformTitle = isWindows ? "Windows Setup 최신 버전 안내" : "새 최신 버전 발견! 필수 업데이트";
 
   if (splash) {
     splash.style.opacity = "1";
@@ -6751,8 +6776,7 @@ function stopLoadingAndForceUpdate(foundUpdate) {
       <div style="font-size:19px; font-weight:900; color:#38bdf8; letter-spacing:-0.5px; margin-bottom:6px;">${platformTitle}</div>
       <div style="font-size:12.5px; color:#cbd5e1; margin-bottom:16px; line-height:1.5; max-width:320px;">
         GitHub 최신 빌드 (<b>${foundUpdate.dateStr}</b>)가 등록되었습니다.<br>
-        <span style="color:#fbbf24; font-size:11.5px;">${foundUpdate.notes || ""}</span><br>
-        <b style="color:#f87171;">최신 버전 적용 전까지 앱 진입이 차단됩니다.</b>
+        <span style="color:#94a3b8; font-size:11.5px;">최신 기능과 안정성이 향상된 새 버전입니다.</span>
       </div>
 
       <div style="width:260px; height:8px; background:#1e293b; border-radius:10px; overflow:hidden; margin-bottom:8px; box-shadow:0 0 14px rgba(56,189,248,0.5);">
@@ -6760,7 +6784,7 @@ function stopLoadingAndForceUpdate(foundUpdate) {
       </div>
 
       <div id="forceUpdateProgressTxt" style="font-size:13.5px; color:#38bdf8; font-weight:900; min-height:22px; margin-bottom:3px;">
-        ⬇️ 업데이트 준비 중...
+        ⬇️ 업데이트 준비 완료
       </div>
       <div id="forceUpdateKbTxt" style="font-size:11px; color:#94a3b8; margin-bottom:14px;">
         대상 파일: ${targetName}
@@ -6768,8 +6792,8 @@ function stopLoadingAndForceUpdate(foundUpdate) {
 
       <div id="forceUpdateActionArea" style="width:100%; max-width:280px; display:flex; flex-direction:column; gap:8px;">
         ${isWindows ? `
-          <button class="btn btn-green" style="padding:12px 16px; font-size:13px; font-weight:900; border-radius:10px; width:100%; box-shadow:0 4px 15px rgba(34,197,94,0.4);" onclick="triggerUniversalDownloadAndInstall()">
-            ⬇️ 최신 EXE 자동 다운로드 및 재실행
+          <button class="btn btn-green" style="padding:11px 16px; font-size:12.5px; font-weight:800; border-radius:10px; width:100%; box-shadow:0 4px 15px rgba(34,197,94,0.3);" onclick="triggerUniversalDownloadAndInstall()">
+            ⬇️ 최신 Setup 설치파일 다운로드
           </button>
         ` : ''}
         <button class="btn btn-meritz" style="padding:10px 16px; font-size:12px; font-weight:800; border-radius:10px; width:100%;" onclick="openDownloadInBrowserFallback('${foundUpdate.webUrl || foundUpdate.downloadUrl}')">
@@ -6780,20 +6804,6 @@ function stopLoadingAndForceUpdate(foundUpdate) {
         </button>
       </div>
     `;
-  }
-
-  showNativeToast("🚀 최신 버전 감지! 다운로드를 준비합니다.");
-  if (isWindows) {
-    if (window.pywebview && window.pywebview.api && window.pywebview.api.downloadAndInstallExe) {
-      triggerUniversalDownloadAndInstall();
-    }
-  } else {
-    const dlUrl = foundUpdate.downloadUrl || `https://raw.githubusercontent.com/${APP_RELEASE_META.githubRepo}/${foundUpdate.fullSha || "main"}/%EB%A9%94%EB%A6%AC%EC%B8%A0_AI_%EC%A3%BC%EC%8B%9D.apk`;
-    if (window.AndroidBridge && window.AndroidBridge.downloadAndApplyUpdate) {
-      window.AndroidBridge.downloadAndApplyUpdate(dlUrl);
-    } else if (window.AndroidBridge && window.AndroidBridge.downloadAndInstallApk) {
-      window.AndroidBridge.downloadAndInstallApk(dlUrl, targetName);
-    }
   }
 }
 
