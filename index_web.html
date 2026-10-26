@@ -1303,15 +1303,15 @@
       </div>
       <div style="font-size:12px; color:#cbd5e1; line-height:1.6; margin-bottom:12px;">
         • 현재 설치된 빌드 일시: <b id="settingsCurrentVer" style="color:#38bdf8;">2026-10-26 14:15</b><br>
-        • 실행 환경: <b id="settingsPlatformLabel" style="color:#38bdf8;">Windows 무설치 데스크톱 앱</b><br>
-        • 배포 파일명: <b id="settingsTargetFileName" style="color:#34d399;">메리츠_AI_주식.exe</b><br>
+        • 실행 환경: <b id="settingsPlatformLabel" style="color:#38bdf8;">Windows 정식 설치 마법사 프로그램 (Setup)</b><br>
+        • 배포 파일명: <b id="settingsTargetFileName" style="color:#34d399;">메리츠_AI_주식_Setup.exe</b><br>
         • GitHub 배포 저장소: <b style="color:#38bdf8;">OKHDEV/AI_TRADE</b><br>
         • 💡 <b>자동 업데이트:</b> 앱을 켤 때 로딩 중 최신 버전이 감지되면 즉시 로딩을 멈추고 자동으로 다운로드 및 재실행 설치 창을 엽니다.
       </div>
       <button id="btnSettingsCheckUpdate" class="btn btn-blue" style="width:100%; padding:11px; font-weight:800; margin-bottom:8px;" onclick="checkAppUpdateFromGitHub(true)">
         🔍 지금 GitHub 최신 업데이트 확인
       </button>
-      <button id="btnSettingsWebDownload" class="btn btn-meritz" style="width:100%; padding:10px; font-size:12px; font-weight:800;" onclick="openDownloadInBrowserFallback('https://github.com/OKHDEV/AI_TRADE/blob/main/%EB%A9%94%EB%A6%AC%EC%B8%A0_AI_%EC%A3%BC%EC%8B%9D.exe')">
+      <button id="btnSettingsWebDownload" class="btn btn-meritz" style="width:100%; padding:10px; font-size:12px; font-weight:800;" onclick="openDownloadInBrowserFallback('https://github.com/OKHDEV/AI_TRADE/blob/main/%EB%A9%94%EB%A6%AC%EC%B8%A0_AI_%EC%A3%BC%EC%8B%9D_Setup.exe')">
         🌐 GitHub 웹에서 직접 다운로드
       </button>
     </div>
@@ -6413,7 +6413,7 @@ const APP_RELEASE_META = {
   buildTimestamp: 1792991700000,
   buildSha: "42eaccc",
   githubRepo: "OKHDEV/AI_TRADE",
-  defaultExeName: "메리츠_AI_주식.exe",
+  defaultExeName: "메리츠_AI_주식_Setup.exe",
   defaultApkName: "메리츠_AI_주식.apk",
   defaultIpaName: "메리츠_AI_주식.ipa"
 };
@@ -6453,9 +6453,9 @@ function initPlatformSettingsUi() {
   if (splashBuild) splashBuild.textContent = APP_RELEASE_META.buildDateStr + " (최신)";
 
   if (p === "WINDOWS") {
-    if (platformEl) platformEl.textContent = "🖥️ Windows 무설치 데스크톱 앱";
+    if (platformEl) platformEl.textContent = "🖥️ Windows 정식 설치 마법사 프로그램 (Setup)";
     if (fileEl) fileEl.textContent = APP_RELEASE_META.defaultExeName;
-    if (btnCheck) btnCheck.textContent = "🔍 지금 GitHub 최신 EXE 업데이트 확인";
+    if (btnCheck) btnCheck.textContent = "🔍 지금 GitHub 최신 Setup 업데이트 확인";
   } else if (p === "ANDROID") {
     if (platformEl) platformEl.textContent = "🤖 안드로이드 네이티브 앱";
     if (fileEl) fileEl.textContent = APP_RELEASE_META.defaultApkName;
