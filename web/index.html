@@ -977,6 +977,10 @@
               <input type="checkbox" id="chkChartTargets" onchange="toggleChartIndicator('TARGETS', this.checked)" checked style="accent-color:#34d399;">
               목표/손절선
             </label>
+            <label style="display:inline-flex; align-items:center; gap:4px; font-size:11.5px; cursor:pointer; color:#a78bfa;">
+              <input type="checkbox" id="chkChartDates" onchange="toggleChartIndicator('DATES', this.checked)" checked style="accent-color:#a78bfa;">
+              날짜 표시
+            </label>
           </div>
           <div style="display:flex; align-items:center; gap:5px;">
             <button class="btn btn-dark" style="padding:4px 8px; font-size:11px; border:1px solid #334155; border-radius:6px;" onclick="zoomChart(-5)">➕ 확대</button>
@@ -1524,13 +1528,30 @@
       <div style="display: flex; flex-direction: column; gap: 10px; font-size: 12px;">
         <label style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
           <div>
-            <div style="font-weight: 700; color: #f8fafc;">🔔 AI 체결 및 주문 승인 차임벨</div>
+            <div style="font-weight: 700; color: #f8fafc;">🔔 AI 체결 및 주문 승인 효과음</div>
             <div style="font-size: 11px; color: var(--sub);">AI 매수/매도 포착 및 체결 시 알림 사운드 재생</div>
           </div>
           <input type="checkbox" id="chkPrefsSound" onchange="toggleSound(this.checked)" style="width: 18px; height: 18px;">
         </label>
-        <div style="margin-top: -4px;">
-          <button class="btn btn-dark" style="padding: 4px 10px; font-size: 11px; width: auto; display: inline-flex;" onclick="testSound()">🔔 효과음 테스트</button>
+
+        <!-- 🎵 효과음 종류 선택 드롭다운 -->
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px;">
+          <div>
+            <div style="font-weight: 700; color: #38bdf8;">🎵 알림 효과음 종류</div>
+            <div style="font-size: 11px; color: var(--sub);">체결 및 신호 발생 시 재생할 음색 선택</div>
+          </div>
+          <select id="selPrefsSoundType" onchange="setSoundType(this.value)" style="background: #1e293b; color: #f8fafc; border: 1px solid #334155; border-radius: 6px; padding: 5px 8px; font-size: 12px; font-weight: 700; outline: none; cursor: pointer;">
+            <option value="chime">🔔 맑은 차임벨 (기본)</option>
+            <option value="arcade">👾 아케이드 8비트 레트로</option>
+            <option value="digital">📟 디지털 비프 (트레이딩룸)</option>
+            <option value="marimba">🪵 마림바 어쿠스틱</option>
+            <option value="crystal">✨ 크리스탈 글래스 벨</option>
+            <option value="laser">⚡ SF 퓨처리스틱 레이저</option>
+          </select>
+        </div>
+
+        <div style="margin-top: -2px;">
+          <button class="btn btn-dark" style="padding: 4px 10px; font-size: 11px; width: auto; display: inline-flex;" onclick="testSound()">🔔 효과음 미리듣기</button>
         </div>
 
         <hr style="border: none; border-top: 1px solid var(--border); margin: 2px 0;">
@@ -4985,9 +5006,11 @@ let chartSettings = {
   showBB: false,
   showRSI: true,
   showTargets: true,
+  showDates: true,
   zoomOffset: 0,
   panOffset: 0
 };
+if (typeof window !== 'undefined') window.chartSettings = chartSettings;
 
 function toggleChartDetailSettings() {
   const body = document.getElementById("chartDetailSettingsBody");
@@ -5097,6 +5120,7 @@ function toggleChartIndicator(type, val) {
   if (type === "BB") chartSettings.showBB = val;
   if (type === "RSI") chartSettings.showRSI = val;
   if (type === "TARGETS") chartSettings.showTargets = val;
+  if (type === "DATES") chartSettings.showDates = val;
   drawChart(currentChartCode);
 }
 
@@ -5121,6 +5145,8 @@ function resetChartSettings() {
   const chkBB = document.getElementById("chkChartBB"); if (chkBB) chkBB.checked = false;
   const chkRSI = document.getElementById("chkChartRSI"); if (chkRSI) chkRSI.checked = true;
   const chkTar = document.getElementById("chkChartTargets"); if (chkTar) chkTar.checked = true;
+  chartSettings.showDates = true;
+  const chkDates = document.getElementById("chkChartDates"); if (chkDates) chkDates.checked = true;
   selectedCandleIdx = null;
   drawChart(currentChartCode);
 }
@@ -5356,7 +5382,21 @@ function drawChart(code) {
     // 차트 좌상단 오버레이 상세 박스 (고대비 대형 2단 HUD 카드)
     const isToday = (selectedCandleIdx === candles.length - 1);
     const dayLabel = isToday ? "오늘" : `${candles.length - 1 - selectedCandleIdx}일전`;
-    const scDate = sc.date ? (sc.date.length === 8 ? `${sc.date.substring(4,6)}/${sc.date.substring(6,8)}` : sc.date) : "";
+    const scDate = sc.date ? (sc.date.length === 8 ? `${sc.date.substring(4,6)}/${sc.date.substring(6,8)}` : (sc.isWeek && sc.date.includes("~") ? sc.date.split("~")[0] : sc.date)) : (isToday ? "오늘" : `D-${candles.length - 1 - selectedCandleIdx}`);
+
+    // 하단 선택 캔들 날짜 뱃지 (날짜 표시 켜짐 시)
+    if (chartSettings.showDates && scDate) {
+      ctx.save();
+      ctx.fillStyle = "#0284c7";
+      const dtBadgeW = Math.max(50, ctx.measureText(scDate).width + 14);
+      const bx = Math.max(padL, Math.min(W - padR - dtBadgeW, selX - dtBadgeW / 2));
+      ctx.fillRect(bx, vTop - 18, dtBadgeW, 16);
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 10px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(scDate, bx + dtBadgeW / 2, vTop - 6);
+      ctx.restore();
+    }
     const prevC = selectedCandleIdx > 0 ? (candles[selectedCandleIdx - 1].close || candles[selectedCandleIdx - 1].c) : sc.o;
     const diff = sc.c - prevC;
     const diffPct = Number(((diff / Math.max(1, prevC)) * 100).toFixed(2));
@@ -5409,6 +5449,48 @@ function drawChart(code) {
   ctx.stroke();
   ctx.fillStyle = "#c084fc";
   ctx.fillText("RSI " + ana.rsi, W - padR + 4, rTop + rH / 2);
+  }
+
+  // 📅 하단 X축 날짜 라벨 및 눈금선 표시
+  if (chartSettings.showDates && candles.length > 0) {
+    ctx.save();
+    const numLabels = Math.min(6, candles.length);
+    const interval = Math.max(1, Math.floor(candles.length / numLabels));
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "10px sans-serif";
+    ctx.textAlign = "center";
+    for (let i = 0; i < candles.length; i += interval) {
+      const c = candles[i];
+      if (!c) continue;
+      const x = padL + i * stepX + stepX / 2;
+      let label = "";
+      if (c.date) {
+        if (c.date.length === 8) {
+          label = `${c.date.substring(4,6)}/${c.date.substring(6,8)}`;
+        } else if (c.isWeek && c.date.includes("~")) {
+          label = c.date.split("~")[0];
+        } else {
+          label = c.date;
+        }
+      } else {
+        label = `D-${candles.length - 1 - i}`;
+      }
+      ctx.fillText(label, x, vTop - 4);
+      ctx.strokeStyle = "rgba(148, 163, 184, 0.2)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x, padT + cH);
+      ctx.lineTo(x, vTop);
+      ctx.stroke();
+    }
+    const lastIdx = candles.length - 1;
+    if (lastIdx > 0 && (lastIdx % interval) > (interval / 2)) {
+      const lc = candles[lastIdx];
+      const lx = padL + lastIdx * stepX + stepX / 2;
+      let lLabel = lc.date ? (lc.date.length === 8 ? `${lc.date.substring(4,6)}/${lc.date.substring(6,8)}` : (lc.isWeek && lc.date.includes("~") ? lc.date.split("~")[0] : lc.date)) : "오늘";
+      ctx.fillText(lLabel, Math.min(W - padR - 16, lx), vTop - 4);
+    }
+    ctx.restore();
   }
 }
 
@@ -7417,6 +7499,7 @@ const DEFAULT_USER_PREFS = {
   accent: "red", // red, blue, green, purple, gold
   priceMode: "kr", // kr, global
   soundEnabled: true,
+  soundType: "chime", // chime, arcade, digital, marimba, crystal, laser
   hapticEnabled: true,
   tickFlash: true,
   fontScale: "normal" // small, normal, large
@@ -7545,6 +7628,9 @@ function updatePrefsUiIndicators() {
   const chkSound = document.getElementById("chkPrefsSound");
   if (chkSound) chkSound.checked = !!userPrefs.soundEnabled;
 
+  const selSound = document.getElementById("selPrefsSoundType");
+  if (selSound) selSound.value = userPrefs.soundType || "chime";
+
   const chkHaptic = document.getElementById("chkPrefsHaptic");
   if (chkHaptic) chkHaptic.checked = !!userPrefs.hapticEnabled;
 
@@ -7615,33 +7701,132 @@ function resetUserPrefs() {
   showNativeToast("🔄 환경설정이 기본값으로 초기화되었습니다.");
 }
 
+function setSoundType(type) {
+  userPrefs.soundType = type;
+  saveUserPrefs();
+  playTradingSound('buy');
+  const names = {
+    chime: "맑은 차임벨",
+    arcade: "아케이드 8비트 레트로",
+    digital: "디지털 비프",
+    marimba: "마림바 어쿠스틱",
+    crystal: "크리스탈 글래스 벨",
+    laser: "SF 퓨처리스틱 레이저"
+  };
+  showNativeToast(`🎵 효과음이 [${names[type] || type}](으)로 설정되었습니다.`);
+}
+
 function playTradingSound(type) {
   if (!userPrefs.soundEnabled) return;
   try {
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     if (!AudioCtx) return;
     const ctx = new AudioCtx();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
+    const now = ctx.currentTime;
+    const st = userPrefs.soundType || 'chime';
 
-    if (type === 'buy') {
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(523.25, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(659.25, ctx.currentTime + 0.08);
-      osc.frequency.exponentialRampToValueAtTime(783.99, ctx.currentTime + 0.16);
-      gain.gain.setValueAtTime(0.18, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.35);
-    } else {
+    if (st === 'arcade') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'square';
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      if (type === 'buy') {
+        osc.frequency.setValueAtTime(392, now);
+        osc.frequency.setValueAtTime(523.25, now + 0.05);
+        osc.frequency.setValueAtTime(659.25, now + 0.10);
+        osc.frequency.setValueAtTime(1046.5, now + 0.15);
+      } else {
+        osc.frequency.setValueAtTime(587.33, now);
+        osc.frequency.setValueAtTime(880, now + 0.08);
+      }
+      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+      osc.start(now);
+      osc.stop(now + 0.32);
+    } else if (st === 'digital') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(880, ctx.currentTime);
-      gain.gain.setValueAtTime(0.18, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.4);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.setValueAtTime(1046.5, now);
+      if (type === 'buy') {
+        osc.frequency.setValueAtTime(1318.5, now + 0.06);
+      }
+      gain.gain.setValueAtTime(0.16, now);
+      gain.gain.setValueAtTime(0.01, now + 0.05);
+      gain.gain.setValueAtTime(0.16, now + 0.06);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+      osc.start(now);
+      osc.stop(now + 0.22);
+    } else if (st === 'marimba') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      const baseFreq = type === 'buy' ? 523.25 : 440;
+      osc.frequency.setValueAtTime(baseFreq, now);
+      gain.gain.setValueAtTime(0.24, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+      osc.start(now);
+      osc.stop(now + 0.28);
+    } else if (st === 'crystal') {
+      const osc1 = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc1.type = 'sine';
+      osc2.type = 'sine';
+      osc1.frequency.setValueAtTime(1318.5, now);
+      osc2.frequency.setValueAtTime(1760.0, now);
+      if (type === 'buy') {
+        osc1.frequency.exponentialRampToValueAtTime(1567.98, now + 0.12);
+        osc2.frequency.exponentialRampToValueAtTime(2093.0, now + 0.12);
+      }
+      osc1.connect(gain);
+      osc2.connect(gain);
+      gain.connect(ctx.destination);
+      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+      osc1.start(now);
+      osc2.start(now);
+      osc1.stop(now + 0.45);
+      osc2.stop(now + 0.45);
+    } else if (st === 'laser') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.setValueAtTime(type === 'buy' ? 1400 : 900, now);
+      osc.frequency.exponentialRampToValueAtTime(type === 'buy' ? 350 : 200, now + 0.20);
+      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+      osc.start(now);
+      osc.stop(now + 0.25);
+    } else {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      if (type === 'buy') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(523.25, now);
+        osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.08);
+        osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.16);
+        gain.gain.setValueAtTime(0.18, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+        osc.start(now);
+        osc.stop(now + 0.35);
+      } else {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, now);
+        gain.gain.setValueAtTime(0.18, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+        osc.start(now);
+        osc.stop(now + 0.4);
+      }
     }
   } catch(e) {}
 }
