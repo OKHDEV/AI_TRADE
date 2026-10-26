@@ -923,56 +923,66 @@
       삼성전자 (005930) | 실시간 KRX 시세 연동 중...
     </div>
     <div id="candleDetailBar" style="background:#0f172a; border:1.5px solid #38bdf8; border-radius:10px; padding:9px 12px; margin-bottom:8px; font-size:13px; line-height:1.5; color:#e2e8f0; box-shadow:0 0 10px rgba(56,189,248,0.15);">
-      <span style="color:#38bdf8; font-weight:700;">👆 <b>그래프를 터치하거나 손가락으로 꾹 누른 채 옆으로 드래그</b>하면 캔들 상세정보가 실시간으로 표시됩니다.</span>
+      <span style="color:#38bdf8; font-weight:700;">💡 <b>PC:</b> 마우스 휠(확대/축소) & 드래그(좌우 이동) | <b>모바일:</b> 두손가락(확대/축소) & 드래그(좌우 이동)</span>
     </div>
         <canvas id="stockCanvas" width="680" height="520" style="cursor:crosshair; touch-action:none;"></canvas>
 
-    <!-- 🎛️ 차트 상세 설정 & 기간 조회 바 (몇주/몇달 보기) -->
+    <!-- 🎛️ 차트 상세 설정 & 기간 조회 바 (몇주/몇달 보기, 접기/펼치기 지원) -->
     <div id="chartDetailSettingsPanel" style="margin-top:10px; background:#0b1329; border:1px solid #1e293b; border-radius:10px; padding:10px 12px;">
-      <!-- 1행: 주기(일/주/월) & 기간 범위 선택 바 -->
-      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:9px; border-bottom:1px solid #1e293b; padding-bottom:9px;">
-        <div style="display:flex; align-items:center; gap:5px; flex-wrap:wrap;">
-          <span style="font-size:12px; font-weight:800; color:#38bdf8; margin-right:2px;">📊 주기:</span>
-          <button class="chart-btn active" id="tf-day" onclick="setChartTimeframe('DAY')">일봉</button>
-          <button class="chart-btn" id="tf-week" onclick="setChartTimeframe('WEEK')">주봉 (몇주)</button>
-          <button class="chart-btn" id="tf-month" onclick="setChartTimeframe('MONTH')">월봉 (몇달)</button>
-        </div>
-        <div style="display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
-          <span style="font-size:12px; font-weight:800; color:#94a3b8; margin-right:2px;">기간:</span>
-          <button class="chart-btn" id="cp-1w" onclick="setChartPeriod('1W')">1주</button>
-          <button class="chart-btn" id="cp-1m" onclick="setChartPeriod('1M')">1개월</button>
-          <button class="chart-btn active" id="cp-3m" onclick="setChartPeriod('3M')">3개월</button>
-          <button class="chart-btn" id="cp-6m" onclick="setChartPeriod('6M')">6개월</button>
-          <button class="chart-btn" id="cp-1y" onclick="setChartPeriod('1Y')">1년</button>
-          <button class="chart-btn" id="cp-all" onclick="setChartPeriod('ALL')">전체</button>
-        </div>
+      <!-- 접기/펼치기 헤더 바 -->
+      <div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; user-select:none; margin-bottom:8px;" onclick="toggleChartDetailSettings()">
+        <span style="font-size:12.5px; font-weight:800; color:#38bdf8; display:flex; align-items:center; gap:6px;">
+          📊 차트 상세 설정 (주기·기간·지표)
+        </span>
+        <span id="chartSettingsFoldIcon" style="font-size:11px; font-weight:700; color:#94a3b8; background:#1e293b; border:1px solid #334155; padding:2px 8px; border-radius:6px;">접기 🔼</span>
       </div>
 
-      <!-- 2행: 기술적 지표 & 캔들 확대/축소 상세 설정 -->
-      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-        <div style="display:flex; align-items:center; flex-wrap:wrap; gap:8px;">
-          <span style="font-size:11.5px; font-weight:800; color:#94a3b8;">상세 지표:</span>
-          <label style="display:inline-flex; align-items:center; gap:4px; font-size:11.5px; cursor:pointer; color:#fbbf24;">
-            <input type="checkbox" id="chkChartMA" onchange="toggleChartIndicator('MA', this.checked)" checked style="accent-color:#fbbf24;">
-            이동평균선(5/20/60)
-          </label>
-          <label style="display:inline-flex; align-items:center; gap:4px; font-size:11.5px; cursor:pointer; color:#38bdf8;">
-            <input type="checkbox" id="chkChartBB" onchange="toggleChartIndicator('BB', this.checked)" style="accent-color:#38bdf8;">
-            볼린저밴드
-          </label>
-          <label style="display:inline-flex; align-items:center; gap:4px; font-size:11.5px; cursor:pointer; color:#c084fc;">
-            <input type="checkbox" id="chkChartRSI" onchange="toggleChartIndicator('RSI', this.checked)" checked style="accent-color:#c084fc;">
-            RSI
-          </label>
-          <label style="display:inline-flex; align-items:center; gap:4px; font-size:11.5px; cursor:pointer; color:#34d399;">
-            <input type="checkbox" id="chkChartTargets" onchange="toggleChartIndicator('TARGETS', this.checked)" checked style="accent-color:#34d399;">
-            목표/손절선
-          </label>
+      <div id="chartDetailSettingsBody">
+        <!-- 1행: 주기(일/주/월) & 기간 범위 선택 바 -->
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:9px; border-bottom:1px solid #1e293b; padding-bottom:9px;">
+          <div style="display:flex; align-items:center; gap:5px; flex-wrap:wrap;">
+            <span style="font-size:12px; font-weight:800; color:#38bdf8; margin-right:2px;">📊 주기:</span>
+            <button class="chart-btn active" id="tf-day" onclick="setChartTimeframe('DAY')">일봉</button>
+            <button class="chart-btn" id="tf-week" onclick="setChartTimeframe('WEEK')">주봉 (몇주)</button>
+            <button class="chart-btn" id="tf-month" onclick="setChartTimeframe('MONTH')">월봉 (몇달)</button>
+          </div>
+          <div style="display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
+            <span style="font-size:12px; font-weight:800; color:#94a3b8; margin-right:2px;">기간:</span>
+            <button class="chart-btn" id="cp-1w" onclick="setChartPeriod('1W')">1주</button>
+            <button class="chart-btn" id="cp-1m" onclick="setChartPeriod('1M')">1개월</button>
+            <button class="chart-btn active" id="cp-3m" onclick="setChartPeriod('3M')">3개월</button>
+            <button class="chart-btn" id="cp-6m" onclick="setChartPeriod('6M')">6개월</button>
+            <button class="chart-btn" id="cp-1y" onclick="setChartPeriod('1Y')">1년</button>
+            <button class="chart-btn" id="cp-all" onclick="setChartPeriod('ALL')">전체</button>
+          </div>
         </div>
-        <div style="display:flex; align-items:center; gap:5px;">
-          <button class="btn btn-dark" style="padding:4px 8px; font-size:11px; border:1px solid #334155; border-radius:6px;" onclick="zoomChart(-5)">➕ 확대</button>
-          <button class="btn btn-dark" style="padding:4px 8px; font-size:11px; border:1px solid #334155; border-radius:6px;" onclick="zoomChart(5)">➖ 축소</button>
-          <button class="btn btn-dark" style="padding:4px 8px; font-size:11px; border:1px solid #334155; border-radius:6px;" onclick="resetChartSettings()">🔄 기본값</button>
+
+        <!-- 2행: 기술적 지표 & 캔들 확대/축소 상세 설정 -->
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+          <div style="display:flex; align-items:center; flex-wrap:wrap; gap:8px;">
+            <span style="font-size:11.5px; font-weight:800; color:#94a3b8;">상세 지표:</span>
+            <label style="display:inline-flex; align-items:center; gap:4px; font-size:11.5px; cursor:pointer; color:#fbbf24;">
+              <input type="checkbox" id="chkChartMA" onchange="toggleChartIndicator('MA', this.checked)" checked style="accent-color:#fbbf24;">
+              이동평균선(5/20/60)
+            </label>
+            <label style="display:inline-flex; align-items:center; gap:4px; font-size:11.5px; cursor:pointer; color:#38bdf8;">
+              <input type="checkbox" id="chkChartBB" onchange="toggleChartIndicator('BB', this.checked)" style="accent-color:#38bdf8;">
+              볼린저밴드
+            </label>
+            <label style="display:inline-flex; align-items:center; gap:4px; font-size:11.5px; cursor:pointer; color:#c084fc;">
+              <input type="checkbox" id="chkChartRSI" onchange="toggleChartIndicator('RSI', this.checked)" checked style="accent-color:#c084fc;">
+              RSI
+            </label>
+            <label style="display:inline-flex; align-items:center; gap:4px; font-size:11.5px; cursor:pointer; color:#34d399;">
+              <input type="checkbox" id="chkChartTargets" onchange="toggleChartIndicator('TARGETS', this.checked)" checked style="accent-color:#34d399;">
+              목표/손절선
+            </label>
+          </div>
+          <div style="display:flex; align-items:center; gap:5px;">
+            <button class="btn btn-dark" style="padding:4px 8px; font-size:11px; border:1px solid #334155; border-radius:6px;" onclick="zoomChart(-5)">➕ 확대</button>
+            <button class="btn btn-dark" style="padding:4px 8px; font-size:11px; border:1px solid #334155; border-radius:6px;" onclick="zoomChart(5)">➖ 축소</button>
+            <button class="btn btn-dark" style="padding:4px 8px; font-size:11px; border:1px solid #334155; border-radius:6px;" onclick="resetChartSettings()">🔄 기본값</button>
+          </div>
         </div>
       </div>
     </div>
@@ -4830,17 +4840,18 @@ function setupCanvasInteractions() {
   if (!canvas || canvas._hasInteraction) return;
   canvas._hasInteraction = true;
 
-  let isScrubbing = false;
+  let isMouseDragging = false;
+  let mouseStartX = 0;
+  let mouseStartPan = 0;
 
-  function updateCandleFromEvent(evt) {
-    const rect = canvas.getBoundingClientRect();
-    let clientX = evt.clientX;
-    let clientY = evt.clientY;
-    if (evt.touches && evt.touches.length > 0) {
-      clientX = evt.touches[0].clientX;
-      clientY = evt.touches[0].clientY;
-    }
+  let touchMode = "none";
+  let lastPinchDist = 0;
+  let touchStartX = 0;
+  let touchStartPan = 0;
+
+  function updateCandleFromClientX(clientX) {
     if (clientX === undefined) return;
+    const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const x = (clientX - rect.left) * scaleX;
 
@@ -4857,39 +4868,98 @@ function setupCanvasInteractions() {
     }
   }
 
-  // 터치 시작
-  canvas.addEventListener("touchstart", function(e) {
-    isScrubbing = true;
-    updateCandleFromEvent(e);
-  }, { passive: true });
-
-  // 터치 드래그 (꾹 누르고 옆으로 쭈우욱 이동했을 때 연속 탐색)
-  canvas.addEventListener("touchmove", function(e) {
-    if (!isScrubbing && (!e.touches || e.touches.length === 0)) return;
-    if (e.cancelable) e.preventDefault(); // 화면 스크롤을 막고 캔들 연속 탐색에 집중
-    updateCandleFromEvent(e);
+  // --- 1. PC 마우스 휠 확대/축소 ---
+  canvas.addEventListener("wheel", function(e) {
+    e.preventDefault();
+    // 휠 올림(deltaY < 0): 확대 (캔들 수 감소: -3)
+    // 휠 내림(deltaY > 0): 축소 (캔들 수 증가: +3)
+    const delta = e.deltaY < 0 ? -3 : 3;
+    zoomChart(delta);
   }, { passive: false });
 
-  // 터치 종료
-  canvas.addEventListener("touchend", function(e) {
-    isScrubbing = false;
-  }, { passive: true });
-  canvas.addEventListener("touchcancel", function(e) {
-    isScrubbing = false;
+  // --- 2. PC 마우스 클릭 후 드래그 (좌우 이동 및 탐색) ---
+  canvas.addEventListener("mousedown", function(e) {
+    isMouseDragging = true;
+    mouseStartX = e.clientX;
+    mouseStartPan = chartSettings.panOffset || 0;
+    updateCandleFromClientX(e.clientX);
+  });
+
+  window.addEventListener("mousemove", function(e) {
+    if (!isMouseDragging) return;
+    const dx = e.clientX - mouseStartX;
+    const rect = canvas.getBoundingClientRect();
+    const padL = 14, padR = 76;
+    const chartW = canvas.width - padL - padR;
+    const candles = getActiveChartCandles();
+    const stepPixels = Math.max(3, (chartW / Math.max(1, candles.length)) * (rect.width / canvas.width));
+    const candlesMoved = Math.round(dx / stepPixels);
+    chartSettings.panOffset = mouseStartPan + candlesMoved;
+    updateCandleFromClientX(e.clientX);
+    drawChart(currentChartCode);
+  });
+
+  window.addEventListener("mouseup", function() {
+    isMouseDragging = false;
+  });
+
+  // --- 3. 모바일 터치 (두손가락 핀치 줌 / 한손가락 드래그 좌우 이동) ---
+  canvas.addEventListener("touchstart", function(e) {
+    if (e.touches.length === 2) {
+      touchMode = "pinch";
+      lastPinchDist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+    } else if (e.touches.length === 1) {
+      touchMode = "pan";
+      touchStartX = e.touches[0].clientX;
+      touchStartPan = chartSettings.panOffset || 0;
+      updateCandleFromClientX(e.touches[0].clientX);
+    }
   }, { passive: true });
 
-  // PC 마우스 드래그 지원
-  canvas.addEventListener("mousedown", function(e) {
-    isScrubbing = true;
-    updateCandleFromEvent(e);
-  });
-  window.addEventListener("mousemove", function(e) {
-    if (isScrubbing) updateCandleFromEvent(e);
-  });
-  window.addEventListener("mouseup", function() {
-    isScrubbing = false;
-  });
-  canvas.addEventListener("click", updateCandleFromEvent);
+  canvas.addEventListener("touchmove", function(e) {
+    if (e.touches.length === 2 && touchMode === "pinch") {
+      if (e.cancelable) e.preventDefault();
+      const curDist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      const diff = curDist - lastPinchDist;
+      if (Math.abs(diff) > 12) {
+        zoomChart(diff > 0 ? -2 : 2);
+        lastPinchDist = curDist;
+      }
+    } else if (e.touches.length === 1 && touchMode === "pan") {
+      if (e.cancelable) e.preventDefault();
+      const curX = e.touches[0].clientX;
+      const dx = curX - touchStartX;
+      const rect = canvas.getBoundingClientRect();
+      const padL = 14, padR = 76;
+      const chartW = canvas.width - padL - padR;
+      const candles = getActiveChartCandles();
+      const stepPixels = Math.max(3, (chartW / Math.max(1, candles.length)) * (rect.width / canvas.width));
+      const candlesMoved = Math.round(dx / stepPixels);
+      chartSettings.panOffset = touchStartPan + candlesMoved;
+      updateCandleFromClientX(curX);
+      drawChart(currentChartCode);
+    }
+  }, { passive: false });
+
+  canvas.addEventListener("touchend", function(e) {
+    if (e.touches.length === 0) {
+      touchMode = "none";
+    } else if (e.touches.length === 1) {
+      touchMode = "pan";
+      touchStartX = e.touches[0].clientX;
+      touchStartPan = chartSettings.panOffset || 0;
+    }
+  }, { passive: true });
+
+  canvas.addEventListener("touchcancel", function() {
+    touchMode = "none";
+  }, { passive: true });
 }
 
 function openChartTab(code) {
@@ -4915,8 +4985,20 @@ let chartSettings = {
   showBB: false,
   showRSI: true,
   showTargets: true,
-  zoomOffset: 0
+  zoomOffset: 0,
+  panOffset: 0
 };
+
+function toggleChartDetailSettings() {
+  const body = document.getElementById("chartDetailSettingsBody");
+  const icon = document.getElementById("chartSettingsFoldIcon");
+  if (!body) return;
+  const isHidden = body.style.display === "none";
+  body.style.display = isHidden ? "block" : "none";
+  if (icon) {
+    icon.textContent = isHidden ? "접기 🔼" : "펼치기 🔽";
+  }
+}
 
 function getActiveChartCandles() {
   const rawCandles = dailyCandles[currentChartCode] || dailyCandles["005930"] || [];
@@ -4981,7 +5063,15 @@ function getAggregatedCandles(rawCandles, timeframe, period, zoomOffset) {
   }
 
   count = Math.max(5, count + (zoomOffset || 0));
-  return list.slice(Math.max(0, list.length - count));
+  count = Math.min(list.length, count);
+
+  const maxPan = Math.max(0, list.length - count);
+  const pan = Math.min(maxPan, Math.max(0, chartSettings.panOffset || 0));
+  chartSettings.panOffset = pan;
+
+  const endIdx = list.length - pan;
+  const startIdx = Math.max(0, endIdx - count);
+  return list.slice(startIdx, endIdx);
 }
 
 function setChartTimeframe(tf) {
@@ -5023,6 +5113,7 @@ function resetChartSettings() {
   chartSettings.showRSI = true;
   chartSettings.showTargets = true;
   chartSettings.zoomOffset = 0;
+  chartSettings.panOffset = 0;
   document.querySelectorAll("#chartDetailSettingsPanel .chart-btn").forEach(b => b.classList.remove("active"));
   const bTf = document.getElementById("tf-day"); if (bTf) bTf.classList.add("active");
   const bP = document.getElementById("cp-3m"); if (bP) bP.classList.add("active");
