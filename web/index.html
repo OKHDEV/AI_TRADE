@@ -6580,8 +6580,8 @@ async function checkAppUpdateFromGitHub(isManual = false) {
     initPlatformSettingsUi();
     const platform = getAppPlatformType();
 
-    // 🌐 순수 웹 브라우저 (GitHub Pages) 환경은 클라우드에서 최신 코드가 실행되므로 즉시 가동
-    if (platform === "WEB" || platform === "IOS") {
+    // 🌐 순수 웹 브라우저, iOS 및 🖥️ Windows 데스크톱 시작 시 즉시 진입
+    if (platform === "WEB" || platform === "IOS" || (platform === "WINDOWS" && !isManual)) {
       updateCheckFinished = true;
       window.isUpdatePendingInstall = false;
       window.isUpdateDownloading = false;
@@ -6591,14 +6591,14 @@ async function checkAppUpdateFromGitHub(isManual = false) {
       const splashStatus = document.getElementById("splashStatusText");
       if (splashStep) splashStep.textContent = "✅ 가동 준비 완료";
       if (splashStatus) {
-        splashStatus.textContent = (platform === "IOS") ? "✅ 최신 iOS 환경 가동 완료" : "✅ 최신 웹 환경 가동 완료";
+        splashStatus.textContent = (platform === "WINDOWS") ? "✅ Windows 전용 엔진 로드 완료" : (platform === "IOS" ? "✅ 최신 iOS 환경 가동 완료" : "✅ 최신 웹 환경 가동 완료");
         splashStatus.style.color = "#4ade80";
       }
       if (splashBar) splashBar.style.width = "100%";
       if (splashPct) splashPct.textContent = "100%";
-      setTimeout(() => { dismissSplashGracefully(); }, 400);
+      setTimeout(() => { dismissSplashGracefully(); }, 250);
       if (isManual) {
-        showNativeToast((platform === "IOS") ? "🍎 현재 최신 iOS 버전을 이용 중입니다." : "🌐 현재 최신 웹 환경을 이용 중입니다.");
+        showNativeToast((platform === "WINDOWS") ? "🖥️ 현재 최신 Windows 정식 버전을 이용 중입니다." : (platform === "IOS" ? "🍎 현재 최신 iOS 버전을 이용 중입니다." : "🌐 현재 최신 웹 환경을 이용 중입니다."));
       }
       return;
     }

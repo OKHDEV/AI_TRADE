@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-메리츠 AI 주식 트레이더 - Windows 데스크톱 네이티브 GUI 실행 엔진 & 자동 업데이트 브릿지
+메리츠 AI 주식 트레이더 - Windows 데스크톱 네이티브 GUI 실행 엔진
 """
 import os
 import sys
@@ -9,7 +9,6 @@ import json
 import urllib.request
 import subprocess
 import webbrowser
-import shutil
 import webview
 
 def get_base_dir():
@@ -36,7 +35,6 @@ class DesktopApi:
         })
 
     def getRemoteCommitInfo(self, repo):
-        # 1) GitHub API
         try:
             req = urllib.request.Request(
                 f"https://api.github.com/repos/{repo}/commits?per_page=1",
@@ -56,29 +54,12 @@ class DesktopApi:
                     })
         except Exception:
             pass
-
-        # 2) GitHub Commits Atom Feed Fallback
-        try:
-            req = urllib.request.Request(
-                f"https://github.com/{repo}/commits/main.atom",
-                headers={"User-Agent": "Ai-Trade-Marits-Desktop/4.5"}
-            )
-            with urllib.request.urlopen(req, timeout=5) as response:
-                content = response.read().decode('utf-8')
-                m_sha = re.search(r'Commit/([0-9a-f]{40})', content, re.I)
-                m_date = re.search(r'<updated>([^<]+)</updated>', content)
-                m_title = re.search(r'<title>([^<]+)</title>', content)
-                return json.dumps({
-                    "sha": m_sha.group(1) if m_sha else "",
-                    "title": m_title.group(1) if m_title else "최신 업데이트",
-                    "date": m_date.group(1) if m_date else ""
-                })
-        except Exception:
-            return ""
+        return ""
 
     def downloadAndInstallExe(self, download_url):
         """
-        Windows 최신 Setup 설치 파일을 다운로드하여 실행 (기존 설치 앱을 임의로 덮어쓰지 않고 안전하게 Setup 마법사 구동)
+        Setup 설치 파일을 임시 디렉터리에 다운로드한 후 독립 실행 마법사로 구동합니다.
+        (절대 현재 실행 중인 메리츠_AI_주식.exe를 Setup.exe로 덮어쓰지 않습니다!)
         """
         try:
             temp_dir = tempfile.gettempdir()
@@ -109,23 +90,10 @@ class DesktopApi:
             if not os.path.isfile(setup_installer) or os.path.getsize(setup_installer) < 500000:
                 return json.dumps({"ok": False, "msg": "다운로드된 설치 파일 크기가 올바르지 않습니다."})
 
-            bat_path = os.path.join(temp_dir, "meritz_update_restart.bat")
-            bat_content = f"""@echo off
-chcp 65001 > nul
-timeout /t 1 /nobreak > nul
-start "" "{setup_installer}"
-del "%~f0"
-"""
-            with open(bat_path, "w", encoding="cp949") as f:
-                f.write(bat_content)
-
-            DETACHED_PROCESS = 0x00000008
-            CREATE_NO_WINDOW = 0x08000000
-            subprocess.Popen(
-                ["cmd.exe", "/c", bat_path],
-                creationflags=DETACHED_PROCESS | CREATE_NO_WINDOW,
-                close_fds=True
-            )
+            # Setup 설치 마법사 독립 실행
+            subprocess.Popen([setup_installer], shell=True)
+            if self._window:
+                self._window.destroy()
             os._exit(0)
             return json.dumps({"ok": True})
         except Exception as e:
@@ -163,7 +131,6 @@ def main():
     else:
         target_url = "https://okhdev.github.io/AI_TRADE/web/index.html?v=4.5.0"
 
-    # WebView2 사용자 데이터 디렉터리 설정 (독립 격리)
     data_dir = os.path.join(tempfile.gettempdir(), "meritz_ai_stock_wv2")
     os.makedirs(data_dir, exist_ok=True)
 
