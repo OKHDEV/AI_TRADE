@@ -7,7 +7,7 @@
   <script>
     // 🚀 [메리츠 AI 트레이더 v4.4.2 실시간 캐시 무효화 및 강제 자동 최신화]
     (function() {
-      const APP_VER = "4.5.1";
+      const APP_VER = "4.5.2";
       if (localStorage.getItem("meritz_app_cache_ver") !== APP_VER) {
         localStorage.setItem("meritz_app_cache_ver", APP_VER);
         if ('caches' in window) {
@@ -5367,13 +5367,23 @@ function drawChart(code) {
     const cls = isUp ? "up-txt" : "down-txt";
     const chgSign = isUp ? "+" : "";
     const isToday = (selectedCandleIdx === candles.length - 1);
+    const diffDays = candles.length - 1 - selectedCandleIdx;
     const curDateStr = getCandleDateLabel(sc, selectedCandleIdx, candles.length);
-    let dayLabel = `${curDateStr}${isToday ? " (실시간)" : ""}`;
+    let dayLabel = "오늘 (실시간)";
+    if (diffDays > 0) {
+      if (chartTimeframe === "WEEK") {
+        dayLabel = `${diffDays}주전`;
+      } else if (chartTimeframe === "MONTH") {
+        dayLabel = `${diffDays}개월전`;
+      } else {
+        dayLabel = `${diffDays}일전`;
+      }
+    }
 
     detailBar.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-bottom:6px; flex-wrap:nowrap; gap:8px;">
         <div style="display:flex; align-items:center; gap:6px; min-width:0; overflow:hidden; white-space:nowrap;">
-          <span class="badge ${isToday ? 'badge-red' : 'badge-blue'}" style="font-size:11px; padding:2px 7px; flex-shrink:0;">📅 ${dayLabel}</span>
+          <span class="badge ${isToday ? 'badge-red' : 'badge-blue'}" title="${curDateStr}" style="font-size:11px; padding:2px 7px; flex-shrink:0;">📅 ${dayLabel}</span>
           <b style="color:#ffffff; font-size:14.5px; letter-spacing:-0.3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${ana.name}</b>
         </div>
         <div style="text-align:right; white-space:nowrap; flex-shrink:0;">
@@ -7021,13 +7031,13 @@ window.onload = function() {
 // =========================================================================
 const APP_RELEASE_META = {
   appName: "메리츠 AI 주식",
-  currentVersion: "4.5.1",
-  buildDateStr: "2026-10-26 (v4.5.1)",
+  currentVersion: "4.5.2",
+  buildDateStr: "2026-10-26 (v4.5.2)",
   githubRepo: "OKHDEV/AI_TRADE",
   defaultExeName: "Meritz-AI-Stock.exe",
-  defaultSetupName: "Meritz-AI-Stock-Setup-v4.5.1.exe",
-  defaultApkName: "Meritz-AI-Stock-v4.5.1.apk",
-  defaultIpaName: "Meritz-AI-Stock-v4.5.1.ipa"
+  defaultSetupName: "Meritz-AI-Stock-Setup-v4.5.2.exe",
+  defaultApkName: "Meritz-AI-Stock-v4.5.2.apk",
+  defaultIpaName: "Meritz-AI-Stock-v4.5.2.ipa"
 };
 
 function compareSemver(v1, v2) {
@@ -7280,7 +7290,7 @@ async function checkAppUpdateFromGitHub(isManual = false) {
       };
       stopLoadingAndForceUpdate(foundUpdate);
     } else {
-      // ✅ 이미 최신 버전(v4.5.1)임! -> 인트로 완료 후 정상 진입
+      // ✅ 이미 최신 버전(v4.5.2)임! -> 인트로 완료 후 정상 진입
       updateCheckFinished = true;
       window.isUpdatePendingInstall = false;
       window.isUpdateDownloading = false;
