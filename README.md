@@ -40,5 +40,5 @@
 
 * **사이트 개설자 및 앱 개발자:** **오경한**
 * **GitHub Repository:** [https://github.com/OKHDEV/AI_TRADE](https://github.com/OKHDEV/AI_TRADE)
-* **Copyright:** © 2026 오경한. All rights reserved.
+* **Copyright:** © 2026 사이트 개설자 및 앱 개발: 오경한 All rights reserved.
 
