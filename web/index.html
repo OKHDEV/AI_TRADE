@@ -691,6 +691,21 @@
     <button class="btn btn-gold" style="padding:3px 7px; font-size:10.5px; font-weight:800; flex-shrink:0;" onclick="setUiMode('DEFAULT')">기본모드</button>
   </div>
 
+  <!-- 🟢 AI 실시간 시장 감시 가동 상태 배너 (감시 시작 시 실시간 스캔 시각 표시) -->
+  <div id="aiMonitoringLiveBanner" style="display:none; background:linear-gradient(90deg, rgba(6,78,59,0.7) 0%, rgba(15,23,42,0.85) 100%); border:1.5px solid #10b981; border-radius:10px; padding:10px 14px; margin-bottom:10px; font-size:12px; color:#a7f3d0; box-shadow:0 0 12px rgba(16,185,129,0.25);">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span style="display:inline-block; width:9px; height:9px; border-radius:50%; background:#10b981; box-shadow:0 0 10px #10b981; animation:pulse 1s infinite;"></span>
+        <b style="color:#ffffff; font-size:12.5px;">AI 실시간 시장 감시 가동 중</b>
+      </div>
+      <span id="aiScanCycleBadge" class="badge badge-green" style="font-size:10px; padding:2px 8px;">실시간 가동</span>
+    </div>
+    <div style="font-size:11px; color:#94a3b8; margin-top:4px; display:flex; justify-content:space-between; align-items:center;">
+      <span>⚡ 4.5초 주기 KOSPI·KOSDAQ 호가 및 10대 퀀트 지표 분석</span>
+      <span id="aiLastScanTime" style="color:#38bdf8; font-weight:700;">감시 대기 중</span>
+    </div>
+  </div>
+
   <!-- 계좌 명의자 허락(승인) 대기 중인 AI 매수/매도 요청함 -->
   <div class="card-approval">
     <div class="card-title" style="color:#fda4af;">
@@ -749,7 +764,7 @@
   </div>
 
   <!-- 👑 대한민국 시가총액 순위 보드 (접기/펼치기 지원: 기본 1~3위, 펼치면 1~10위) -->
-  <div class="card">
+  <div class="card pro-only">
     <div class="card-title" style="cursor:pointer;" onclick="toggleHomeMarcap()">
       <span>👑 대한민국 시가총액 순위</span>
       <span id="homeMarcapBadge" class="badge badge-gold" style="font-size:10px; cursor:pointer;">1~3위 표시중 (펼치기 ▼)</span>
@@ -922,7 +937,7 @@
   </div>
 
   <!-- 수동 주문 및 메리츠 앱 연동 -->
-  <div class="card">
+  <div class="card pro-only">
     <div class="card-title">
       <span>⚡ 직접 주문 / 메리츠 SMART 앱 연동</span>
       <button class="btn btn-gold" style="padding:3px 8px; font-size:10px;" onclick="addWatchlist(currentChartCode)">⭐ 관심종목 추가</button>
@@ -3980,6 +3995,8 @@ function updateBotUiState() {
       btnEz.className = "btn btn-amber";
       btnEz.textContent = "⏹ AI 주식 감시 정지";
     }
+    const liveBanner = document.getElementById("aiMonitoringLiveBanner");
+    if (liveBanner) liveBanner.style.display = "block";
   } else {
     if (badge) {
       badge.className = "bot-badge";
@@ -3993,6 +4010,8 @@ function updateBotUiState() {
       btnEz.className = "btn btn-green";
       btnEz.textContent = "▶ AI 안전 주식 감시 시작";
     }
+    const liveBannerOff = document.getElementById("aiMonitoringLiveBanner");
+    if (liveBannerOff) liveBannerOff.style.display = "none";
   }
 }
 
@@ -4129,6 +4148,15 @@ function renderHomeMarcapTop10() {
 function runOneBotCycle(isManual) {
   saveBotSettings();
   syncRealNaverQuotesBatch();
+
+  // 실시간 AI 감시 가동 시각 갱신
+  if (botRunning || isManual) {
+    const scanTimeEl = document.getElementById("aiLastScanTime");
+    const scanBadgeEl = document.getElementById("aiScanCycleBadge");
+    const nowTimeStr = new Date().toLocaleTimeString("ko-KR", { hour12: false });
+    if (scanTimeEl) scanTimeEl.textContent = `${nowTimeStr} 정상 스캔됨`;
+    if (scanBadgeEl) scanBadgeEl.textContent = "🟢 실시간 스캔 중";
+  }
 
   const tp = Number(state.config.tp) || 4.5;
   const sl = Number(state.config.sl) || 2.5;
