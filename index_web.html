@@ -7,7 +7,7 @@
   <script>
     // 🚀 [메리츠 AI 트레이더 v4.4.2 실시간 캐시 무효화 및 강제 자동 최신화]
     (function() {
-      const APP_VER = "4.5.2";
+      const APP_VER = "4.5.3";
       if (localStorage.getItem("meritz_app_cache_ver") !== APP_VER) {
         localStorage.setItem("meritz_app_cache_ver", APP_VER);
         if ('caches' in window) {
@@ -924,7 +924,7 @@
     </div>
     <div id="candleDetailBar" style="background:#0f172a; border:1.5px solid #38bdf8; border-radius:10px; padding:8px 12px; margin-bottom:8px; min-height:86px; max-height:86px; box-sizing:border-box; overflow:hidden; font-size:13px; color:#e2e8f0; box-shadow:0 0 10px rgba(56,189,248,0.15);">
       <div style="display:flex; justify-content:space-between; align-items:center; height:100%;">
-        <span style="color:#38bdf8; font-weight:700; font-size:12px;">💡 <b>PC:</b> 마우스 호버(상세정보 추적) · 좌클릭(정보 고정/해제) · 길게 드래그(좌우 이동) · 휠(확대/축소) | <b>모바일:</b> 탭(고정) · 드래그(이동) · 핀치(확대/축소)</span>
+        <span style="color:#38bdf8; font-weight:700; font-size:12px;">💡 <b>PC:</b> 마우스 호버(상세정보 추적) · 좌클릭(정보 고정/해제) · 길게 드래그(좌우 이동) · 휠(확대/축소) | <b>모바일:</b> 탭(캔들선택) · 드래그(이동) · 핀치(확대/축소)</span>
       </div>
     </div>
         <canvas id="stockCanvas" width="680" height="520" style="cursor:crosshair; touch-action:none;"></canvas>
@@ -4871,6 +4871,13 @@ let selectedCandleIdx = null;
 let isCandleDetailPinned = false;
 let chartMousePos = null;
 
+function isMobileEnvironment() {
+  if (typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent || "";
+  const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+  return /Android|iPhone|iPad|iPod|Mobile/i.test(ua) || !!window.AndroidBridge || (isTouch && window.innerWidth <= 820);
+}
+
 function setupCanvasInteractions() {
   const canvas = document.getElementById("stockCanvas");
   if (!canvas || canvas._hasInteraction) return;
@@ -4985,16 +4992,21 @@ function setupCanvasInteractions() {
     if (!isMouseDragging) return;
     isMouseDragging = false;
     const clickDuration = Date.now() - mouseDownTime;
-    // 짧은 좌클릭 (이동 없이 350ms 이내 클릭): 상세 정보 고정/해제 토글!
+    // 짧은 좌클릭 (이동 없이 350ms 이내 클릭): PC에서만 상세 정보 고정/해제 토글!
     if (!hasMouseMoved && clickDuration < 350) {
       const rect = canvas.getBoundingClientRect();
       if (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom) {
         chartMousePos = getCanvasCoords(e);
         updateCandleFromClientX(e.clientX, true);
-        isCandleDetailPinned = !isCandleDetailPinned;
-        drawChart(currentChartCode);
-        if (typeof showNativeToast === "function") {
-          showNativeToast(isCandleDetailPinned ? "📌 상세 정보가 고정되었습니다. (다시 클릭 시 해제)" : "🔓 상세 정보 고정이 해제되었습니다.");
+        if (!isMobileEnvironment()) {
+          isCandleDetailPinned = !isCandleDetailPinned;
+          drawChart(currentChartCode);
+          if (typeof showNativeToast === "function") {
+            showNativeToast(isCandleDetailPinned ? "📌 상세 정보가 고정되었습니다. (다시 클릭 시 해제)" : "🔓 상세 정보 고정이 해제되었습니다.");
+          }
+        } else {
+          isCandleDetailPinned = false;
+          drawChart(currentChartCode);
         }
       }
     }
@@ -5069,12 +5081,10 @@ function setupCanvasInteractions() {
 
   canvas.addEventListener("touchend", function(e) {
     if (touchMode === "pan" && !hasTouchMoved && (Date.now() - touchStartTime) < 350) {
-      isCandleDetailPinned = !isCandleDetailPinned;
+      // 📱 모바일 터치 시에는 고정(Pin)하지 않고 탭한 캔들의 상세 정보만 자유롭게 조회
+      isCandleDetailPinned = false;
       updateCandleFromClientX(touchStartX, true);
       drawChart(currentChartCode);
-      if (typeof showNativeToast === "function") {
-        showNativeToast(isCandleDetailPinned ? "📌 상세 정보가 고정되었습니다. (다시 탭 시 해제)" : "🔓 상세 정보 고정이 해제되었습니다.");
-      }
     }
     if (e.touches.length === 0) {
       touchMode = "none";
@@ -5576,17 +5586,19 @@ function drawChart(code) {
     ctx.fillRect(boxX, boxY, boxW, boxH);
     ctx.strokeRect(boxX, boxY, boxW, boxH);
 
-    // 고정 상태 표시 뱃지 (우측 상단)
-    ctx.font = "bold 9.5px sans-serif";
-    ctx.textAlign = "right";
-    if (isCandleDetailPinned) {
-      ctx.fillStyle = "#fbbf24";
-      ctx.fillText("📌 고정됨 (클릭하여 해제)", boxX + boxW - 8, boxY + 16);
-    } else {
-      ctx.fillStyle = "#94a3b8";
-      ctx.fillText("💡 클릭하여 고정", boxX + boxW - 8, boxY + 16);
+    // 고정 상태 표시 뱃지 (우측 상단 - PC 전용)
+    if (!isMobileEnvironment()) {
+      ctx.font = "bold 9.5px sans-serif";
+      ctx.textAlign = "right";
+      if (isCandleDetailPinned) {
+        ctx.fillStyle = "#fbbf24";
+        ctx.fillText("📌 고정됨 (클릭하여 해제)", boxX + boxW - 8, boxY + 16);
+      } else {
+        ctx.fillStyle = "#94a3b8";
+        ctx.fillText("💡 클릭하여 고정", boxX + boxW - 8, boxY + 16);
+      }
+      ctx.textAlign = "left";
     }
-    ctx.textAlign = "left";
 
     // 1행: [날짜/오늘] 종가 및 등락률
     ctx.fillStyle = "#ffffff";
@@ -7031,13 +7043,13 @@ window.onload = function() {
 // =========================================================================
 const APP_RELEASE_META = {
   appName: "메리츠 AI 주식",
-  currentVersion: "4.5.2",
-  buildDateStr: "2026-10-26 (v4.5.2)",
+  currentVersion: "4.5.3",
+  buildDateStr: "2026-10-26 (v4.5.3)",
   githubRepo: "OKHDEV/AI_TRADE",
   defaultExeName: "Meritz-AI-Stock.exe",
-  defaultSetupName: "Meritz-AI-Stock-Setup-v4.5.2.exe",
-  defaultApkName: "Meritz-AI-Stock-v4.5.2.apk",
-  defaultIpaName: "Meritz-AI-Stock-v4.5.2.ipa"
+  defaultSetupName: "Meritz-AI-Stock-Setup-v4.5.3.exe",
+  defaultApkName: "Meritz-AI-Stock-v4.5.3.apk",
+  defaultIpaName: "Meritz-AI-Stock-v4.5.3.ipa"
 };
 
 function compareSemver(v1, v2) {
@@ -7290,7 +7302,7 @@ async function checkAppUpdateFromGitHub(isManual = false) {
       };
       stopLoadingAndForceUpdate(foundUpdate);
     } else {
-      // ✅ 이미 최신 버전(v4.5.2)임! -> 인트로 완료 후 정상 진입
+      // ✅ 이미 최신 버전(v4.5.3)임! -> 인트로 완료 후 정상 진입
       updateCheckFinished = true;
       window.isUpdatePendingInstall = false;
       window.isUpdateDownloading = false;

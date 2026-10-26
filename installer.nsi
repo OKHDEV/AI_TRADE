@@ -2,7 +2,7 @@
 
 !define PRODUCT_NAME "메리츠 AI 자동 주식"
 !define PRODUCT_SHORT_NAME "메리츠_AI_주식"
-!define PRODUCT_VERSION "4.5.2"
+!define PRODUCT_VERSION "4.5.3"
 !define PRODUCT_PUBLISHER "오경한 (OKHDEV)"
 !define PRODUCT_WEB_SITE "https://okhdev.github.io/AI_TRADE/"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\메리츠_AI_주식.exe"
