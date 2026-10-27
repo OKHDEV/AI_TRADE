@@ -188,7 +188,12 @@ def update_android_manifest(new_ver):
         dst = os.path.join(GIT_DIR, "android_app", "AndroidManifest.xml")
         os.makedirs(os.path.dirname(dst), exist_ok=True)
         shutil.copy2(file_path, dst)
-    print(f"  [OK] AndroidManifest.xml versionCode={code}, versionName={new_ver}")
+        src_java = os.path.join(WORK_DIR, "android_app", "src", "com", "aiquant", "autotrader", "MainActivity.java")
+        dst_java = os.path.join(GIT_DIR, "android_app", "src", "com", "aiquant", "autotrader", "MainActivity.java")
+        if os.path.exists(src_java):
+            os.makedirs(os.path.dirname(dst_java), exist_ok=True)
+            shutil.copy2(src_java, dst_java)
+    print(f"  [OK] AndroidManifest.xml versionCode={code}, versionName={new_ver} (and MainActivity.java synced)")
 
 def update_build_ipa(new_ver):
     file_path = os.path.join(WORK_DIR, "build_ipa.py")
@@ -327,11 +332,12 @@ def deploy_github(new_ver):
     release_notes = f"""## 메리츠 AI 자동 주식 트레이더 v{new_ver} 정식 배포
 
 ### 주요 업데이트
-- 차트 상단 상세 정보바 및 캔들 호버 레이아웃 완전 고정 (수직 이동 현상 원천 차단)
-- 웹사이트 최신 정식 빌드 배지 및 다운로드 링크 실시간 자동 동기화 시스템 탑재
-- Windows 정식 NSIS 설치 마법사 지원 (바탕화면/시작메뉴/제어판 프로그램 추가·제거 등록)
-- 메리츠증권 Open API 실시간 7중 안전 감시 체결 엔진
-- Android APK 및 iOS Safari PWA 지원
+- 🔔 [주문 승인 연동] 고객님 주문 승인 대기함에서 종목명 클릭 시 차트·주문 탭으로 즉시 이동하여 차트 및 상세 분석 조회 기능 탑재
+- 📈 [차트 종횡비 최적화] 스마트폰 화면이 길쭉(20:9, 21:9)해도 캔들이 위아래로 길쭉하게 늘어나는 왜곡 원천 차단 (최적 종횡비 680/446 완전 고정)
+- 🔍 [모바일 가독성 대폭 향상] 캔들 두께 대폭 강화, 가격 축/라벨 볼드체 확대, 기본 1개월(22캔들) 시각화로 한눈에 쉽게 확인 가능
+- ⬇️ [모바일 업데이트 안정화] 다운로드 중단/무한 멈춤 현상 원천 해결 (S3 리디렉트 인코딩 보정 및 자바스크립트 예외 회피)
+- 🛡️ 메리츠증권 Open API 실시간 7중 안전 감시 체결 엔진
+- 💻 Windows EXE 및 Setup 설치 마법사, Android APK, iOS IPA 전 플랫폼 동시 배포
 """
 
     assets = [

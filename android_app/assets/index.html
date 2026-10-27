@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -7,7 +7,7 @@
   <script>
     // 🚀 [메리츠 AI 트레이더 v4.4.2 실시간 캐시 무효화 및 강제 자동 최신화]
     (function() {
-      const APP_VER = "4.5.3";
+      const APP_VER = "4.5.4";
       if (localStorage.getItem("meritz_app_cache_ver") !== APP_VER) {
         localStorage.setItem("meritz_app_cache_ver", APP_VER);
         if ('caches' in window) {
@@ -342,7 +342,20 @@
     font-size: 9px; font-weight: 800; border-radius: 10px; padding: 1px 5px; display: none;
   }
 
-  canvas { width: 100%; height: 300px; background: #0b1120; border-radius: 8px; display: block; }
+  /* 차트 캔버스 스타일: 휴대폰이 길쭉해도 세로로 늘어지지 않고 최적 종횡비(680/446)를 완벽 유지 */
+  #stockCanvas, canvas {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 680 / 446;
+    max-height: 420px;
+    background: #0b1120;
+    border-radius: 8px;
+    display: block;
+    box-sizing: border-box;
+  }
+  #tab-chart .card {
+    padding: 11px 9px;
+  }
 
   /* 초보자 전용 쉬운 모드 UI: 4개 탭(홈, 추천, 차트, 설정)과 네비게이션이 100% 온전히 유지되며 각 페이지 UI만 초보자용으로 직관적 전환 */
   body.beginner-ui-active #cardReservedOrders.ez-empty { display: none !important; }
@@ -927,7 +940,7 @@
         <span style="color:#38bdf8; font-weight:700; font-size:12px;">💡 <b>PC:</b> 마우스 호버(상세정보 추적) · 좌클릭(정보 고정/해제) · 길게 드래그(좌우 이동) · 휠(확대/축소) | <b>모바일:</b> 탭(캔들선택) · 드래그(이동) · 핀치(확대/축소)</span>
       </div>
     </div>
-        <canvas id="stockCanvas" width="680" height="520" style="cursor:crosshair; touch-action:none;"></canvas>
+        <canvas id="stockCanvas" width="680" height="446" style="cursor:crosshair; touch-action:none;"></canvas>
 
     <!-- 🎛️ 차트 상세 설정 & 기간 조회 바 (몇주/몇달 보기, 접기/펼치기 지원) -->
     <div id="chartDetailSettingsPanel" style="margin-top:10px; background:#0b1329; border:1px solid #1e293b; border-radius:10px; padding:10px 12px;">
@@ -951,8 +964,8 @@
           <div style="display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
             <span style="font-size:12px; font-weight:800; color:#94a3b8; margin-right:2px;">기간:</span>
             <button class="chart-btn" id="cp-1w" onclick="setChartPeriod('1W')">1주</button>
-            <button class="chart-btn" id="cp-1m" onclick="setChartPeriod('1M')">1개월</button>
-            <button class="chart-btn active" id="cp-3m" onclick="setChartPeriod('3M')">3개월</button>
+            <button class="chart-btn active" id="cp-1m" onclick="setChartPeriod('1M')">1개월</button>
+            <button class="chart-btn" id="cp-3m" onclick="setChartPeriod('3M')">3개월</button>
             <button class="chart-btn" id="cp-6m" onclick="setChartPeriod('6M')">6개월</button>
             <button class="chart-btn" id="cp-1y" onclick="setChartPeriod('1Y')">1년</button>
             <button class="chart-btn" id="cp-all" onclick="setChartPeriod('ALL')">전체</button>
@@ -1736,6 +1749,7 @@ let botRunning = false; window.botRunning = false;
 let botTimer = null;
 let currentRecCat = "MARKET_CAP_TOP10";
 let currentChartCode = "005930";
+if (typeof window !== "undefined") window.currentChartCode = currentChartCode;
 let lastTgUpdateId = 0;
 
 // 계좌, 안전장치, 주인 승인 대기열 상태 (계좌 미연결 기본값: 0원 — 메리츠 Open API로 실제 자산을 불러오기 전에는 절대 가짜 돈 표시 안 함)
@@ -4606,8 +4620,8 @@ function renderDashboard() {
           <div style="min-width:0; flex:1 1 auto;">
             <div style="display:flex; align-items:center; gap:5px; flex-wrap:wrap;">
               <span class="badge ${req.side === '매수' ? 'badge-red' : 'badge-blue'}" style="font-size:10px; padding:3px 6px; flex-shrink:0;">AI ${req.side} 요청</span>
-              <b style="font-size:14.5px; font-weight:900; color:#fff; letter-spacing:-0.3px; white-space:nowrap;">${req.name}</b>
-              <span style="font-size:11px; color:#94a3b8; font-weight:600; white-space:nowrap;">(${req.code})</span>
+              <b onclick="openChartTab('${req.code}')" style="font-size:14.5px; font-weight:900; color:#38bdf8; cursor:pointer; text-decoration:underline; text-underline-offset:2.5px; letter-spacing:-0.3px; white-space:nowrap;" title="클릭 시 '${req.name}' 차트 및 주문 페이지로 이동">${req.name}</b>
+              <span onclick="openChartTab('${req.code}')" style="font-size:11px; color:#94a3b8; font-weight:600; cursor:pointer; white-space:nowrap;" title="클릭 시 '${req.name}' 차트 및 주문 페이지로 이동">(${req.code} 📈)</span>
             </div>
           </div>
           <span class="badge badge-gold" style="font-size:10px; padding:3px 6px; flex-shrink:0;">AI ${req.aiScore}점</span>
@@ -5104,9 +5118,21 @@ function setupCanvasInteractions() {
 function openChartTab(code) {
   // 쉬운 모드 상태 유지 (사용자가 의도치 않게 기본 모드로 풀리지 않도록 보호)
   currentChartCode = code;
+  if (typeof window !== "undefined") window.currentChartCode = code;
   selectedCandleIdx = null;
-  switchTab("chart", document.querySelectorAll(".nav-item")[2]);
-  drawChart(code);
+  try {
+    const navItems = (typeof document !== "undefined" && document.querySelectorAll) ? document.querySelectorAll(".nav-item") : [];
+    switchTab("chart", navItems ? navItems[2] : null);
+    drawChart(code);
+  } catch (e) {
+    console.warn("[openChartTab]", e);
+  }
+  try {
+    const chartTab = document.getElementById("tab-chart");
+    if (chartTab && chartTab.scrollIntoView) chartTab.scrollIntoView({ behavior: "smooth", block: "start" });
+  } catch (e) {
+    if (typeof window !== "undefined" && window.scrollTo) window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 }
 
 function renderQuickStockChips() {
@@ -5118,7 +5144,7 @@ function renderQuickStockChips() {
 }
 
 let chartTimeframe = "DAY"; // 'DAY' | 'WEEK' | 'MONTH'
-let chartPeriod = "3M";     // '1W' | '1M' | '3M' | '6M' | '1Y' | 'ALL'
+let chartPeriod = "1M";     // '1W' | '1M' | '3M' | '6M' | '1Y' | 'ALL'
 let chartSettings = {
   showMA: true,
   showBB: false,
@@ -5185,11 +5211,11 @@ function getAggregatedCandles(rawCandles, timeframe, period, zoomOffset) {
 
   let count = list.length;
   if (timeframe === "DAY") {
-    if (period === "1W") count = 5;
-    else if (period === "1M") count = 20;
-    else if (period === "3M") count = 60;
-    else if (period === "6M") count = 120;
-    else if (period === "1Y") count = 240;
+    if (period === "1W") count = 7;
+    else if (period === "1M") count = 22;
+    else if (period === "3M") count = 38;
+    else if (period === "6M") count = 75;
+    else if (period === "1Y") count = 150;
   } else if (timeframe === "WEEK") {
     if (period === "1W") count = 4;
     else if (period === "1M") count = 8;
@@ -5260,7 +5286,7 @@ function resetChartSettings() {
   chartMousePos = null;
   document.querySelectorAll("#chartDetailSettingsPanel .chart-btn").forEach(b => b.classList.remove("active"));
   const bTf = document.getElementById("tf-day"); if (bTf) bTf.classList.add("active");
-  const bP = document.getElementById("cp-3m"); if (bP) bP.classList.add("active");
+  const bP = document.getElementById("cp-1m"); if (bP) bP.classList.add("active");
   const chkMA = document.getElementById("chkChartMA"); if (chkMA) chkMA.checked = true;
   const chkBB = document.getElementById("chkChartBB"); if (chkBB) chkBB.checked = false;
   const chkRSI = document.getElementById("chkChartRSI"); if (chkRSI) chkRSI.checked = true;
@@ -5274,7 +5300,7 @@ function resetChartSettings() {
 function drawMovingAverage(ctx, candles, period, color, padL, stepX, yPrice) {
   if (candles.length < period) return;
   ctx.strokeStyle = color;
-  ctx.lineWidth = 1.3;
+  ctx.lineWidth = 1.8;
   ctx.beginPath();
   let started = false;
   for (let i = period - 1; i < candles.length; i++) {
@@ -5363,8 +5389,10 @@ function drawChart(code) {
   const sign = ana.change >= 0 ? "▲" : "▼";
   const hdr = document.getElementById("chartHeaderTitle");
   const tfName = chartTimeframe === "WEEK" ? "주봉" : (chartTimeframe === "MONTH" ? "월봉" : "일봉");
-  hdr.textContent = `${ana.name} (${code}) | [${tfName}] 현재가 ${fmt(ana.price)}원 (${sign}${fmt(Math.abs(ana.change))}원 ${ana.changePct >= 0 ? "+" : ""}${ana.changePct}%)`;
-  hdr.className = ana.changePct >= 0 ? "up-txt" : "down-txt";
+  if (hdr) {
+    hdr.textContent = `${ana.name} (${code}) | [${tfName}] 현재가 ${fmt(ana.price)}원 (${sign}${fmt(Math.abs(ana.change))}원 ${ana.changePct >= 0 ? "+" : ""}${ana.changePct}%)`;
+    hdr.className = ana.changePct >= 0 ? "up-txt" : "down-txt";
+  }
 
   // 터치/클릭된 캔들 일자별 세부정보 바 갱신
   const detailBar = document.getElementById("candleDetailBar");
@@ -5410,20 +5438,24 @@ function drawChart(code) {
     `;
   }
 
-  document.getElementById("diagScoreBadge").textContent = `AI ${ana.aiScore}점 · ${ana.signal}`;
-  document.getElementById("diagSafetyAlert").textContent = ana.safetyWarning;
-  document.getElementById("diagSafetyAlert").style.color = ana.isSafeToBuy ? "#34d399" : "#ff4d4f";
-  document.getElementById("diagTargets").textContent = `매수가: ${fmt(ana.entryPrice)}원 | 목표가: ${fmt(ana.targetPrice)}원 | 칼손절가: ${fmt(ana.stopPrice)}원`;
-  document.getElementById("diagReasons").innerHTML = ana.reasons.map(r => `• ${r}`).join("<br>");
+  const dScore = document.getElementById("diagScoreBadge"); if (dScore) dScore.textContent = `AI ${ana.aiScore}점 · ${ana.signal}`;
+  const dAlert = document.getElementById("diagSafetyAlert"); if (dAlert) { dAlert.textContent = ana.safetyWarning; dAlert.style.color = ana.isSafeToBuy ? "#34d399" : "#ff4d4f"; }
+  const dTargets = document.getElementById("diagTargets"); if (dTargets) dTargets.textContent = `매수가: ${fmt(ana.entryPrice)}원 | 목표가: ${fmt(ana.targetPrice)}원 | 칼손절가: ${fmt(ana.stopPrice)}원`;
+  const dReasons = document.getElementById("diagReasons"); if (dReasons) dReasons.innerHTML = ana.reasons.map(r => `• ${r}`).join("<br>");
   renderMeritzIndicatorsReport(ana);
 
   const canvas = document.getElementById("stockCanvas");
+  if (!canvas || !canvas.getContext) return;
   const ctx = canvas.getContext("2d");
   const W = canvas.width, H = canvas.height;
   ctx.clearRect(0, 0, W, H);
 
   const padL = 14, padR = 76, padT = 18;
-  const cH = 310, vTop = 345, vH = 75, rTop = 435, rH = 65;
+  const isRsiOn = !!chartSettings.showRSI;
+  const cH = isRsiOn ? 275 : 335;
+  const vTop = isRsiOn ? 300 : 362;
+  const vH = isRsiOn ? 55 : 56;
+  const rTop = 368, rH = 50;
   const chartW = W - padL - padR;
 
   const prices = [];
@@ -5439,9 +5471,9 @@ function drawChart(code) {
     const y = padT + (cH / 4) * i;
     ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
     const val = Math.round(maxP - ((maxP - minP) / 4) * i);
-    ctx.fillStyle = "#94a3b8";
-    ctx.font = "11px sans-serif";
-    ctx.fillText(fmt(val), W - padR + 4, y + 4);
+    ctx.fillStyle = "#cbd5e1";
+    ctx.font = "bold 12px sans-serif";
+    ctx.fillText(fmt(val), W - padR + 5, y + 4);
   }
 
   const stepX = chartW / candles.length;
@@ -5452,11 +5484,12 @@ function drawChart(code) {
     const isUp = c.c >= c.o;
     ctx.strokeStyle = isUp ? "#ff4d4f" : "#3b82f6";
     ctx.fillStyle = isUp ? "#ff4d4f" : "#3b82f6";
+    ctx.lineWidth = 1.6;
     ctx.beginPath(); ctx.moveTo(x, yPrice(c.h)); ctx.lineTo(x, yPrice(c.l)); ctx.stroke();
     const yO = yPrice(c.o), yC = yPrice(c.c);
-    ctx.fillRect(x - stepX * 0.32, Math.min(yO, yC), stepX * 0.64, Math.max(2, Math.abs(yC - yO)));
+    ctx.fillRect(x - stepX * 0.35, Math.min(yO, yC), stepX * 0.70, Math.max(2.5, Math.abs(yC - yO)));
     const vh = (c.v / maxV) * vH;
-    ctx.fillRect(x - stepX * 0.3, vTop + vH - vh, stepX * 0.6, vh);
+    ctx.fillRect(x - stepX * 0.32, vTop + vH - vh, stepX * 0.64, vh);
   });
 
   // 이동평균선(MA) 그리기
@@ -5464,10 +5497,10 @@ function drawChart(code) {
     drawMovingAverage(ctx, candles, 5, "#fbbf24", padL, stepX, yPrice);
     drawMovingAverage(ctx, candles, 20, "#f43f5e", padL, stepX, yPrice);
     drawMovingAverage(ctx, candles, 60, "#38bdf8", padL, stepX, yPrice);
-    ctx.font = "bold 10px sans-serif";
-    ctx.fillStyle = "#fbbf24"; ctx.fillText("— MA5", W - padR - 170, padT - 5);
-    ctx.fillStyle = "#f43f5e"; ctx.fillText("— MA20", W - padR - 125, padT - 5);
-    ctx.fillStyle = "#38bdf8"; ctx.fillText("— MA60", W - padR - 75, padT - 5);
+    ctx.font = "bold 11.5px sans-serif";
+    ctx.fillStyle = "#fbbf24"; ctx.fillText("— MA5", W - padR - 180, padT - 5);
+    ctx.fillStyle = "#f43f5e"; ctx.fillText("— MA20", W - padR - 130, padT - 5);
+    ctx.fillStyle = "#38bdf8"; ctx.fillText("— MA60", W - padR - 78, padT - 5);
   }
 
   // 볼린저 밴드 그리기
@@ -5508,11 +5541,11 @@ function drawChart(code) {
     ctx.save();
     // 세로 십자선 (선택 캔들 강조)
     ctx.strokeStyle = "rgba(56, 189, 248, 0.75)";
-    ctx.lineWidth = 1.2;
+    ctx.lineWidth = 1.4;
     ctx.setLineDash([3, 3]);
     ctx.beginPath();
     ctx.moveTo(selX, padT);
-    ctx.lineTo(selX, rTop + rH);
+    ctx.lineTo(selX, isRsiOn ? (rTop + rH) : (vTop + vH));
     ctx.stroke();
 
     // 가로 십자선 (선택 캔들 종가 라인)
@@ -5523,9 +5556,9 @@ function drawChart(code) {
 
     // 우측 가격 축 태그
     ctx.fillStyle = "#0284c7";
-    ctx.fillRect(W - padR + 2, selY - 9, 72, 18);
+    ctx.fillRect(W - padR + 2, selY - 10, 72, 20);
     ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 10.5px sans-serif";
+    ctx.font = "bold 11.5px sans-serif";
     ctx.fillText(fmt(sc.c), W - padR + 6, selY + 4);
 
     // 차트 좌상단 오버레이 상세 박스 (고대비 대형 2단 HUD 카드)
@@ -5539,11 +5572,12 @@ function drawChart(code) {
       ctx.fillStyle = "#0284c7";
       const dtBadgeW = Math.max(50, ctx.measureText(scDate).width + 14);
       const bx = Math.max(padL, Math.min(W - padR - dtBadgeW, selX - dtBadgeW / 2));
-      ctx.fillRect(bx, vTop - 18, dtBadgeW, 16);
+      const badgeY = isRsiOn ? (rTop - 18) : (vTop - 18);
+      ctx.fillRect(bx, badgeY, dtBadgeW, 16);
       ctx.fillStyle = "#ffffff";
       ctx.font = "bold 10px sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText(scDate, bx + dtBadgeW / 2, vTop - 6);
+      ctx.fillText(scDate, bx + dtBadgeW / 2, badgeY + 12);
       ctx.restore();
     }
     const prevC = selectedCandleIdx > 0 ? (candles[selectedCandleIdx - 1].close || candles[selectedCandleIdx - 1].c) : sc.o;
@@ -5619,20 +5653,21 @@ function drawChart(code) {
 
   // RSI
   if (chartSettings.showRSI) {
-  ctx.strokeStyle = "#334155";
-  ctx.strokeRect(padL, rTop, chartW, rH);
-  ctx.strokeStyle = "#c084fc";
-  ctx.lineWidth = 1.8;
-  ctx.beginPath();
-  candles.forEach((c, i) => {
-    const x = padL + i * stepX + stepX / 2;
-    const rVal = Math.min(88, Math.max(18, ana.rsi + Math.sin(i * 0.5) * 9));
-    const y = rTop + rH - ((rVal / 100) * rH);
-    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-  });
-  ctx.stroke();
-  ctx.fillStyle = "#c084fc";
-  ctx.fillText("RSI " + ana.rsi, W - padR + 4, rTop + rH / 2);
+    ctx.strokeStyle = "#334155";
+    ctx.strokeRect(padL, rTop, chartW, rH);
+    ctx.strokeStyle = "#c084fc";
+    ctx.lineWidth = 2.0;
+    ctx.beginPath();
+    candles.forEach((c, i) => {
+      const x = padL + i * stepX + stepX / 2;
+      const rVal = Math.min(88, Math.max(18, ana.rsi + Math.sin(i * 0.5) * 9));
+      const y = rTop + rH - ((rVal / 100) * rH);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+    ctx.fillStyle = "#c084fc";
+    ctx.font = "bold 11px sans-serif";
+    ctx.fillText("RSI " + ana.rsi, W - padR + 5, rTop + rH / 2 + 4);
   }
 
   // 📅 하단 X축 날짜 라벨 및 눈금선 표시
@@ -5640,20 +5675,21 @@ function drawChart(code) {
     ctx.save();
     const numLabels = Math.min(6, candles.length);
     const interval = Math.max(1, Math.floor(candles.length / numLabels));
-    ctx.fillStyle = "#94a3b8";
-    ctx.font = "10px sans-serif";
+    ctx.fillStyle = "#cbd5e1";
+    ctx.font = "bold 11px sans-serif";
     ctx.textAlign = "center";
+    const dateY = isRsiOn ? (rTop + rH + 16) : (vTop + vH + 16);
     for (let i = 0; i < candles.length; i += interval) {
       const c = candles[i];
       if (!c) continue;
       const x = padL + i * stepX + stepX / 2;
       const label = getCandleDateLabel(c, i, candles.length);
-      ctx.fillText(label, x, vTop - 4);
-      ctx.strokeStyle = "rgba(148, 163, 184, 0.2)";
+      ctx.fillText(label, x, dateY);
+      ctx.strokeStyle = "rgba(148, 163, 184, 0.25)";
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(x, padT + cH);
-      ctx.lineTo(x, vTop);
+      ctx.lineTo(x, dateY - 12);
       ctx.stroke();
     }
     const lastIdx = candles.length - 1;
@@ -5661,7 +5697,7 @@ function drawChart(code) {
       const lc = candles[lastIdx];
       const lx = padL + lastIdx * stepX + stepX / 2;
       const lLabel = getCandleDateLabel(lc, lastIdx, candles.length);
-      ctx.fillText(lLabel, Math.min(W - padR - 16, lx), vTop - 4);
+      ctx.fillText(lLabel, Math.min(W - padR - 16, lx), dateY);
     }
     ctx.restore();
   }
@@ -7043,13 +7079,13 @@ window.onload = function() {
 // =========================================================================
 const APP_RELEASE_META = {
   appName: "메리츠 AI 주식",
-  currentVersion: "4.5.3",
-  buildDateStr: "2026-10-26 (v4.5.3)",
+  currentVersion: "4.5.4",
+  buildDateStr: "2026-10-27 (v4.5.4)",
   githubRepo: "OKHDEV/AI_TRADE",
   defaultExeName: "Meritz-AI-Stock.exe",
-  defaultSetupName: "Meritz-AI-Stock-Setup-v4.5.3.exe",
-  defaultApkName: "Meritz-AI-Stock-v4.5.3.apk",
-  defaultIpaName: "Meritz-AI-Stock-v4.5.3.ipa"
+  defaultSetupName: "Meritz-AI-Stock-Setup-v4.5.4.exe",
+  defaultApkName: "Meritz-AI-Stock-v4.5.4.apk",
+  defaultIpaName: "Meritz-AI-Stock-v4.5.4.ipa"
 };
 
 function compareSemver(v1, v2) {
@@ -7073,13 +7109,13 @@ window.isUpdatePendingInstall = false;
 
 function getAppPlatformType() {
   const isIos = (typeof navigator !== 'undefined') && /iphone|ipad|ipod/i.test(navigator.userAgent || "");
-  const isAndroid = !!(window.AndroidBridge && typeof window.AndroidBridge.downloadAndInstallApk === 'function');
+  const isAndroid = !!(typeof window !== 'undefined' && window.AndroidBridge && typeof window.AndroidBridge.downloadAndInstallApk === 'function');
+  const locProto = (typeof window !== 'undefined' && window.location && window.location.protocol) ? window.location.protocol : "";
   const isWindows = !!(
-    window.pywebview ||
-    window.isDesktopApp ||
-    (typeof navigator !== 'undefined' && navigator.userAgent.includes("Windows") && (window.location.protocol === "file:" || !window.AndroidBridge))
+    (typeof window !== 'undefined' && (window.pywebview || window.isDesktopApp)) ||
+    (typeof navigator !== 'undefined' && (navigator.userAgent || "").includes("Windows") && (locProto === "file:" || (typeof window !== 'undefined' && !window.AndroidBridge)))
   );
-  const isPureWeb = (typeof window !== 'undefined') && window.location.protocol.startsWith("http") && !window.AndroidBridge && !window.pywebview && !window.isDesktopApp;
+  const isPureWeb = (typeof window !== 'undefined') && locProto.startsWith("http") && !window.AndroidBridge && !window.pywebview && !window.isDesktopApp;
   if (isAndroid) return "ANDROID";
   if (isWindows && !isPureWeb) return "WINDOWS";
   if (isIos) return "IOS";
@@ -7271,17 +7307,26 @@ async function checkAppUpdateFromGitHub(isManual = false) {
         const res = await fetch(`https://api.github.com/repos/${repo}/releases/latest`);
         if (res.ok) {
           const d = await res.json();
+          let apkUrl = "";
           let exeUrl = "";
           for (const a of (d.assets || [])) {
-            if (a.name === "Meritz-AI-Stock.exe" || a.name === "메리츠_AI_주식.exe") {
+            const aname = (a.name || "").toLowerCase();
+            if (aname.endsWith(".apk")) {
+              apkUrl = a.browser_download_url;
+            } else if (aname.endsWith(".exe") && !aname.includes("setup")) {
               exeUrl = a.browser_download_url;
-              break;
             }
           }
+          const isAndroidEnv = (platform === "ANDROID") || !!window.AndroidBridge;
+          const targetDownloadUrl = isAndroidEnv
+            ? (apkUrl || `https://github.com/${repo}/releases/download/${d.tag_name || ('v' + APP_RELEASE_META.currentVersion)}/${APP_RELEASE_META.defaultApkName}`)
+            : (exeUrl || `https://github.com/${repo}/releases/download/${d.tag_name || ('v' + APP_RELEASE_META.currentVersion)}/${APP_RELEASE_META.defaultExeName}`);
+
           latestRelease = {
             tag: d.tag_name || `v${APP_RELEASE_META.currentVersion}`,
             name: d.name || "",
-            downloadUrl: exeUrl || `https://github.com/${repo}/releases/download/v${APP_RELEASE_META.currentVersion}/Meritz-AI-Stock.exe`,
+            downloadUrl: targetDownloadUrl,
+            webUrl: d.html_url || `https://github.com/${repo}/releases/tag/${d.tag_name || ('v' + APP_RELEASE_META.currentVersion)}`,
             publishedAt: d.published_at || ""
           };
         }
@@ -7302,7 +7347,7 @@ async function checkAppUpdateFromGitHub(isManual = false) {
       };
       stopLoadingAndForceUpdate(foundUpdate);
     } else {
-      // ✅ 이미 최신 버전(v4.5.3)임! -> 인트로 완료 후 정상 진입
+      // ✅ 이미 최신 버전(v4.5.4)임! -> 인트로 완료 후 정상 진입
       updateCheckFinished = true;
       window.isUpdatePendingInstall = false;
       window.isUpdateDownloading = false;
@@ -7332,6 +7377,9 @@ async function checkAppUpdateFromGitHub(isManual = false) {
   }
 }
 
+let updateWatchdogTimer = null;
+let lastDownloadProgressTime = Date.now();
+
 function stopLoadingAndForceUpdate(foundUpdate) {
   if (splashDismissTimer) {
     clearTimeout(splashDismissTimer);
@@ -7340,9 +7388,13 @@ function stopLoadingAndForceUpdate(foundUpdate) {
   isUpdateDownloading = true;
   window.isUpdateDownloading = true;
   window.isUpdatePendingInstall = true;
+  latestRemoteUpdateInfo = foundUpdate;
 
   const splash = document.getElementById("appSplashScreen");
-  const isWindows = foundUpdate.platform === "WINDOWS";
+  const platform = getAppPlatformType();
+  const isWindows = foundUpdate.platform === "WINDOWS" || platform === "WINDOWS";
+  const isAndroid = foundUpdate.platform === "ANDROID" || platform === "ANDROID" || !!window.AndroidBridge;
+  const webUrl = (foundUpdate && (foundUpdate.webUrl || foundUpdate.downloadUrl)) || `https://github.com/${APP_RELEASE_META.githubRepo}/releases/latest`;
 
   if (splash) {
     splash.style.opacity = "1";
@@ -7353,7 +7405,7 @@ function stopLoadingAndForceUpdate(foundUpdate) {
       <div style="font-size:19px; font-weight:900; color:#38bdf8; letter-spacing:-0.5px; margin-bottom:6px;">새 최신 버전(${foundUpdate.version}) 자동 업데이트</div>
       <div style="font-size:12.5px; color:#cbd5e1; margin-bottom:16px; line-height:1.5; max-width:320px;">
         최신 빌드가 등록되어 자동으로 업데이트를 진행합니다.<br>
-        <span style="color:#34d399; font-size:11.5px; font-weight:800;">다운로드 완료 후 자동으로 재시작됩니다.</span>
+        <span style="color:#34d399; font-size:11.5px; font-weight:800;">다운로드 완료 후 자동으로 설치 창이 열립니다.</span>
       </div>
 
       <div style="width:260px; height:8px; background:#1e293b; border-radius:10px; overflow:hidden; margin-bottom:8px; box-shadow:0 0 14px rgba(56,189,248,0.5);">
@@ -7368,30 +7420,93 @@ function stopLoadingAndForceUpdate(foundUpdate) {
       </div>
 
       <div id="forceUpdateActionArea" style="width:100%; max-width:280px; display:flex; flex-direction:column; gap:8px;">
-        
+        <button class="btn btn-meritz" style="padding:9px 12px; font-size:12px; font-weight:800; border-radius:10px; width:100%; box-shadow:0 0 10px rgba(56,189,248,0.25);" onclick="openDownloadInBrowserFallback('${webUrl}')">
+          🌐 다운로드 지연 시 브라우저에서 직접 받기
+        </button>
+        <button class="btn btn-dark" style="padding:7px 10px; font-size:11px; border-radius:8px; width:100%; opacity:0.85;" onclick="skipOrFinishUpdate()">
+          ⏭️ 나중에 업데이트 (앱 바로 열기)
+        </button>
       </div>
     `;
   }
 
-  // Windows 데스크톱인 경우 즉시 백그라운드 다운로드 및 자동 재실행 트리거!
+  // 1. Windows 데스크톱인 경우
   if (isWindows && window.pywebview && window.pywebview.api && window.pywebview.api.downloadAndInstallExe) {
     window.pywebview.api.downloadAndInstallExe(foundUpdate.downloadUrl);
   }
+  // 2. Android 모바일인 경우 즉각 백그라운드 다운로드 & 설치 엔진 실행!
+  else if (isAndroid && window.AndroidBridge) {
+    if (typeof window.AndroidBridge.downloadAndApplyUpdate === "function") {
+      window.AndroidBridge.downloadAndApplyUpdate(foundUpdate.downloadUrl);
+    } else if (typeof window.AndroidBridge.downloadAndInstallApk === "function") {
+      window.AndroidBridge.downloadAndInstallApk(foundUpdate.downloadUrl, APP_RELEASE_META.defaultApkName);
+    }
+  }
+
+  // 3. 다운로드 멈춤 방지 워치독 타이머 (10초 이상 무응답 시 자동 감지 및 안내)
+  lastDownloadProgressTime = Date.now();
+  if (updateWatchdogTimer) clearInterval(updateWatchdogTimer);
+  updateWatchdogTimer = setInterval(() => {
+    if (!isUpdateDownloading) {
+      clearInterval(updateWatchdogTimer);
+      updateWatchdogTimer = null;
+      return;
+    }
+    const elapsed = Date.now() - lastDownloadProgressTime;
+    if (elapsed > 10000) {
+      const txt = document.getElementById("forceUpdateProgressTxt");
+      const bar = document.getElementById("forceUpdateBar");
+      if (txt) {
+        txt.textContent = "⚠️ 네트워크 지연 발생 (브라우저 직접 받기 가능)";
+        txt.style.color = "#fbbf24";
+      }
+      if (bar) bar.style.background = "#fbbf24";
+      const actionArea = document.getElementById("forceUpdateActionArea");
+      if (actionArea) {
+        actionArea.innerHTML = `
+          <button class="btn btn-green" style="padding:11px 16px; font-size:13.5px; font-weight:900; border-radius:10px; width:100%; margin-bottom:4px; box-shadow:0 0 12px rgba(34,197,94,0.3);" onclick="retryForceUpdateDownload()">
+            🔄 다운로드 다시 시도
+          </button>
+          <button class="btn btn-meritz" style="padding:9px 12px; font-size:12px; font-weight:800; border-radius:10px; width:100%;" onclick="openDownloadInBrowserFallback('${webUrl}')">
+            🌐 모바일 브라우저에서 직접 받기
+          </button>
+          <button class="btn btn-dark" style="padding:7px 10px; font-size:11px; border-radius:8px; width:100%; margin-top:2px;" onclick="skipOrFinishUpdate()">
+            ⏭️ 나중에 업데이트 (앱 바로 열기)
+          </button>
+        `;
+      }
+    }
+  }, 2000);
 }
 
 // 실시간 다운로드 퍼센트 및 용량 UI 반영
 window.onUpdateDownloadProgress = function(pct, downloaded, total) {
+  lastDownloadProgressTime = Date.now();
   const bar = document.getElementById("forceUpdateBar");
   const txt = document.getElementById("forceUpdateProgressTxt");
   const kb = document.getElementById("forceUpdateKbTxt");
-  if (bar) bar.style.width = Math.max(5, pct) + "%";
-  if (txt) txt.textContent = `⬇️ 업데이트 다운로드 중... ${pct}%`;
-  if (kb && total > 0) {
-    kb.textContent = `${Math.round(downloaded / 1024)} KB / ${Math.round(total / 1024)} KB`;
+  if (bar) {
+    bar.style.width = Math.max(5, pct) + "%";
+    bar.style.background = "linear-gradient(90deg, #38bdf8, #10b981)";
+  }
+  if (txt) {
+    txt.textContent = `⬇️ 업데이트 다운로드 중... ${pct}%`;
+    txt.style.color = "#38bdf8";
+  }
+  if (kb) {
+    if (total > 0) {
+      kb.textContent = `${Math.round(downloaded / 1024)} KB / ${Math.round(total / 1024)} KB`;
+    } else {
+      kb.textContent = `${Math.round(downloaded / 1024)} KB 다운로드 중...`;
+    }
   }
 };
 
 window.onUpdateComplete = function(success) {
+  if (updateWatchdogTimer) {
+    clearInterval(updateWatchdogTimer);
+    updateWatchdogTimer = null;
+  }
   isUpdateDownloading = false;
   window.isUpdateDownloading = false;
   window.isUpdatePendingInstall = true;
@@ -7434,6 +7549,10 @@ window.onUpdateComplete = function(success) {
 };
 
 window.onUpdateFailed = function(errMsg) {
+  if (updateWatchdogTimer) {
+    clearInterval(updateWatchdogTimer);
+    updateWatchdogTimer = null;
+  }
   isUpdateDownloading = false;
   window.isUpdateDownloading = false;
   window.isUpdatePendingInstall = true;

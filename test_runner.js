@@ -34,7 +34,24 @@ function getOrCreateElement(id) {
       appendChild: () => {},
       setAttribute: () => {},
       removeAttribute: () => {},
-      addEventListener: () => {}
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      getContext: () => ({
+        save: () => {},
+        restore: () => {},
+        fillRect: () => {},
+        strokeRect: () => {},
+        clearRect: () => {},
+        beginPath: () => {},
+        moveTo: () => {},
+        lineTo: () => {},
+        stroke: () => {},
+        fill: () => {},
+        fillText: () => {},
+        measureText: () => ({ width: 40 }),
+        setLineDash: () => {}
+      }),
+      getBoundingClientRect: () => ({ left: 0, top: 0, width: 400, height: 400 })
     };
   }
   return elements[id];
@@ -92,7 +109,9 @@ const domWindow = {
   innerWidth: 400,
   innerHeight: 800,
   location: { reload: () => {} },
-  scrollTo: () => {}
+  scrollTo: () => {},
+  addEventListener: () => {},
+  removeEventListener: () => {}
 };
 
 const domDocument = {
@@ -111,7 +130,8 @@ const domDocument = {
   },
   body: {
     appendChild: () => {},
-    classList: { add: () => {}, remove: () => {} }
+    classList: { add: () => {}, remove: () => {} },
+    style: { setProperty: () => {} }
   }
 };
 
@@ -257,10 +277,13 @@ assert(state.holdings['005930'].qty === 1, 'Holding quantity is 1');
 console.log(`  Cash before: ${cashBefore}, Cash after: ${state.cash}`);
 
 console.log('\n--- 5. Selling & Market Hours / Reservation Handling ---');
-// When market is closed (default at night/weekend), sell is reserved
+// When market is closed, sell is safely reserved
+const origIsMarketOpen = context.isMarketOpen;
+context.isMarketOpen = () => false;
 state.reservedOrders = [];
 context.executeSellImmediately('005930', 1, '손절매도', '손절 테스트');
 assert(state.reservedOrders.length >= 1, 'Sell order is safely reserved when market is closed');
+context.isMarketOpen = origIsMarketOpen;
 
 // When market is open, direct execution applies immediately
 context.isMarketOpen = () => true;
@@ -358,6 +381,11 @@ assert(domWindow.isUpdatePendingInstall === true, 'onUpdateComplete keeps isUpda
 domWindow.onUpdateFailed('네트워크 오류');
 assert(domWindow.isUpdatePendingInstall === true, 'onUpdateFailed keeps isUpdatePendingInstall true so screen stays locked');
 
+// Test skipOrFinishUpdate unlocks and allows entry
+context.skipOrFinishUpdate();
+assert(domWindow.isUpdatePendingInstall === false, 'skipOrFinishUpdate releases install lock');
+assert(domWindow.isUpdateDownloading === false, 'skipOrFinishUpdate releases download flag');
+
 
 // =============================================
 // Elite Quant Algorithms & Security Tests
@@ -402,6 +430,57 @@ const moatTop1 = context.meritzEvaluateMoat('005930', 1);
 assert(moatTop1.score === 12 && moatTop1.moat === 'WIDE_MOAT', 'meritzEvaluateMoat recognizes top market cap economic moat');
 const moatSmall = context.meritzEvaluateMoat('999999', 999);
 assert(moatSmall.score === 0 && moatSmall.moat === 'STANDARD', 'meritzEvaluateMoat filters non-moat small cap stocks');
+
+// 6. Test toggleIdxBar
+const mockBar = { style: { display: 'flex' }, classList: { contains: () => false, toggle: (cls) => true, add: () => {}, remove: () => {} } };
+const mockBtn = { textContent: '▲ 지수접기', style: {} };
+context.document.getElementById = (id) => {
+  if (id === 'idxBarBox') return mockBar;
+  if (id === 'btnFoldIdx') return mockBtn;
+  return getOrCreateElement(id);
+};
+context.toggleIdxBar();
+assert(mockBar.style.display === 'none' && mockBtn.textContent === '▼ 지수보기', 'toggleIdxBar properly collapses index bar and toggles button');
+
+// 7. Test toggleHomeMarcap (collapsible top 3 / top 10)
+assert(domWindow.isHomeMarcapCollapsed === true, 'Home marcap starts in collapsed state (top 3 only)');
+context.toggleHomeMarcap();
+assert(domWindow.isHomeMarcapCollapsed === false, 'toggleHomeMarcap expands to top 10');
+context.toggleHomeMarcap();
+assert(domWindow.isHomeMarcapCollapsed === true, 'toggleHomeMarcap collapses back to top 3');
+
+// 8. Test setFontScale
+context.setFontScale('large');
+const up1 = domWindow.userPrefs || context.userPrefs;
+assert(up1.fontScale === 'large', 'setFontScale updates user preferences to large');
+context.setFontScale('normal');
+const up2 = domWindow.userPrefs || context.userPrefs;
+assert(up2.fontScale === 'normal', 'setFontScale reverts user preferences to normal');
+
+// 9. Test setSoundType (Sound effect dropdown selection)
+context.setSoundType('hts_fill');
+const upSound1 = domWindow.userPrefs || context.userPrefs;
+assert(upSound1.soundType === 'hts_fill', 'setSoundType updates sound effect to arcade');
+context.setSoundType('meritz_mts');
+const upSound2 = domWindow.userPrefs || context.userPrefs;
+assert(upSound2.soundType === 'meritz_mts', 'setSoundType updates sound effect to digital');
+
+// 10. Test chart date indicator toggle
+context.toggleChartIndicator('DATES', false);
+const csDates1 = domWindow.chartSettings || context.chartSettings;
+assert(csDates1.showDates === false, 'toggleChartIndicator disables date display');
+context.toggleChartIndicator('DATES', true);
+const csDates2 = domWindow.chartSettings || context.chartSettings;
+assert(csDates2.showDates === true, 'toggleChartIndicator enables date display');
+
+// 11. Test pending approval stock click navigation & openChartTab
+context.openChartTab('000660');
+const curCode = domWindow.currentChartCode || context.currentChartCode;
+assert(curCode === '000660', 'openChartTab sets currentChartCode to clicked stock');
+
+assert(htmlContent.length > 0, 'htmlContent loaded');
+assert(htmlContent.includes("openChartTab('${req.code}')"), 'Pending approval HTML contains openChartTab click handler');
+assert(htmlContent.includes('aspect-ratio: 680 / 446'), 'Chart canvas CSS enforces fixed responsive aspect-ratio');
 
 console.log('\n=============================================');
 console.log(`TEST SUMMARY: Passed: ${passedTests}, Failed: ${failedTests}`);
