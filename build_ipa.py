@@ -51,9 +51,9 @@ def build_ipa(output_ipa_path):
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
-    <string>4.5.4</string>
+    <string>4.5.5</string>
     <key>CFBundleVersion</key>
-    <string>4.5.4</string>
+    <string>4.5.5</string>
     <key>LSRequiresIPhoneOS</key>
     <true/>
     <key>MinimumOSVersion</key>

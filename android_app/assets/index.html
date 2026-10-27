@@ -7,7 +7,7 @@
   <script>
     // 🚀 [메리츠 AI 트레이더 v4.4.2 실시간 캐시 무효화 및 강제 자동 최신화]
     (function() {
-      const APP_VER = "4.5.4";
+      const APP_VER = "4.5.5";
       if (localStorage.getItem("meritz_app_cache_ver") !== APP_VER) {
         localStorage.setItem("meritz_app_cache_ver", APP_VER);
         if ('caches' in window) {
@@ -768,7 +768,7 @@
           <span style="font-size:10px; color:#94a3b8;">Super365 실계좌</span>
         </div>
         <div style="display:grid; grid-template-columns:1fr auto; gap:6px; width:100%; box-sizing:border-box;">
-          <button class="btn btn-blue" style="width:100%; padding:7px 6px; font-size:clamp(10px, 2.8vw, 11.5px); font-weight:800;" onclick="syncRealBrokerAccountNow(true)">🔄 실전자산 불러오기</button>
+          <button class="btn btn-blue" style="width:100%; padding:7px 6px; font-size:clamp(10px, 2.8vw, 11.5px); font-weight:800;" onclick="syncRealBrokerAccountSafe(true, true)">🔄 실전자산 불러오기</button>
           <button class="btn btn-dark" style="padding:7px 10px; font-size:11.5px; font-weight:800;" onclick="goToMeritzAccountSetup()">⚙️ 연동</button>
         </div>
       </div>
@@ -2162,6 +2162,31 @@ function renderReservedOrdersList() {
   }).join("");
 }
 
+let lastRealBrokerSyncTime = 0;
+let isRealBrokerSyncing = false;
+
+// 🛡️ [메리츠 Open API 레이트 리밋 방지 실전자산 안전 동기화 함수]
+// - 초당 요청 제한(Rate Limit)을 안전하게 준수하도록 5초 쿨다운 적용
+// - 홈/승인함 진입 시 즉시 갱신되며, 백그라운드에서는 안전 주기(6초)마다 자동 갱신
+function syncRealBrokerAccountSafe(showToastMsg, force) {
+  const now = Date.now();
+  if (!force && (now - lastRealBrokerSyncTime < 5000 || isRealBrokerSyncing)) {
+    return false;
+  }
+  if (!state.isAccountLinked && !force) {
+    const appKey = (state.config.meritzKey || "").trim();
+    const appSecret = (state.config.meritzUrl || "").trim();
+    if (!appKey || !appSecret) return false;
+  }
+  isRealBrokerSyncing = true;
+  lastRealBrokerSyncTime = now;
+  try {
+    return syncRealBrokerAccountNow(showToastMsg);
+  } finally {
+    isRealBrokerSyncing = false;
+  }
+}
+
 function syncRealBrokerAccountNow(showToastMsg) {
   syncRealNaverQuotesBatch();
   syncMarketIndices();
@@ -2258,12 +2283,15 @@ function syncRealBrokerAccountNow(showToastMsg) {
     state.reservedOrders = serverReserved;
   }
 
+  const assetChanged = (state.serverTotalAsset !== totalAsset || state.cash !== realCash);
   saveState();
   updateMeritzStatusBox("");
   renderDashboard();
   renderReservedOrdersList();
   renderHomeMarcapTop10();
-  appendLog(`🏦 [메리츠 Open API 실전 조회] 총 추정자산 ${fmt(totalAsset)}원 | 주문가능 ${fmt(realCash)}원 | 보유 ${Object.keys(newHoldings).length}종목 | 예약 ${state.reservedOrders.length}건`);
+  if (showToastMsg || assetChanged || !wasLinked) {
+    appendLog(`🏦 [메리츠 Open API 실전 조회] 총 추정자산 ${fmt(totalAsset)}원 | 주문가능 ${fmt(realCash)}원 | 보유 ${Object.keys(newHoldings).length}종목 | 예약 ${state.reservedOrders.length}건`);
+  }
   if (showToastMsg) showNativeToast(`메리츠 실전자산 ${fmt(totalAsset)}원 동기화 완료!`);
   return true;
 }
@@ -6423,9 +6451,9 @@ function tickMarketPrices() {
   tickCount++;
   syncRealNaverQuotesBatch();
   syncMarketIndices();
-  // 30초마다 메리츠 실계좌 자산 자동 재조회 (연결된 경우만)
-  if (state.isAccountLinked && tickCount % 10 === 0) {
-    syncRealBrokerAccountNow(false);
+  // 🛡️ 6초(2틱)마다 메리츠 실계좌 자산 자동 재조회 (레이트 리밋 안전 5초 쿨다운 준수)
+  if ((state.isAccountLinked || (state.config.meritzKey && state.config.meritzUrl)) && tickCount % 2 === 0) {
+    syncRealBrokerAccountSafe(false, false);
   }
   pollTelegramRemoteApproval();
   renderDashboard();
@@ -6469,6 +6497,14 @@ function switchTab(tabId, navEl) {
     }
   }
 
+  if (tabId === "home") {
+    // 🏠 홈(주문 승인 대기함) 진입 시 즉시 자산 및 대기함 실시간 갱신!
+    renderDashboard();
+    renderReservedOrdersList();
+    if (state.isAccountLinked || (state.config.meritzKey && state.config.meritzUrl)) {
+      syncRealBrokerAccountSafe(false, false);
+    }
+  }
   if (tabId === "recommend") renderRecommendations(currentRecCat);
   if (tabId === "chart") { drawChart(currentChartCode); renderWatchlist(); }
   if (tabId === "settings") { renderHistory(); renderSecurityPinCard(); }
@@ -7079,13 +7115,13 @@ window.onload = function() {
 // =========================================================================
 const APP_RELEASE_META = {
   appName: "메리츠 AI 주식",
-  currentVersion: "4.5.4",
-  buildDateStr: "2026-10-27 (v4.5.4)",
+  currentVersion: "4.5.5",
+  buildDateStr: "2026-10-27 (v4.5.5)",
   githubRepo: "OKHDEV/AI_TRADE",
   defaultExeName: "Meritz-AI-Stock.exe",
-  defaultSetupName: "Meritz-AI-Stock-Setup-v4.5.4.exe",
-  defaultApkName: "Meritz-AI-Stock-v4.5.4.apk",
-  defaultIpaName: "Meritz-AI-Stock-v4.5.4.ipa"
+  defaultSetupName: "Meritz-AI-Stock-Setup-v4.5.5.exe",
+  defaultApkName: "Meritz-AI-Stock-v4.5.5.apk",
+  defaultIpaName: "Meritz-AI-Stock-v4.5.5.ipa"
 };
 
 function compareSemver(v1, v2) {
@@ -7347,7 +7383,7 @@ async function checkAppUpdateFromGitHub(isManual = false) {
       };
       stopLoadingAndForceUpdate(foundUpdate);
     } else {
-      // ✅ 이미 최신 버전(v4.5.4)임! -> 인트로 완료 후 정상 진입
+      // ✅ 이미 최신 버전(v4.5.5)임! -> 인트로 완료 후 정상 진입
       updateCheckFinished = true;
       window.isUpdatePendingInstall = false;
       window.isUpdateDownloading = false;

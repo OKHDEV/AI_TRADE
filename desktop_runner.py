@@ -307,7 +307,7 @@ def main():
     if html_file and os.path.isfile(html_file):
         target_url = "file:///" + os.path.abspath(html_file).replace("\\", "/")
     else:
-        target_url = "https://okhdev.github.io/AI_TRADE/web/index.html?v=4.5.4"
+        target_url = "https://okhdev.github.io/AI_TRADE/web/index.html?v=4.5.5"
 
     data_dir = os.path.join(tempfile.gettempdir(), "meritz_ai_stock_wv2")
     os.makedirs(data_dir, exist_ok=True)

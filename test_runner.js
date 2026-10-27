@@ -482,6 +482,13 @@ assert(htmlContent.length > 0, 'htmlContent loaded');
 assert(htmlContent.includes("openChartTab('${req.code}')"), 'Pending approval HTML contains openChartTab click handler');
 assert(htmlContent.includes('aspect-ratio: 680 / 446'), 'Chart canvas CSS enforces fixed responsive aspect-ratio');
 
+// 12. Test safe real broker asset sync & cooldown
+assert(typeof context.syncRealBrokerAccountSafe === 'function', 'syncRealBrokerAccountSafe is defined');
+const firstSync = context.syncRealBrokerAccountSafe(false, false);
+const secondSyncImmediate = context.syncRealBrokerAccountSafe(false, false);
+assert(secondSyncImmediate === false, 'syncRealBrokerAccountSafe prevents rate limit via 5s cooldown');
+assert(htmlContent.includes('syncRealBrokerAccountSafe(false, false)'), 'Home tab entry triggers safe real asset sync');
+
 console.log('\n=============================================');
 console.log(`TEST SUMMARY: Passed: ${passedTests}, Failed: ${failedTests}`);
 if (failedTests > 0) {
